@@ -1,0 +1,24 @@
+/* ── Buttons ───────────────────────────────────────── */
+
+.btn-wine {
+  background-color: var(--wine);
+  border-color: var(--wine);
+  color: #fff;
+}
+.btn-wine:hover,
+.btn-wine:focus {
+  background-color: var(--wine-dark);
+  border-color: var(--wine-dark);
+  color: #fff;
+}
+
+.btn-outline-wine {
+  color: var(--wine);
+  border-color: var(--wine);
+}
+.btn-outline-wine:hover,
+.btn-outline-wine:focus {
+  background-color: var(--wine);
+  border-color: var(--wine);
+  color: #fff;
+}

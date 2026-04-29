@@ -1,0 +1,26 @@
+/* ── Avatars ───────────────────────────────────────── */
+
+/* Small square avatars used in job/company cards */
+.company-avatar {
+  width: 44px;
+  height: 44px;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* Large circular avatars for designer profiles and testimonials */
+.avatar-lg {
+  width: 64px;
+  height: 64px;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* ── Feature Icon Squares ──────────────────────────── */
+
+.icon-square {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  flex-shrink: 0;
+}

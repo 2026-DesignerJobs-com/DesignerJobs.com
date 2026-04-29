@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DesignerJobs.com</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="./css/solution.css">
+</head>
+
+<body>
+
+  <!-- ── Navbar ─────────────────────────────────────── -->
+  <nav class="navbar navbar-expand-lg navbar-dark wine-background sticky-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">
+        <i class="bi bi-palette2 me-1"></i>DesignerJobs.com
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-1">
+          <li class="nav-item"><a class="nav-link" href="#feed">Jobs</a></li>
+          <li class="nav-item"><a class="nav-link" href="#designers">Designers</a></li>
+          <li class="nav-item"><a class="nav-link" href="#pricing">Pricing</a></li>
+          <li class="nav-item ms-lg-2">
+            <a class="btn btn-outline-light btn-sm px-3" href="#">Log In</a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-light btn-sm px-3 text-wine fw-semibold" href="#">Register</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Hero ───────────────────────────────────────── -->
+  <section id="title" class="gradient-background py-5">
+    <div class="container py-4">
+      <div class="row align-items-center g-5">
+
+        <!-- Left: headline + search -->
+        <div class="col-lg-6 text-white">
+          <span class="badge bg-white text-wine fw-semibold mb-3 px-3 py-2">
+            <i class="bi bi-stars me-1"></i>Austria's #1 Design Jobs Platform
+          </span>
+          <h1 class="display-4 fw-bold lh-1 mb-3">Find your next design gig.</h1>
+          <p class="lead mb-4 text-white-75">Connect with top-tier creatives and clients — web, interior, graphic &amp; more.</p>
+
+          <!-- Mock search bar -->
+          <div class="input-group input-group-lg shadow mb-4">
+            <span class="input-group-text bg-white border-0">
+              <i class="bi bi-search text-wine"></i>
+            </span>
+            <input type="text" class="form-control border-0" placeholder="UX Designer, Vienna…" disabled>
+            <button class="btn btn-wine px-4 fw-semibold" disabled>Search</button>
+          </div>
+
+          <!-- Category pills -->
+          <div class="d-flex flex-wrap gap-2">
+            <span class="badge rounded-pill bg-white text-wine px-3 py-2"><i class="bi bi-globe2 me-1"></i>Web Design</span>
+            <span class="badge rounded-pill bg-white text-wine px-3 py-2"><i class="bi bi-house me-1"></i>Interior</span>
+            <span class="badge rounded-pill bg-white text-wine px-3 py-2"><i class="bi bi-vector-pen me-1"></i>Graphic</span>
+            <span class="badge rounded-pill bg-white text-wine px-3 py-2"><i class="bi bi-phone me-1"></i>UX / UI</span>
+          </div>
+        </div>
+
+        <!-- Right: mock job card -->
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+            <!-- card header bar -->
+            <div class="card-header wine-background text-white d-flex justify-content-between align-items-center py-3">
+              <span class="fw-semibold"><i class="bi bi-briefcase me-2"></i>Latest Posting</span>
+              <span class="badge bg-white text-wine">New</span>
+            </div>
+            <div class="card-body p-4">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <!-- company avatar -->
+                <div class="company-avatar bg-wine-light text-white rounded-3 d-flex align-items-center justify-content-center fw-bold me-3">
+                  AW
+                </div>
+                <div class="flex-grow-1">
+                  <h5 class="mb-1 fw-bold">Senior UX Designer</h5>
+                  <p class="text-muted mb-0 small">Atelier Wien GmbH</p>
+                </div>
+                <button class="btn btn-outline-wine btn-sm rounded-pill px-3">
+                  <i class="bi bi-bookmark"></i>
+                </button>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="badge bg-light text-dark"><i class="bi bi-geo-alt me-1"></i>Vienna, AT</span>
+                <span class="badge bg-light text-dark"><i class="bi bi-clock me-1"></i>Full-time</span>
+                <span class="badge bg-light text-dark"><i class="bi bi-currency-euro me-1"></i>60–80k / yr</span>
+              </div>
+
+              <p class="text-muted small mb-3">
+                We're looking for a passionate UX Designer to shape digital experiences for our
+                award-winning agency clients across Europe.
+              </p>
+
+              <!-- skill tags -->
+              <div class="d-flex flex-wrap gap-1 mb-4">
+                <span class="badge rounded-pill wine-badge">Figma</span>
+                <span class="badge rounded-pill wine-badge">User Research</span>
+                <span class="badge rounded-pill wine-badge">Prototyping</span>
+                <span class="badge rounded-pill wine-badge">Design Systems</span>
+              </div>
+
+              <div class="d-grid">
+                <button class="btn btn-wine btn-lg rounded-pill fw-semibold" disabled>
+                  Apply Now <i class="bi bi-arrow-right ms-1"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Stats Bar ──────────────────────────────────── -->
+  <section class="bg-body-secondary py-4 border-bottom">
+    <div class="container">
+      <div class="row text-center g-3">
+        <div class="col-4">
+          <p class="display-6 fw-bold wine-text mb-0">2,400+</p>
+          <small class="text-muted text-uppercase tracking-wide">Active Jobs</small>
+        </div>
+        <div class="col-4">
+          <p class="display-6 fw-bold wine-text mb-0">8,000+</p>
+          <small class="text-muted text-uppercase tracking-wide">Designer Profiles</small>
+        </div>
+        <div class="col-4">
+          <p class="display-6 fw-bold wine-text mb-0">190+</p>
+          <small class="text-muted text-uppercase tracking-wide">Cities</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Features ───────────────────────────────────── -->
+  <section id="features" class="py-5">
+    <div class="container">
+      <div class="row g-4 py-3 row-cols-1 row-cols-lg-3">
+        <div class="col d-flex align-items-start">
+          <div class="icon-square text-white wine-background d-inline-flex align-items-center justify-content-center flex-shrink-0 me-3">
+            <i class="bi bi-funnel fs-4"></i>
+          </div>
+          <div>
+            <h3 class="fs-2">Refined Search.</h3>
+            <p class="text-muted">Filter by specialty, location, remote/on-site, and budget to surface exactly the right match.</p>
+          </div>
+        </div>
+        <div class="col d-flex align-items-start">
+          <div class="icon-square text-white wine-background d-inline-flex align-items-center justify-content-center flex-shrink-0 me-3">
+            <i class="bi bi-patch-check fs-4"></i>
+          </div>
+          <div>
+            <h3 class="fs-2">Verified Profiles.</h3>
+            <p class="text-muted">Every designer portfolio is reviewed — clients get quality, designers get real visibility.</p>
+          </div>
+        </div>
+        <div class="col d-flex align-items-start">
+          <div class="icon-square text-white wine-background d-inline-flex align-items-center justify-content-center flex-shrink-0 me-3">
+            <i class="bi bi-lightning-charge fs-4"></i>
+          </div>
+          <div>
+            <h3 class="fs-2">Fast Matching.</h3>
+            <p class="text-muted">Post a job and receive shortlisted, relevant applications within 24 hours.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Job Feed Preview ───────────────────────────── -->
+  <section id="feed" class="py-5 bg-body-secondary">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Trending Jobs</h2>
+        <a href="#" class="btn btn-outline-wine btn-sm rounded-pill px-3">View all <i class="bi bi-arrow-right ms-1"></i></a>
+      </div>
+
+      <div class="row g-4">
+
+        <!-- Job card 1 -->
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+              <div class="d-flex align-items-center mb-3">
+                <div class="company-avatar bg-wine text-white rounded-3 d-flex align-items-center justify-content-center fw-bold me-3">ST</div>
+                <div>
+                  <h6 class="mb-0 fw-bold">UI Designer</h6>
+                  <small class="text-muted">Studio Trio</small>
+                </div>
+              </div>
+              <div class="d-flex flex-wrap gap-1 mb-3">
+                <span class="badge bg-light text-dark"><i class="bi bi-geo-alt me-1"></i>Graz</span>
+                <span class="badge bg-light text-dark">Part-time</span>
+                <span class="badge bg-light text-dark">€35–45k</span>
+              </div>
+              <div class="d-flex flex-wrap gap-1">
+                <span class="badge rounded-pill wine-badge">Figma</span>
+                <span class="badge rounded-pill wine-badge">Branding</span>
+                <span class="badge rounded-pill wine-badge">Illustration</span>
+              </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 px-4 pb-4">
+              <button class="btn btn-wine w-100 rounded-pill" disabled>Apply</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Job card 2 -->
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm rounded-4 border-wine-highlight">
+            <div class="card-body p-4">
+              <div class="d-flex align-items-center mb-3">
+                <div class="company-avatar bg-wine-light text-white rounded-3 d-flex align-items-center justify-content-center fw-bold me-3">ND</div>
+                <div>
+                  <h6 class="mb-0 fw-bold">Interior Designer</h6>
+                  <small class="text-muted">Nordic Design Co.</small>
+                </div>
+                <span class="badge bg-wine ms-auto">Hot</span>
+              </div>
+              <div class="d-flex flex-wrap gap-1 mb-3">
+                <span class="badge bg-light text-dark"><i class="bi bi-geo-alt me-1"></i>Salzburg</span>
+                <span class="badge bg-light text-dark">Full-time</span>
+                <span class="badge bg-light text-dark">€50–65k</span>
+              </div>
+              <div class="d-flex flex-wrap gap-1">
+                <span class="badge rounded-pill wine-badge">AutoCAD</span>
+                <span class="badge rounded-pill wine-badge">3D Rendering</span>
+                <span class="badge rounded-pill wine-badge">Space Planning</span>
+              </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 px-4 pb-4">
+              <button class="btn btn-wine w-100 rounded-pill" disabled>Apply</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Job card 3 -->
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+              <div class="d-flex align-items-center mb-3">
+                <div class="company-avatar bg-secondary text-white rounded-3 d-flex align-items-center justify-content-center fw-bold me-3">BP</div>
+                <div>
+                  <h6 class="mb-0 fw-bold">Brand Designer</h6>
+                  <small class="text-muted">Blaupunkt Digital</small>
+                </div>
+              </div>
+              <div class="d-flex flex-wrap gap-1 mb-3">
+                <span class="badge bg-light text-dark"><i class="bi bi-house me-1"></i>Remote</span>
+                <span class="badge bg-light text-dark">Freelance</span>
+                <span class="badge bg-light text-dark">€400–600/day</span>
+              </div>
+              <div class="d-flex flex-wrap gap-1">
+                <span class="badge rounded-pill wine-badge">Adobe CC</span>
+                <span class="badge rounded-pill wine-badge">Typography</span>
+                <span class="badge rounded-pill wine-badge">Motion</span>
+              </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 px-4 pb-4">
+              <button class="btn btn-wine w-100 rounded-pill" disabled>Apply</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Designer Profiles ──────────────────────────── -->
+  <section id="designers" class="py-5">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Featured Designers</h2>
+        <a href="#" class="btn btn-outline-wine btn-sm rounded-pill px-3">View all <i class="bi bi-arrow-right ms-1"></i></a>
+      </div>
+
+      <div class="row g-4">
+
+        <!-- Designer 1 -->
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm rounded-4 text-center">
+            <div class="card-body p-4">
+              <div class="avatar-lg wine-background text-white rounded-circle d-flex align-items-center justify-content-center fw-bold mx-auto mb-3">
+                AM
+              </div>
+              <h6 class="fw-bold mb-0">Anna Mueller</h6>
+              <small class="text-muted">UX / UI Designer</small>
+              <div class="d-flex justify-content-center gap-1 mt-2 mb-3">
+                <span class="badge rounded-pill wine-badge">Figma</span>
+                <span class="badge rounded-pill wine-badge">Research</span>
+                <span class="badge rounded-pill wine-badge">Web</span>
+              </div>
+              <div class="mb-1 d-flex justify-content-between small text-muted"><span>Figma</span><span>90%</span></div>
+              <div class="progress mb-2" style="height:6px"><div class="progress-bar bg-wine" style="width:90%"></div></div>
+              <div class="mb-1 d-flex justify-content-between small text-muted"><span>User Research</span><span>75%</span></div>
+              <div class="progress mb-3" style="height:6px"><div class="progress-bar bg-wine" style="width:75%"></div></div>
+              <button class="btn btn-outline-wine btn-sm rounded-pill w-100" disabled>View Profile</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Designer 2 -->
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm rounded-4 text-center">
+            <div class="card-body p-4">
+              <div class="avatar-lg bg-wine-light text-white rounded-circle d-flex align-items-center justify-content-center fw-bold mx-auto mb-3">
+                LV
+              </div>
+              <h6 class="fw-bold mb-0">Luca Varga</h6>
+              <small class="text-muted">Graphic &amp; Brand Designer</small>
+              <div class="d-flex justify-content-center gap-1 mt-2 mb-3">
+                <span class="badge rounded-pill wine-badge">Adobe CC</span>
+                <span class="badge rounded-pill wine-badge">Motion</span>
+                <span class="badge rounded-pill wine-badge">Brand</span>
+              </div>
+              <div class="mb-1 d-flex justify-content-between small text-muted"><span>Adobe Illustrator</span><span>95%</span></div>
+              <div class="progress mb-2" style="height:6px"><div class="progress-bar bg-wine" style="width:95%"></div></div>
+              <div class="mb-1 d-flex justify-content-between small text-muted"><span>Motion Design</span><span>80%</span></div>
+              <div class="progress mb-3" style="height:6px"><div class="progress-bar bg-wine" style="width:80%"></div></div>
+              <button class="btn btn-outline-wine btn-sm rounded-pill w-100" disabled>View Profile</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Designer 3 -->
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm rounded-4 text-center">
+            <div class="card-body p-4">
+              <div class="avatar-lg bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold mx-auto mb-3">
+                SK
+              </div>
+              <h6 class="fw-bold mb-0">Sara Köhler</h6>
+              <small class="text-muted">Interior Designer</small>
+              <div class="d-flex justify-content-center gap-1 mt-2 mb-3">
+                <span class="badge rounded-pill wine-badge">AutoCAD</span>
+                <span class="badge rounded-pill wine-badge">3ds Max</span>
+                <span class="badge rounded-pill wine-badge">Render</span>
+              </div>
+              <div class="mb-1 d-flex justify-content-between small text-muted"><span>AutoCAD</span><span>88%</span></div>
+              <div class="progress mb-2" style="height:6px"><div class="progress-bar bg-wine" style="width:88%"></div></div>
+              <div class="mb-1 d-flex justify-content-between small text-muted"><span>3D Rendering</span><span>70%</span></div>
+              <div class="progress mb-3" style="height:6px"><div class="progress-bar bg-wine" style="width:70%"></div></div>
+              <button class="btn btn-outline-wine btn-sm rounded-pill w-100" disabled>View Profile</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Testimonial ────────────────────────────────── -->
+  <section id="testimonial" class="py-5 testimonial-bg">
+    <div class="container py-3">
+
+      <!-- Quote -->
+      <div class="row justify-content-center">
+        <div class="col-lg-8 text-center text-white">
+          <i class="bi bi-quote display-4 opacity-50"></i>
+          <blockquote class="blockquote fs-4 fst-italic mb-4">
+            I found an incredible UX designer for my startup in under two days.
+            DesignerJobs.com is exactly what the creative industry needed.
+          </blockquote>
+
+          <!-- Avatar with initials -->
+          <div class="avatar-lg bg-wine-light text-white rounded-circle d-flex align-items-center justify-content-center fw-bold mx-auto mb-2">
+            TK
+          </div>
+          <p class="text-white-50 mb-0 fw-semibold">Thomas K.</p>
+          <small class="text-white-50">Vienna — Startup Founder</small>
+        </div>
+      </div>
+
+      <!-- Press mentions as styled text (no images) -->
+      <div class="row justify-content-center mt-5 g-3 text-center">
+        <div class="col-auto">
+          <span class="press-badge">TechCrunch</span>
+        </div>
+        <div class="col-auto">
+          <span class="press-badge">Mashable</span>
+        </div>
+        <div class="col-auto">
+          <span class="press-badge">Business Insider</span>
+        </div>
+        <div class="col-auto">
+          <span class="press-badge">The Next Web</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Pricing ────────────────────────────────────── -->
+  <section id="pricing" class="py-5">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold">A Plan for Every Creative</h2>
+        <p class="fs-5 text-muted">Simple, transparent pricing — for designers and clients alike.</p>
+      </div>
+
+      <div class="row row-cols-1 row-cols-md-3 mb-3 text-center g-4">
+
+        <!-- Freelancer -->
+        <div class="col">
+          <div class="card h-100 border-0 shadow-sm rounded-4">
+            <div class="card-header py-3 bg-transparent border-0">
+              <h4 class="my-0 fw-semibold">Freelancer</h4>
+            </div>
+            <div class="card-body">
+              <h1 class="card-title pricing-card-title fw-bold">€0<small class="text-muted fw-light fs-5">/mo</small></h1>
+              <ul class="list-unstyled mt-3 mb-4 text-muted">
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>1 Active Job Post</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Browse Designer Feed</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Basic Profile Page</li>
+                <li class="mb-2 text-decoration-line-through opacity-50"><i class="bi bi-x-circle me-2"></i>Refined Search</li>
+              </ul>
+              <button class="w-100 btn btn-lg btn-outline-wine rounded-pill" disabled>Sign up for free</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Studio (featured) -->
+        <div class="col">
+          <div class="card h-100 border-0 shadow rounded-4 border-wine-highlight position-relative">
+            <span class="position-absolute top-0 start-50 translate-middle badge bg-wine rounded-pill px-3 py-2 shadow">
+              Most Popular
+            </span>
+            <div class="card-header py-3 text-bg-wine border-0 rounded-top-4">
+              <h4 class="my-0 fw-semibold">Studio</h4>
+            </div>
+            <div class="card-body">
+              <h1 class="card-title pricing-card-title fw-bold">€19<small class="text-muted fw-light fs-5">/mo</small></h1>
+              <ul class="list-unstyled mt-3 mb-4 text-muted">
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>5 Active Job Posts</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Refined Search Filters</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Featured Profile Listing</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Email Notifications</li>
+              </ul>
+              <button class="w-100 btn btn-lg btn-wine rounded-pill" disabled>Get started</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agency -->
+        <div class="col">
+          <div class="card h-100 border-0 shadow-sm rounded-4">
+            <div class="card-header py-3 bg-transparent border-0">
+              <h4 class="my-0 fw-semibold">Agency</h4>
+            </div>
+            <div class="card-body">
+              <h1 class="card-title pricing-card-title fw-bold">€49<small class="text-muted fw-light fs-5">/mo</small></h1>
+              <ul class="list-unstyled mt-3 mb-4 text-muted">
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited Job Posts</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Priority Feed Placement</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Account Support</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Analytics Dashboard</li>
+              </ul>
+              <button class="w-100 btn btn-lg btn-outline-wine rounded-pill" disabled>Contact us</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ─────────────────────────────────────── -->
+  <footer id="contact" class="gradient-background text-white">
+    <div class="container">
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5 py-5 border-top border-light border-opacity-25">
+        <div class="col mb-3">
+          <span class="fs-5 fw-bold d-block mb-2">
+            <i class="bi bi-palette2 me-1"></i>DesignerJobs.com
+          </span>
+          <p class="text-white-50 small mb-0">© 2025 DesignerJobs.com</p>
+          <p class="text-white-50 small">Vienna, Austria</p>
+        </div>
+
+        <div class="col mb-3"></div>
+
+        <div class="col mb-3">
+          <h6 class="fw-semibold text-uppercase tracking-wide mb-3">Platform</h6>
+          <ul class="nav flex-column">
+            <li class="nav-item mb-1"><a href="#" class="nav-link p-0 text-white-50">Home</a></li>
+            <li class="nav-item mb-1"><a href="#feed" class="nav-link p-0 text-white-50">Browse Jobs</a></li>
+            <li class="nav-item mb-1"><a href="#designers" class="nav-link p-0 text-white-50">Find Designers</a></li>
+            <li class="nav-item mb-1"><a href="#pricing" class="nav-link p-0 text-white-50">Pricing</a></li>
+          </ul>
+        </div>
+
+        <div class="col mb-3">
+          <h6 class="fw-semibold text-uppercase tracking-wide mb-3">Account</h6>
+          <ul class="nav flex-column">
+            <li class="nav-item mb-1"><a href="#" class="nav-link p-0 text-white-50">Log In</a></li>
+            <li class="nav-item mb-1"><a href="#" class="nav-link p-0 text-white-50">Register</a></li>
+            <li class="nav-item mb-1"><a href="#" class="nav-link p-0 text-white-50">Create Profile</a></li>
+            <li class="nav-item mb-1"><a href="#" class="nav-link p-0 text-white-50">Post a Job</a></li>
+          </ul>
+        </div>
+
+        <div class="col mb-3">
+          <h6 class="fw-semibold text-uppercase tracking-wide mb-3">Company</h6>
+          <ul class="nav flex-column">
+            <li class="nav-item mb-1"><a href="#" class="nav-link p-0 text-white-50">About</a></li>
+            <li class="nav-item mb-1"><a href="#" class="nav-link p-0 text-white-50">Contact</a></li>
+            <li class="nav-item mb-1"><a href="#" class="nav-link p-0 text-white-50">Privacy Policy</a></li>
+            <li class="nav-item mb-1"><a href="#" class="nav-link p-0 text-white-50">Terms</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVzdl1"
+    crossorigin="anonymous"></script>
+</body>
+
+</html>

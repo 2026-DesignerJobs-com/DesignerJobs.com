@@ -1,5 +1,6 @@
 ### idea
 workspace.xml
+.idea
 ### Java template
 # Compiled class file
 *.class

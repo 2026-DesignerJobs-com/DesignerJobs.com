@@ -1,53 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DesignerJobs.com</title>
 
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>DesignerJobs.com</title>
-
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="css/main.css">
-
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
 </head>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
 <body>
-
-
-
 
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">DesignerJobs</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <a class="navbar-brand" href="#home">DesignerJobs</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
+            <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    <a class="nav-link active" aria-current="page" href="#home">Home</a>
                 </li>
+
                 <li class="nav-item">
-                    <a class="nav-link" href="#">About us</a>
+                    <a class="nav-link" href="#audience">For clients & designers</a>
                 </li>
+
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Impressum</a>
+                    <a class="nav-link" href="#jobs">Projects</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#about">About us</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#impressum">Impressum</a>
                 </li>
             </ul>
-        </div>
-        <div class="d-flex justify-content-end">
-            <div class="dropdown">
-                <button type="button" class="btn btn-outline-primary">Register</button>
-                
-                <button type="button" class="btn btn-outline-secondary">Login</button>
+
+            <div class="d-flex gap-2">
+                <button id="registerBtn" type="button" class="btn btn-outline-primary">Register</button>
+                <button id="loginBtn" type="button" class="btn btn-outline-secondary">Login</button>
             </div>
         </div>
     </div>
-</nav>
 </nav>
 
 <main id="home">
@@ -55,35 +56,84 @@
         <div class="hero-content">
             <p class="eyebrow">Freelance job portal for designers</p>
 
-            <h1>Find design jobs that match your skills.</h1>
+            <h1>Where clients and designers find each other.</h1>
 
             <p class="hero-text">
-                DesignerJobs connects freelance designers with clients who need creative work,
-                from logos and branding to web design and visual content.
+                DesignerJobs connects clients who need creative work with freelance designers
+                who are looking for suitable projects.
             </p>
 
             <div class="hero-actions">
-                <a class="primary-button" href="#jobs">Browse Jobs</a>
+                <a class="primary-button" href="#audience">Get Started</a>
                 <a class="secondary-button" href="#about">Learn More</a>
             </div>
         </div>
     </section>
 
+    <section id="audience" class="audience-section">
+        <div class="section-heading">
+            <p class="eyebrow">Choose your path</p>
+            <h2>What are you looking for?</h2>
+            <p>
+                DesignerJobs supports both clients who need creative work and designers
+                who are looking for freelance projects.
+            </p>
+        </div>
+
+        <div class="audience-grid">
+            <article class="audience-card">
+                <h3>Looking for a designer?</h3>
+
+                <p>
+                    Post your design project, describe your needs, set a budget and receive
+                    applications from freelance designers who match your project.
+                </p>
+
+                <ul class="audience-list">
+                    <li>Create design projects</li>
+                    <li>Set category, budget and deadline</li>
+                    <li>Receive applications from designers</li>
+                </ul>
+
+                <a class="primary-button" href="#post-job">Post a Job</a>
+            </article>
+
+            <article class="audience-card">
+                <h3>Are you a designer?</h3>
+
+                <p>
+                    Find freelance design projects, browse open opportunities and apply with your
+                    portfolio and a short message.
+                </p>
+
+                <ul class="audience-list">
+                    <li>Browse open design projects</li>
+                    <li>Filter by category and budget</li>
+                    <li>Apply with your portfolio</li>
+                </ul>
+
+                <a class="secondary-button" href="#jobs">Find Projects</a>
+            </article>
+        </div>
+    </section>
+
     <section id="jobs" class="jobs-section">
         <div class="section-heading">
-            <p class="eyebrow">Open projects</p>
-            <h2>Available design jobs</h2>
+            <p class="eyebrow">Featured projects</p>
+            <h2>Explore design opportunities</h2>
             <p>
-                Browse current freelance design opportunities and apply for projects
-                that match your skills and portfolio.
+                These example projects show how design jobs can later be displayed dynamically
+                from the backend.
             </p>
         </div>
 
         <div class="jobs-grid">
             <article class="job-card">
                 <h3>Logo Design for Coffee Shop</h3>
+
                 <p>
-                    A small coffee shop in Vienna needs a modern and warm logo design.
+                    A small coffee shop in Vienna needs a modern and warm logo design
+                    for packaging, social media and storefront use.
                 </p>
 
                 <div class="job-meta">
@@ -97,8 +147,10 @@
 
             <article class="job-card">
                 <h3>Portfolio Website Design</h3>
+
                 <p>
-                    A photographer is looking for a clean portfolio website layout.
+                    A photographer is looking for a clean portfolio website layout
+                    with a minimal visual structure and image-focused design.
                 </p>
 
                 <div class="job-meta">
@@ -112,8 +164,10 @@
 
             <article class="job-card">
                 <h3>Social Media Templates</h3>
+
                 <p>
-                    A startup needs reusable Instagram templates for product marketing.
+                    A startup needs reusable Instagram templates for product marketing,
+                    campaign announcements and brand storytelling.
                 </p>
 
                 <div class="job-meta">
@@ -130,18 +184,49 @@
     <section id="about" class="info-section">
         <div class="section-heading">
             <p class="eyebrow">About us</p>
+
             <h2>Built for the design community</h2>
+
             <p>
                 DesignerJobs is a specialized freelance job portal where clients can post
-                design needs and designers can apply for suitable projects.
+                design needs and designers can apply for suitable projects. The platform focuses
+                on design work instead of general freelance categories.
             </p>
+        </div>
+
+        <div class="steps-grid">
+            <article class="step-card">
+                <h3>Design-only focus</h3>
+                <p>
+                    The platform is built specifically for design-related work such as branding,
+                    web design, illustration and visual content.
+                </p>
+            </article>
+
+            <article class="step-card">
+                <h3>Clear project structure</h3>
+                <p>
+                    Clients can describe project requirements, budget, location and deadline
+                    so designers understand the work before applying.
+                </p>
+            </article>
+
+            <article class="step-card">
+                <h3>Better matching</h3>
+                <p>
+                    Designers can apply to projects that fit their portfolio, skills and creative
+                    style instead of competing on general platforms.
+                </p>
+            </article>
         </div>
     </section>
 
     <section id="impressum" class="info-section">
         <div class="section-heading">
             <p class="eyebrow">Legal information</p>
+
             <h2>Impressum</h2>
+
             <p>
                 DesignerJobs.com is a student project created at FH Campus Wien
                 as part of the Web Technologies course.
@@ -154,10 +239,6 @@
     <p>&copy; 2026 DesignerJobs.com. Built for the design community.</p>
 </footer>
 
-</body>
-</html>
-
-
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

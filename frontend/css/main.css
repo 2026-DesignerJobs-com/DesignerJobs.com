@@ -1,6 +1,6 @@
 /* ================================
    DesignerJobs.com - Main Styling
-   General desktop and base design
+   General desktop, responsive design
 ================================ */
 
 /* ---------- Global Reset ---------- */
@@ -40,42 +40,70 @@ img {
     display: block;
 }
 
-/* ---------- Header ---------- */
+/* ---------- Bootstrap Navbar Custom Styling ---------- */
 
-.site-header {
-    width: 100%;
-    padding: 24px 8%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #f8f4ef;
+.navbar {
+    padding: 18px 8%;
+    background-color: #f8f4ef !important;
     border-bottom: 1px solid #e2d8ce;
     position: sticky;
     top: 0;
     z-index: 100;
 }
 
-.logo {
+.navbar-brand {
     font-size: 1.4rem;
     font-weight: 700;
     letter-spacing: -0.03em;
+    color: #1f1f1f;
 }
 
-.main-nav {
-    display: flex;
-    gap: 28px;
-    align-items: center;
+.navbar-brand:hover {
+    color: #8b3a3a;
 }
 
-.main-nav a {
+.navbar-nav {
+    gap: 12px;
+}
+
+.nav-link {
     font-size: 0.95rem;
     font-weight: 500;
     color: #333333;
     transition: color 0.2s ease;
 }
 
-.main-nav a:hover {
+.nav-link:hover,
+.nav-link.active {
+    color: #8b3a3a !important;
+}
+
+.navbar .btn {
+    border-radius: 999px;
+    font-weight: 700;
+    padding: 9px 20px;
+}
+
+.navbar .btn-outline-primary {
     color: #8b3a3a;
+    border-color: #8b3a3a;
+}
+
+.navbar .btn-outline-primary:hover {
+    background-color: #8b3a3a;
+    border-color: #8b3a3a;
+    color: #ffffff;
+}
+
+.navbar .btn-outline-secondary {
+    color: #1f1f1f;
+    border-color: #1f1f1f;
+}
+
+.navbar .btn-outline-secondary:hover {
+    background-color: #1f1f1f;
+    border-color: #1f1f1f;
+    color: #ffffff;
 }
 
 /* ---------- Hero Section ---------- */
@@ -97,7 +125,7 @@ img {
 }
 
 .hero-content {
-    max-width: 720px;
+    max-width: 760px;
 }
 
 .eyebrow {
@@ -117,7 +145,7 @@ img {
 }
 
 .hero-text {
-    max-width: 620px;
+    max-width: 640px;
     font-size: 1.15rem;
     color: #4a4a4a;
     margin-bottom: 34px;
@@ -142,7 +170,7 @@ img {
     font-weight: 700;
     cursor: pointer;
     border: 1px solid transparent;
-    transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .primary-button {
@@ -152,6 +180,7 @@ img {
 
 .primary-button:hover {
     background-color: #8b3a3a;
+    color: #ffffff;
     transform: translateY(-2px);
 }
 
@@ -167,11 +196,11 @@ img {
     transform: translateY(-2px);
 }
 
-/* ---------- Sections ---------- */
+/* ---------- General Sections ---------- */
 
 .jobs-section,
 .info-section,
-.login-section {
+.audience-section {
     padding: 90px 8%;
 }
 
@@ -192,30 +221,45 @@ img {
     font-size: 1.05rem;
 }
 
-/* ---------- Filter Bar ---------- */
+/* ---------- Audience Section ---------- */
 
-.filter-bar {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 34px;
+.audience-section {
+    background-color: #efe5dc;
 }
 
-.filter-bar input,
-.filter-bar select {
-    min-height: 48px;
-    border: 1px solid #d4c7bb;
-    border-radius: 999px;
-    padding: 0 18px;
+.audience-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+.audience-card {
     background-color: #ffffff;
-    color: #1f1f1f;
+    border: 1px solid #e2d8ce;
+    border-radius: 28px;
+    padding: 34px;
+    box-shadow: 0 14px 35px rgba(31, 31, 31, 0.06);
 }
 
-.filter-bar input {
-    flex: 1;
+.audience-card h3 {
+    font-size: 1.6rem;
+    line-height: 1.2;
+    margin-bottom: 14px;
 }
 
-.filter-bar select {
-    min-width: 220px;
+.audience-card p {
+    color: #555555;
+    margin-bottom: 20px;
+}
+
+.audience-list {
+    margin-bottom: 26px;
+    padding-left: 20px;
+    color: #4a4a4a;
+}
+
+.audience-list li {
+    margin-bottom: 8px;
 }
 
 /* ---------- Jobs Grid ---------- */
@@ -232,8 +276,10 @@ img {
     border-radius: 28px;
     padding: 26px;
     box-shadow: 0 14px 35px rgba(31, 31, 31, 0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
-
 
 .job-card h3 {
     font-size: 1.35rem;
@@ -250,19 +296,23 @@ img {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin: 18px 0;
+    margin: 18px 0 22px;
 }
 
 .job-meta span {
-    background-color: #c6b8a9;
-    color: #c82b2b;
+    background-color: #f1e7dd;
+    color: #5a2f2f;
     border-radius: 999px;
     padding: 6px 12px;
     font-size: 0.85rem;
     font-weight: 600;
 }
 
-/* ---------- How It Works ---------- */
+.job-card .primary-button {
+    margin-top: auto;
+}
+
+/* ---------- About / Feature Cards ---------- */
 
 .steps-grid {
     display: grid;
@@ -286,40 +336,6 @@ img {
     color: #d8d8d8;
 }
 
-/* ---------- Login Form ---------- */
-
-.login-section {
-    background-color: #efe5dc;
-}
-
-.login-form {
-    max-width: 460px;
-    background-color: #ffffff;
-    border: 1px solid #e2d8ce;
-    border-radius: 28px;
-    padding: 32px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
-
-.login-form label {
-    font-weight: 700;
-}
-
-.login-form input {
-    min-height: 48px;
-    border: 1px solid #d4c7bb;
-    border-radius: 14px;
-    padding: 0 14px;
-}
-
-.form-message {
-    min-height: 24px;
-    font-size: 0.95rem;
-    color: #8b3a3a;
-}
-
 /* ---------- Footer ---------- */
 
 .site-footer {
@@ -331,18 +347,20 @@ img {
 
 .site-footer p {
     color: #d8d8d8;
+    margin: 0;
 }
+
 /* ---------- Responsive Design ---------- */
 
 @media (max-width: 1024px) {
-    .site-header {
-        padding: 20px 6%;
+    .navbar {
+        padding: 16px 6%;
     }
 
     .hero-section,
     .jobs-section,
     .info-section,
-    .login-section {
+    .audience-section {
         padding-left: 6%;
         padding-right: 6%;
     }
@@ -354,16 +372,18 @@ img {
 }
 
 @media (max-width: 768px) {
-    .site-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 18px;
+    .navbar {
+        padding: 14px 5%;
     }
 
-    .main-nav {
+    .navbar .d-flex {
+        margin-top: 16px;
         width: 100%;
-        flex-wrap: wrap;
-        gap: 16px;
+        flex-direction: column;
+    }
+
+    .navbar .btn {
+        width: 100%;
     }
 
     .hero-section {
@@ -371,6 +391,15 @@ img {
         padding-top: 70px;
         padding-bottom: 70px;
         background-position: right center;
+    }
+
+    .hero-content h1 {
+        font-size: 3rem;
+        line-height: 1;
+    }
+
+    .hero-text {
+        font-size: 1rem;
     }
 
     .hero-actions {
@@ -383,17 +412,46 @@ img {
         width: 100%;
     }
 
-    .filter-bar {
-        flex-direction: column;
-    }
-
-    .filter-bar input,
-    .filter-bar select {
-        width: 100%;
-    }
-
+    .audience-grid,
     .jobs-grid,
     .steps-grid {
         grid-template-columns: 1fr;
+    }
+
+    .jobs-section,
+    .info-section,
+    .audience-section {
+        padding-top: 64px;
+        padding-bottom: 64px;
+    }
+
+    .audience-card,
+    .job-card,
+    .step-card {
+        border-radius: 22px;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+
+    .nav-link {
+        font-size: 0.9rem;
+    }
+
+    .hero-content h1 {
+        font-size: 2.4rem;
+    }
+
+    .section-heading h2 {
+        font-size: 2rem;
+    }
+
+    .audience-card,
+    .job-card,
+    .step-card {
+        padding: 24px;
     }
 }

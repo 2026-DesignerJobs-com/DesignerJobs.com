@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DESIGNJOBS.COM — About Us</title>
+
+  <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light')</script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg top-nav" data-bs-theme="dark">
+    <div class="container-fluid" style="max-width: var(--max-w)">
+      <a class="navbar-brand" href="index.html">DESIGNJOBS.COM</a>
+
+      <button class="navbar-toggler" type="button"
+              data-bs-toggle="collapse" data-bs-target="#nav-menu"
+              aria-controls="nav-menu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="nav-menu">
+        <ul class="navbar-nav mx-auto gap-4">
+          <li class="nav-item"><a class="nav-link active" href="about.html" aria-current="page">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="jobs.html">All Jobs</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Random Job</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
+          <button id="theme-toggle" type="button" class="stamp-btn stamp-btn--inverse">☾ Dark</button>
+          <a href="#" class="stamp-btn stamp-btn--inverse">Register</a>
+          <a href="#" class="stamp-btn stamp-btn--inverse">Login</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- PAGE HEADER -->
+    <section class="search-banner" aria-label="About us header">
+      <div class="search-banner__panel" style="min-height: 280px">
+        <div class="text-center" style="color: var(--on-primary)">
+          <p style="font-family: var(--font-ui); font-size: var(--fs-sm); letter-spacing: .2em; text-transform: uppercase; opacity: .7; margin-bottom: .75rem">Who we are</p>
+          <h1 style="font-family: var(--font-ui); font-size: var(--fs-xl); letter-spacing: .06em; text-transform: uppercase; color: var(--on-primary); margin: 0">About Us</h1>
+        </div>
+      </div>
+    </section>
+
+    <!-- MISSION -->
+    <section class="page-section" aria-labelledby="mission-h">
+      <div class="page-section__head">
+        <h2 id="mission-h">Our Mission</h2>
+      </div>
+      <div class="row g-5">
+        <div class="col-lg-7">
+          <p style="font-size: var(--fs-md); color: var(--ink-soft); margin-bottom: 1.5rem">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+            incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+            exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+          </p>
+          <p style="color: var(--ink-soft)">
+            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+            fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+            culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde
+            omnis iste natus error sit voluptatem accusantium doloremque laudantium.
+          </p>
+          <p style="color: var(--ink-soft)">
+            Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed
+            quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque
+            porro quisquam est, qui dolorem ipsum quia dolor sit amet.
+          </p>
+        </div>
+        <div class="col-lg-5">
+          <article class="job-card" style="height: auto; padding: 2rem">
+            <h3 class="job-card__title" style="font-size: var(--fs-md); margin-bottom: 1rem">By the numbers</h3>
+            <div style="display: flex; flex-direction: column; gap: 1.2rem">
+              <div>
+                <div style="font-family: var(--font-ui); font-size: var(--fs-xl); color: var(--on-primary)">2 400+</div>
+                <div style="font-family: var(--font-ui); font-size: var(--fs-xs); letter-spacing: .2em; text-transform: uppercase; color: var(--on-primary); opacity: .7">Jobs posted</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-ui); font-size: var(--fs-xl); color: var(--on-primary)">800+</div>
+                <div style="font-family: var(--font-ui); font-size: var(--fs-xs); letter-spacing: .2em; text-transform: uppercase; color: var(--on-primary); opacity: .7">Designers</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-ui); font-size: var(--fs-xl); color: var(--on-primary)">12</div>
+                <div style="font-family: var(--font-ui); font-size: var(--fs-xs); letter-spacing: .2em; text-transform: uppercase; color: var(--on-primary); opacity: .7">Countries</div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEAM -->
+    <section class="page-section" aria-labelledby="team-h">
+      <div class="page-section__head">
+        <h2 id="team-h">The Team</h2>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-4">
+          <article class="job-card">
+            <h3 class="job-card__title">Lorem Ipsum</h3>
+            <p class="job-card__body">
+              Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis
+              suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
+            </p>
+            <div class="job-card__meta"><span>Founder</span><span>Vienna</span></div>
+          </article>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <article class="job-card">
+            <h3 class="job-card__title">Dolor Sit</h3>
+            <p class="job-card__body">
+              Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse
+              quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat.
+            </p>
+            <div class="job-card__meta"><span>Design Lead</span><span>Remote</span></div>
+          </article>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <article class="job-card">
+            <h3 class="job-card__title">Amet Consec</h3>
+            <p class="job-card__body">
+              At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis
+              praesentium voluptatum deleniti atque corrupti quos dolores.
+            </p>
+            <div class="job-card__meta"><span>Engineering</span><span>Vienna</span></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- IMPRESSUM -->
+    <section class="page-section" id="impressum" aria-labelledby="impressum-h" style="margin-bottom: 2rem">
+      <div class="page-section__head">
+        <h2 id="impressum-h">Impressum</h2>
+      </div>
+      <p style="color: var(--ink-soft); font-family: var(--font-ui); font-size: var(--fs-sm); letter-spacing: .05em; line-height: 2">
+        DesignerJobs.com<br>
+        FH Campus Wien · Favoritenstraße 226 · 1100 Wien<br>
+        Studienkennzahl: VZ2028 · Lehrveranstaltung: Web Technologies 2<br>
+        Group AF · SoSe 2026
+      </p>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <span class="site-footer__brand">DESIGNJOBS.COM</span>
+      <nav aria-label="Footer navigation">
+        <a href="about.html">About</a> &middot;
+        <a href="about.html#impressum">Impressum</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

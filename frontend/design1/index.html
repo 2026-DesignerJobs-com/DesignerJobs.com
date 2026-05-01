@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DESIGNJOBS.COM — Find your next client</title>
+
+  <!-- Restore saved theme before first paint — prevents flash -->
+  <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light')</script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- NAVBAR — Bootstrap collapse handles the hamburger, no custom JS needed -->
+  <nav class="navbar navbar-expand-lg top-nav" data-bs-theme="dark">
+    <div class="container-fluid" style="max-width: var(--max-w)">
+      <a class="navbar-brand" href="index.html">DESIGNJOBS.COM</a>
+
+      <button class="navbar-toggler" type="button"
+              data-bs-toggle="collapse" data-bs-target="#nav-menu"
+              aria-controls="nav-menu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="nav-menu">
+        <ul class="navbar-nav mx-auto gap-4">
+          <li class="nav-item"><a class="nav-link" href="about.html">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="jobs.html">All Jobs</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Random Job</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
+          <button id="theme-toggle" type="button" class="stamp-btn stamp-btn--inverse">☾ Dark</button>
+          <a href="#" class="stamp-btn stamp-btn--inverse">Register</a>
+          <a href="#" class="stamp-btn stamp-btn--inverse">Login</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- BANNER -->
+  <main>
+    <section class="search-banner" aria-label="Search banner">
+      <div class="search-banner__panel">
+        <div class="search-banner__cutout">
+          <!-- Signature lobed cutout. fill set via CSS so it adapts to dark mode. -->
+          <svg viewBox="0 0 880 550" preserveAspectRatio="none" aria-hidden="true">
+            <path class="search-banner__cutout-fill" d="
+              M 60 240 C 60 110,180 50,320 70 C 410 82,470 60,560 70
+              C 700 82,820 130,820 250 C 820 330,780 380,700 400
+              C 600 425,540 470,470 500 C 400 528,320 510,250 470
+              C 180 432,110 410,80 350 C 64 320,60 280,60 240 Z"/>
+          </svg>
+
+          <div class="search-banner__cutout-content">
+            <form class="search-bar" role="search" id="search-form">
+              <svg class="search-bar__icon" width="22" height="22" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+              </svg>
+              <input class="search-bar__input" type="search"
+                     placeholder="Find your next client" aria-label="Search jobs">
+            </form>
+
+            <div class="search-banner__row">
+              <button class="stamp-btn" type="button">Refined Search</button>
+              <a href="jobs.html" class="stamp-btn">All Jobs</a>
+            </div>
+
+            <div class="search-banner__or">OR</div>
+            <a href="#post" class="stamp-btn stamp-btn--filled">Post a Job</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RECENT POSTINGS -->
+    <section class="page-section" aria-labelledby="recent-h">
+      <div class="page-section__head">
+        <h2 id="recent-h">Recent Postings</h2>
+        <span class="count">03 / 24</span>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-4">
+          <article class="job-card">
+            <h3 class="job-card__title">Looking for a Webdesigner</h3>
+            <p class="job-card__body">My website is a whole mess. Need someone who can fix it! The whole site is about my rats — I love my rats — so people get the vibe.</p>
+            <div class="job-card__meta"><span>Remote</span><span>€€</span><span>2d ago</span></div>
+            <a href="#" class="stamp-btn stamp-btn--inverse job-card__more">Read More</a>
+          </article>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <article class="job-card">
+            <h3 class="job-card__title">Need Interior Designer!</h3>
+            <p class="job-card__body">Small flat in the 7th district. Vintage feel, lots of plants, very cosy. Looking for someone with a portfolio I can browse.</p>
+            <div class="job-card__meta"><span>Vienna</span><span>€€€</span><span>5d ago</span></div>
+            <a href="#" class="stamp-btn stamp-btn--inverse job-card__more">Read More</a>
+          </article>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <article class="job-card">
+            <h3 class="job-card__title">Graphic Designer Needed</h3>
+            <p class="job-card__body">Local zine looking for a cover artist for our autumn issue. Risograph experience preferred. Tight deadline but the rate is fair.</p>
+            <div class="job-card__meta"><span>Hybrid</span><span>€€</span><span>1w ago</span></div>
+            <a href="#" class="stamp-btn stamp-btn--inverse job-card__more">Read More</a>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <span class="site-footer__brand">DESIGNJOBS.COM</span>
+      <nav aria-label="Footer navigation">
+        <a href="about.html">About</a> &middot;
+        <a href="impressum.html">Impressum</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

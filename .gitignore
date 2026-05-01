@@ -1,6 +1,9 @@
 ### idea
 workspace.xml
-.idea
+.idea/
+frontend/design1/frontend-specs.md
+backend/
+organisation/
 
 ### project-specific
 backend/jobs.json
@@ -163,3 +166,4 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+/organisation/presentations/~$ProfPres1.pptx

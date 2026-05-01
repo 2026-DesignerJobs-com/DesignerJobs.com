@@ -35,9 +35,9 @@ python3 -m http.server 8080
 design1/
 ├── index.html          ← landing page
 ├── jobs.html           ← listings page
-├── about.html          ← about us page
-├── impressum.html      ← legal page
-├── styles.css          ← all custom styles (~220 lines, layered on Bootstrap)
+├── about.html          ← about us page lorom ipsum 
+├── impressum.html      ← legal page lorom ipsum
+├── styles.css          ← all custom styles (layered on Bootstrap)
 ├── app.js              ← theme toggle + search submit
 ├── frontend-specs.md   ← design specification
 └── docu.md             ← component reference and extension guide

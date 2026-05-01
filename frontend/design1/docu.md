@@ -147,7 +147,7 @@ Copy any `<article class="job-card">` block in `jobs.html`, swap the content. No
 
 Edit `--primary` and `--primary-deep` in `:root`. All violet surfaces, borders, and buttons update.
 
-### …wire up the real backend
+### …wire up the real I 
 
 `app.js` has the integration point — the `#search-form` submit handler. Replace `window.location.href` with:
 

@@ -49,11 +49,25 @@
         <div class="search-banner__cutout">
           <!-- Signature lobed cutout. fill set via CSS so it adapts to dark mode. -->
           <svg viewBox="0 0 880 550" preserveAspectRatio="none" aria-hidden="true">
-            <path class="search-banner__cutout-fill" d="
-              M 60 240 C 60 110,180 50,320 70 C 410 82,470 60,560 70
-              C 700 82,820 130,820 250 C 820 330,780 380,700 400
-              C 600 425,540 470,470 500 C 400 528,320 510,250 470
-              C 180 432,110 410,80 350 C 64 320,60 280,60 240 Z"/>
+            <!-- 1 (bottom): wide accent stroke — the visible outline ring -->
+            <path class="search-banner__cutout-outline"
+                  d="M 60 240 C 60 110,180 50,320 70 C 410 82,470 60,560 70
+                     C 700 82,820 130,820 250 C 820 330,780 380,700 400
+                     C 600 425,540 470,470 500 C 400 528,320 510,250 470
+                     C 180 432,110 410,80 350 C 64 320,60 280,60 240 Z"/>
+            <!-- 2 (middle): narrower violet stroke — covers inner part of outline
+                 and the gap zone, leaving only the outer accent ring exposed -->
+            <path class="search-banner__cutout-gap"
+                  d="M 60 240 C 60 110,180 50,320 70 C 410 82,470 60,560 70
+                     C 700 82,820 130,820 250 C 820 330,780 380,700 400
+                     C 600 425,540 470,470 500 C 400 528,320 510,250 470
+                     C 180 432,110 410,80 350 C 64 320,60 280,60 240 Z"/>
+            <!-- 3 (top): white fill — covers everything inside the bezier edge -->
+            <path class="search-banner__cutout-fill"
+                  d="M 60 240 C 60 110,180 50,320 70 C 410 82,470 60,560 70
+                     C 700 82,820 130,820 250 C 820 330,780 380,700 400
+                     C 600 425,540 470,470 500 C 400 528,320 510,250 470
+                     C 180 432,110 410,80 350 C 64 320,60 280,60 240 Z"/>
           </svg>
 
           <div class="search-banner__cutout-content">

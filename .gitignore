@@ -1,4 +1,8 @@
+###current
+backend/
+
 ### idea
+.idea
 workspace.xml
 ### Java template
 # Compiled class file

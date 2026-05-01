@@ -1,8 +1,8 @@
 # DESIGNJOBS.COM — Developer Documentation
 
-A minimal, dependency-light frontend for a freelance design-jobs portal.
 **Bootstrap 5.3** for grid, navbar collapse, and dark mode base.
-**Vanilla JS** for theme toggle and search routing. **Custom CSS** for the visual identity.
+**Vanilla JS** for theme toggle and search routing. 
+**Custom CSS** for the visual identity.
 No build step.
 
 ---

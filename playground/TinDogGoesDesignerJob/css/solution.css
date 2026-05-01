@@ -1,10 +1,125 @@
 /* ── DesignerJobs.com — Wine Red Theme ─────────────── */
-/* Entry point: imports all partials in dependency order */
 
-@import "variables.css";
-@import "backgrounds.css";
-@import "buttons.css";
-@import "badges.css";
-@import "cards.css";
-@import "avatars.css";
-@import "utilities.css";
+:root {
+  --wine:       #800020;
+  --wine-dark:  #5c0016;
+  --wine-light: #9b2335;
+}
+
+/* ── Backgrounds ───────────────────────────────────── */
+
+.gradient-background {
+  background: linear-gradient(300deg, var(--wine-dark), var(--wine), var(--wine-light));
+  background-size: 180% 180%;
+  animation: gradient-animation 18s ease infinite;
+}
+
+@keyframes gradient-animation {
+  0%   { background-position:   0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position:   0% 50%; }
+}
+
+.wine-background { background-color: var(--wine) !important; }
+.bg-wine         { background-color: var(--wine) !important; }
+.bg-wine-light   { background-color: var(--wine-light) !important; }
+.testimonial-bg  { background-color: var(--wine-dark); }
+
+/* ── Text ──────────────────────────────────────────── */
+
+.wine-text { color: var(--wine) !important; }
+.text-wine { color: var(--wine) !important; }
+
+/* ── Buttons ───────────────────────────────────────── */
+
+.btn-wine {
+  background-color: var(--wine);
+  border-color: var(--wine);
+  color: #fff;
+}
+.btn-wine:hover,
+.btn-wine:focus {
+  background-color: var(--wine-dark);
+  border-color: var(--wine-dark);
+  color: #fff;
+}
+
+.btn-outline-wine {
+  color: var(--wine);
+  border-color: var(--wine);
+}
+.btn-outline-wine:hover,
+.btn-outline-wine:focus {
+  background-color: var(--wine);
+  border-color: var(--wine);
+  color: #fff;
+}
+
+/* ── Card accents ──────────────────────────────────── */
+
+.text-bg-wine {
+  background-color: var(--wine) !important;
+  color: #fff !important;
+}
+
+.border-wine-highlight {
+  border: 2px solid var(--wine) !important;
+}
+
+/* ── Badge variant ─────────────────────────────────── */
+
+.wine-badge {
+  background-color: rgba(128, 0, 32, 0.12);
+  color: var(--wine);
+  font-weight: 500;
+}
+
+/* ── Avatars ───────────────────────────────────────── */
+
+/* Small company square avatars in cards */
+.company-avatar {
+  width: 44px;
+  height: 44px;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* Large circular designer / testimonial avatars */
+.avatar-lg {
+  width: 64px;
+  height: 64px;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* ── Feature icon squares ──────────────────────────── */
+
+.icon-square {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* ── Progress bars ─────────────────────────────────── */
+
+.bg-wine { background-color: var(--wine) !important; }
+
+/* ── Press mention badges ──────────────────────────── */
+
+.press-badge {
+  display: inline-block;
+  color: rgba(255,255,255,0.55);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 0.5rem;
+  padding: 0.4rem 1rem;
+}
+
+/* ── Misc ──────────────────────────────────────────── */
+
+.tracking-wide { letter-spacing: 0.06em; }
+
+.text-white-75 { color: rgba(255,255,255,0.75) !important; }

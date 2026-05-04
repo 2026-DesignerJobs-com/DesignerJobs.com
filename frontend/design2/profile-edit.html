@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edit Profile — DESIGNJOBS.COM</title>
+
+  <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light')</script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles_bootstrap+.css">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg top-nav" data-bs-theme="dark">
+    <div class="container-fluid" style="max-width: var(--max-w)">
+      <a class="navbar-brand" href="index.html">DESIGNJOBS.COM</a>
+
+      <button class="navbar-toggler" type="button"
+              data-bs-toggle="collapse" data-bs-target="#nav-menu"
+              aria-controls="nav-menu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="nav-menu">
+        <ul class="navbar-nav mx-auto gap-4">
+          <li class="nav-item"><a class="nav-link" href="about.html">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="jobs.html">All Jobs</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Random Job</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
+          <button id="theme-toggle" type="button" class="stamp-btn stamp-btn--inverse">☾ Dark</button>
+          <a href="#" class="stamp-btn stamp-btn--inverse">Register</a>
+          <a href="profile.html" class="stamp-btn stamp-btn--inverse">Login</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <section class="search-banner" aria-label="Edit profile header">
+    <div class="search-banner__panel" style="min-height: 280px">
+      <div class="text-center" style="color: var(--on-primary)">
+        <p style="font-family: var(--font-ui); font-size: var(--fs-sm); letter-spacing: .2em; text-transform: uppercase; opacity: .7; margin-bottom: .75rem">Your Profile</p>
+        <h1 style="font-family: var(--font-ui); font-size: var(--fs-xl); letter-spacing: .06em; text-transform: uppercase; color: var(--on-primary); margin: 0">Edit Your Profile</h1>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section class="page-section" aria-labelledby="edit-form-h">
+      <div class="row g-5">
+        <!-- LEFT COLUMN: FORM -->
+        <div class="col-lg-8">
+          <form id="edit-form" class="post-form" method="POST" action="/api/profile">
+            <!-- BASIC INFORMATION -->
+            <h2 id="edit-form-h" style="font-family: var(--font-ui); font-size: var(--fs-md); margin-bottom: 1.5rem">Basic Information</h2>
+
+            <div class="dj-field">
+              <label class="dj-label" for="full-name">Full Name *</label>
+              <input class="dj-input" id="full-name" type="text" name="fullName" value="Jane Doe" required>
+            </div>
+
+            <div class="dj-field">
+              <label class="dj-label" for="title">Professional Title *</label>
+              <input class="dj-input" id="title" type="text" name="title" value="Product Designer" placeholder="e.g., UX Designer, Graphic Designer" required>
+            </div>
+
+            <div class="dj-field">
+              <label class="dj-label" for="bio">Bio *</label>
+              <textarea class="dj-textarea" id="bio" name="bio" required>Passionate about creating delightful user experiences. Specialized in digital product design with 5+ years of experience in fintech, SaaS, and e-commerce. Always excited about new challenges and collaborative projects.</textarea>
+            </div>
+
+            <!-- LOCATION & AVAILABILITY -->
+            <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-top: 2.5rem; margin-bottom: 1rem">Location & Availability</h3>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <div class="dj-field">
+                  <label class="dj-label" for="city">City *</label>
+                  <input class="dj-input" id="city" type="text" name="city" value="Vienna" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="dj-field">
+                  <label class="dj-label" for="country">Country *</label>
+                  <input class="dj-input" id="country" type="text" name="country" value="Austria" required>
+                </div>
+              </div>
+            </div>
+
+            <div class="dj-field">
+              <label class="dj-label">Availability Status *</label>
+              <div class="role-toggle">
+                <button class="role-toggle__btn active" type="button" data-status="available">Available Now</button>
+                <button class="role-toggle__btn" type="button" data-status="limited">Limited Capacity</button>
+                <button class="role-toggle__btn" type="button" data-status="unavailable">Not Available</button>
+              </div>
+              <input type="hidden" name="availability" value="available">
+            </div>
+
+            <!-- RATES -->
+            <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-top: 2.5rem; margin-bottom: 1rem">Rates</h3>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <div class="dj-field">
+                  <label class="dj-label" for="hourly-min">Hourly Rate (Min) €*</label>
+                  <input class="dj-input" id="hourly-min" type="number" name="hourlyMin" value="65" min="0" step="5" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="dj-field">
+                  <label class="dj-label" for="hourly-max">Hourly Rate (Max) €*</label>
+                  <input class="dj-input" id="hourly-max" type="number" name="hourlyMax" value="85" min="0" step="5" required>
+                </div>
+              </div>
+            </div>
+
+            <div class="dj-field">
+              <label class="dj-label" for="project-min">Minimum Project Rate €*</label>
+              <input class="dj-input" id="project-min" type="number" name="projectMin" value="2500" min="0" step="100" required>
+            </div>
+
+            <!-- SKILLS -->
+            <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-top: 2.5rem; margin-bottom: 1rem">Skills</h3>
+
+            <div class="dj-field">
+              <label class="dj-label" for="skills">Add Skills (comma-separated) *</label>
+              <textarea class="dj-textarea" id="skills" name="skills" style="min-height: 80px" placeholder="e.g., UI Design, UX Research, Figma, Prototyping, Design Systems" required>UI Design, UX Research, Figma, Prototyping, Design Systems, Accessibility, Adobe XD, Responsive Design</textarea>
+              <small style="color: var(--ink-soft); display: block; margin-top: .5rem">Separate skills with commas. These help clients find you in search.</small>
+            </div>
+
+            <!-- PORTFOLIO SETTINGS -->
+            <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-top: 2.5rem; margin-bottom: 1rem">Portfolio</h3>
+
+            <div class="dj-field">
+              <label class="dj-label">Portfolio Visibility *</label>
+              <div class="seg-control">
+                <button class="seg-control__btn active" type="button" data-visibility="public">Public</button>
+                <button class="seg-control__btn" type="button" data-visibility="clients-only">Clients Only</button>
+                <button class="seg-control__btn" type="button" data-visibility="private">Private</button>
+              </div>
+              <input type="hidden" name="portfolioVisibility" value="public">
+            </div>
+
+            <div class="dj-field" style="margin-top: 1.5rem">
+              <label class="dj-label" for="portfolio-url">Portfolio Website URL</label>
+              <input class="dj-input" id="portfolio-url" type="url" name="portfolioUrl" placeholder="https://yourportfolio.com">
+            </div>
+
+            <!-- SOCIAL LINKS -->
+            <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-top: 2.5rem; margin-bottom: 1rem">Social Links (Optional)</h3>
+
+            <div class="dj-field">
+              <label class="dj-label" for="twitter">Twitter Handle</label>
+              <input class="dj-input" id="twitter" type="text" name="twitter" placeholder="@yourhandle">
+            </div>
+
+            <div class="dj-field">
+              <label class="dj-label" for="linkedin">LinkedIn Profile</label>
+              <input class="dj-input" id="linkedin" type="url" name="linkedin" placeholder="https://linkedin.com/in/yourprofile">
+            </div>
+
+            <div class="dj-field">
+              <label class="dj-label" for="instagram">Instagram Handle</label>
+              <input class="dj-input" id="instagram" type="text" name="instagram" placeholder="@yourhandle">
+            </div>
+
+            <!-- FORM ACTIONS -->
+            <div style="display: flex; gap: 1rem; margin-top: 2.5rem; flex-wrap: wrap">
+              <button class="stamp-btn stamp-btn--filled" type="submit">Save Changes</button>
+              <a href="profile.html" class="stamp-btn stamp-btn--inverse">View Profile</a>
+              <button class="stamp-btn stamp-btn--inverse" type="button" data-action="delete">Delete Profile</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- RIGHT COLUMN: PREVIEW & TIPS -->
+        <div class="col-lg-4">
+          <div style="position: sticky; top: 2rem">
+            <!-- PREVIEW CARD -->
+            <div style="background: var(--bg-soft); border: var(--stroke) solid var(--primary); border-radius: var(--r-lg); padding: 2rem; margin-bottom: 2rem">
+              <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-top: 0; margin-bottom: 1rem">Profile Preview</h3>
+              <div style="background: var(--primary); border-radius: var(--r-md); padding: 1.5rem; color: var(--on-primary); text-align: center">
+                <div style="width: 80px; height: 80px; border-radius: var(--r-md); background: var(--primary-deep); margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700">JD</div>
+                <div style="font-family: var(--font-ui); font-size: var(--fs-lg); font-weight: 700; margin-bottom: .25rem">Jane Doe</div>
+                <div style="font-family: var(--font-ui); font-size: var(--fs-sm); color: var(--accent); margin-bottom: .5rem">Product Designer</div>
+                <div style="font-size: var(--fs-xs); opacity: .7; margin-bottom: 1rem">Vienna, Austria</div>
+              </div>
+            </div>
+
+            <!-- TIPS & GUIDELINES -->
+            <div style="background: var(--bg-soft); border: var(--stroke) solid var(--primary); border-radius: var(--r-lg); padding: 1.5rem">
+              <h4 style="font-family: var(--font-ui); font-size: var(--fs-sm); letter-spacing: .2em; text-transform: uppercase; margin-top: 0; margin-bottom: 1rem; color: var(--accent)">Profile Tips</h4>
+              <ul style="font-size: var(--fs-sm); color: var(--ink-soft); margin: 0; padding-left: 1.5rem">
+                <li style="margin-bottom: .75rem">Write a compelling bio that highlights your unique skills</li>
+                <li style="margin-bottom: .75rem">Choose realistic rates to attract more clients</li>
+                <li style="margin-bottom: .75rem">Keep your portfolio up-to-date with recent work</li>
+                <li style="margin-bottom: .75rem">Add relevant skills for better searchability</li>
+                <li style="margin-bottom: .75rem">Link to your personal website and social profiles</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <span class="site-footer__brand">DESIGNJOBS.COM</span>
+      <nav aria-label="Footer navigation">
+        <a href="about.html">About</a> &middot;
+        <a href="impressum.html">Impressum</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // Handle availability status toggle
+    document.querySelectorAll('[data-status]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelector('input[name="availability"]').value = btn.dataset.status;
+      });
+    });
+
+    // Handle portfolio visibility toggle
+    document.querySelectorAll('[data-visibility]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelectorAll('[data-visibility]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelector('input[name="portfolioVisibility"]').value = btn.dataset.visibility;
+      });
+    });
+
+    // Handle delete profile
+    document.querySelector('[data-action="delete"]').addEventListener('click', (e) => {
+      if (confirm('Are you sure you want to delete your profile? This cannot be undone.')) {
+        // TODO: Send delete request to backend
+        console.log('Delete profile');
+      }
+    });
+
+    // Handle form submission
+    document.getElementById('edit-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      // TODO: Send form data to backend
+      console.log('Form submitted');
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Designer Profile — DESIGNJOBS.COM</title>
+
+  <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light')</script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles_bootstrap+.css">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg top-nav" data-bs-theme="dark">
+    <div class="container-fluid" style="max-width: var(--max-w)">
+      <a class="navbar-brand" href="index.html">DESIGNJOBS.COM</a>
+
+      <button class="navbar-toggler" type="button"
+              data-bs-toggle="collapse" data-bs-target="#nav-menu"
+              aria-controls="nav-menu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="nav-menu">
+        <ul class="navbar-nav mx-auto gap-4">
+          <li class="nav-item"><a class="nav-link" href="about.html">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="jobs.html">All Jobs</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Random Job</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
+          <button id="theme-toggle" type="button" class="stamp-btn stamp-btn--inverse">☾ Dark</button>
+          <a href="#" class="stamp-btn stamp-btn--inverse">Register</a>
+          <a href="profile.html" class="stamp-btn stamp-btn--inverse">Login</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <!-- PROFILE HERO -->
+    <section class="page-section" style="margin-top: 3rem" aria-labelledby="profile-name">
+      <div class="profile-hero">
+        <div class="profile-hero__avatar">JD</div>
+        <div>
+          <h1 class="profile-hero__name" id="profile-name">Jane Doe</h1>
+          <div class="profile-hero__role">Product Designer</div>
+          <div class="profile-hero__meta">
+            <span class="tag-pill tag-pill--on-primary">Vienna, Austria</span>
+            <span class="tag-pill tag-pill--on-primary">Available</span>
+            <span class="tag-pill tag-pill--accent">Verified</span>
+          </div>
+          <p class="profile-hero__bio">
+            Passionate about creating delightful user experiences. Specialized in digital product design with 5+ years of experience in fintech, SaaS, and e-commerce. Always excited about new challenges and collaborative projects.
+          </p>
+        </div>
+        <div class="profile-hero__actions">
+          <a href="#" class="stamp-btn stamp-btn--filled">Send Message</a>
+          <a href="#" class="stamp-btn stamp-btn--inverse">View Profile</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="page-section">
+      <div class="stat-bar">
+        <div class="stat-bar__item">
+          <strong>12</strong>
+          <span>Projects Completed</span>
+        </div>
+        <div class="stat-bar__item">
+          <strong>4.9</strong>
+          <span>Average Rating</span>
+        </div>
+        <div class="stat-bar__item">
+          <strong>€45k</strong>
+          <span>Total Earnings</span>
+        </div>
+        <div class="stat-bar__item">
+          <strong>98%</strong>
+          <span>On-Time Delivery</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT SECTION -->
+    <section class="page-section" aria-labelledby="about-h">
+      <div class="page-section__head">
+        <h2 id="about-h">About</h2>
+      </div>
+      <div class="row g-5">
+        <div class="col-lg-8">
+          <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-bottom: 1rem">Experience</h3>
+          <p style="color: var(--ink-soft); margin-bottom: 1.5rem">
+            I've worked with startups and established companies to design intuitive digital experiences. My expertise spans user research, wireframing, prototyping, and high-fidelity design. I'm comfortable working in Figma, Adobe XD, and Sketch, and always follow best practices for accessibility and responsive design.
+          </p>
+          <p style="color: var(--ink-soft)">
+            I thrive in collaborative environments and enjoy working closely with developers and product managers to bring designs to life. I'm also passionate about mentoring junior designers and sharing knowledge within the design community.
+          </p>
+
+          <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-bottom: 1rem; margin-top: 2rem">Skills</h3>
+          <div style="display: flex; flex-wrap: wrap; gap: .5rem">
+            <span class="tag-pill tag-pill--outline">UI Design</span>
+            <span class="tag-pill tag-pill--outline">UX Research</span>
+            <span class="tag-pill tag-pill--outline">Figma</span>
+            <span class="tag-pill tag-pill--outline">Prototyping</span>
+            <span class="tag-pill tag-pill--outline">Design Systems</span>
+            <span class="tag-pill tag-pill--outline">Accessibility</span>
+            <span class="tag-pill tag-pill--outline">Adobe XD</span>
+            <span class="tag-pill tag-pill--outline">Responsive Design</span>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div style="background: var(--bg-soft); border: var(--stroke) solid var(--primary); border-radius: var(--r-lg); padding: 2rem">
+            <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-top: 0; margin-bottom: 1rem">Rates</h3>
+            <div style="margin-bottom: 1.2rem">
+              <div style="font-family: var(--font-ui); font-size: var(--fs-xs); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: .5rem">Hourly</div>
+              <div style="font-size: var(--fs-lg); font-weight: 600; color: var(--primary)">€65–€85/hr</div>
+            </div>
+            <div>
+              <div style="font-family: var(--font-ui); font-size: var(--fs-xs); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: .5rem">Project-based</div>
+              <div style="font-size: var(--fs-lg); font-weight: 600; color: var(--primary)">€2,500+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PORTFOLIO SECTION -->
+    <section class="page-section" aria-labelledby="portfolio-h">
+      <div class="page-section__head">
+        <h2 id="portfolio-h">Portfolio</h2>
+        <span class="count">6 projects</span>
+      </div>
+
+      <div class="portfolio-grid">
+        <div class="portfolio-card">
+          <div class="portfolio-card__thumb">Portfolio Item 1</div>
+          <div class="portfolio-card__body">
+            <div class="portfolio-card__title">SaaS Dashboard Redesign</div>
+            <div class="portfolio-card__tags">
+              <span class="tag-pill tag-pill--on-primary">UI Design</span>
+              <span class="tag-pill tag-pill--on-primary">SaaS</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="portfolio-card">
+          <div class="portfolio-card__thumb">Portfolio Item 2</div>
+          <div class="portfolio-card__body">
+            <div class="portfolio-card__title">E-commerce Mobile App</div>
+            <div class="portfolio-card__tags">
+              <span class="tag-pill tag-pill--on-primary">UX Design</span>
+              <span class="tag-pill tag-pill--on-primary">Mobile</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="portfolio-card">
+          <div class="portfolio-card__thumb">Portfolio Item 3</div>
+          <div class="portfolio-card__body">
+            <div class="portfolio-card__title">Banking App Concept</div>
+            <div class="portfolio-card__tags">
+              <span class="tag-pill tag-pill--on-primary">Fintech</span>
+              <span class="tag-pill tag-pill--on-primary">Prototyping</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="portfolio-card">
+          <div class="portfolio-card__thumb">Portfolio Item 4</div>
+          <div class="portfolio-card__body">
+            <div class="portfolio-card__title">Design System Components</div>
+            <div class="portfolio-card__tags">
+              <span class="tag-pill tag-pill--on-primary">Design System</span>
+              <span class="tag-pill tag-pill--on-primary">Figma</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="portfolio-card">
+          <div class="portfolio-card__thumb">Portfolio Item 5</div>
+          <div class="portfolio-card__body">
+            <div class="portfolio-card__title">Travel Booking Platform</div>
+            <div class="portfolio-card__tags">
+              <span class="tag-pill tag-pill--on-primary">UX Research</span>
+              <span class="tag-pill tag-pill--on-primary">Web</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="portfolio-card">
+          <div class="portfolio-card__thumb">Portfolio Item 6</div>
+          <div class="portfolio-card__body">
+            <div class="portfolio-card__title">Healthcare Dashboard</div>
+            <div class="portfolio-card__tags">
+              <span class="tag-pill tag-pill--on-primary">Accessibility</span>
+              <span class="tag-pill tag-pill--on-primary">Healthcare</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REVIEWS SECTION -->
+    <section class="page-section" aria-labelledby="reviews-h">
+      <div class="page-section__head">
+        <h2 id="reviews-h">Reviews</h2>
+        <span class="count">4.9 / 5 (8 reviews)</span>
+      </div>
+
+      <div style="display: grid; gap: 1.5rem">
+        <div style="background: var(--bg-soft); border: var(--stroke) solid var(--primary); border-radius: var(--r-md); padding: 1.5rem">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem">
+            <div>
+              <div style="font-weight: 600; color: var(--ink)">Amazing work on our product redesign</div>
+              <div style="font-family: var(--font-ui); font-size: var(--fs-xs); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft); margin-top: .3rem">by Alex Chen</div>
+            </div>
+            <div style="font-size: var(--fs-lg); color: var(--accent)">★★★★★</div>
+          </div>
+          <p style="color: var(--ink-soft); margin: 0">Jane delivered exactly what we needed. Her attention to detail, accessibility considerations, and collaborative approach made the whole process smooth. Highly recommended!</p>
+        </div>
+
+        <div style="background: var(--bg-soft); border: var(--stroke) solid var(--primary); border-radius: var(--r-md); padding: 1.5rem">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem">
+            <div>
+              <div style="font-weight: 600; color: var(--ink)">Professional and thorough approach</div>
+              <div style="font-family: var(--font-ui); font-size: var(--fs-xs); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft); margin-top: .3rem">by Maria Schmidt</div>
+            </div>
+            <div style="font-size: var(--fs-lg); color: var(--accent)">★★★★★</div>
+          </div>
+          <p style="color: var(--ink-soft); margin: 0">Great communication and very responsive to feedback. Jane went above and beyond to ensure the design system would scale for our growing team.</p>
+        </div>
+
+        <div style="background: var(--bg-soft); border: var(--stroke) solid var(--primary); border-radius: var(--r-md); padding: 1.5rem">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem">
+            <div>
+              <div style="font-weight: 600; color: var(--ink)">Exceeded expectations on timeline & quality</div>
+              <div style="font-family: var(--font-ui); font-size: var(--fs-xs); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft); margin-top: .3rem">by Thomas Weber</div>
+            </div>
+            <div style="font-size: var(--fs-lg); color: var(--accent)">★★★★☆</div>
+          </div>
+          <p style="color: var(--ink-soft); margin: 0">Delivered ahead of schedule with deliverables that were better than expected. Would definitely work with Jane again on future projects.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <span class="site-footer__brand">DESIGNJOBS.COM</span>
+      <nav aria-label="Footer navigation">
+        <a href="about.html">About</a> &middot;
+        <a href="impressum.html">Impressum</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+

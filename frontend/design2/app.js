@@ -26,7 +26,7 @@
   /* --- 2. Banner search → jobs.html?q=... -------------------- */
   document.getElementById("search-form")?.addEventListener("submit", e => {
     e.preventDefault();
-    const q = e.target.querySelector(".dj-search__input").value.trim();
+    const q = e.target.querySelector(".search-input").value.trim();
     window.location.href = "jobs.html" + (q ? "?q=" + encodeURIComponent(q) : "");
   });
 

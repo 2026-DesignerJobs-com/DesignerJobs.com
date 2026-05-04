@@ -16,11 +16,11 @@
 <body>
 
   <!-- PAGE HEADER -->
-  <section class="search-banner" aria-label="Edit profile header">
-    <div class="search-banner__panel" style="min-height: 280px">
+  <section class="page-banner" aria-label="Edit profile header">
+    <div class="search-panel" style="min-height: 280px">
       <div class="text-center" style="color: var(--on-primary)">
         <p style="font-family: var(--font-ui); font-size: var(--fs-sm); letter-spacing: .2em; text-transform: uppercase; opacity: .7; margin-bottom: .75rem">Your Profile</p>
-        <h1 style="font-family: var(--font-ui); font-size: var(--fs-xl); letter-spacing: .06em; text-transform: uppercase; color: var(--on-primary); margin: 0">Edit Your Profile</h1>
+        <h1>Edit Your Profile</h1>
       </div>
     </div>
   </section>
@@ -28,136 +28,132 @@
   <main>
     <section class="page-section" aria-labelledby="edit-form-h">
       <div class="row g-5">
-        <!-- LEFT COLUMN: FORM -->
+
+        <!-- FORM -->
         <div class="col-lg-8">
-          <form id="edit-form" class="post-form" method="POST" action="/api/profile">
-            <!-- BASIC INFORMATION -->
+          <form id="edit-form" method="POST" action="/api/profile">
+
             <h2 id="edit-form-h" style="font-family: var(--font-ui); font-size: var(--fs-md); margin-bottom: 1.5rem">Basic Information</h2>
 
-            <div class="dj-field">
-              <label class="dj-label" for="full-name">Full Name *</label>
-              <input class="dj-input" id="full-name" type="text" name="fullName" value="Jane Doe" required>
+            <div class="field-group">
+              <label class="field-label" for="full-name">Full Name *</label>
+              <input class="field-input" id="full-name" type="text" name="fullName" value="Jane Doe" required>
             </div>
 
-            <div class="dj-field">
-              <label class="dj-label" for="title">Professional Title *</label>
-              <input class="dj-input" id="title" type="text" name="title" value="Product Designer" placeholder="e.g., UX Designer, Graphic Designer" required>
+            <div class="field-group">
+              <label class="field-label" for="title">Professional Title *</label>
+              <input class="field-input" id="title" type="text" name="title" value="Product Designer"
+                     placeholder="e.g., UX Designer, Graphic Designer" required>
             </div>
 
-            <div class="dj-field">
-              <label class="dj-label" for="bio">Bio *</label>
-              <textarea class="dj-textarea" id="bio" name="bio" required>Passionate about creating delightful user experiences. Specialized in digital product design with 5+ years of experience in fintech, SaaS, and e-commerce. Always excited about new challenges and collaborative projects.</textarea>
+            <div class="field-group">
+              <label class="field-label" for="bio">Bio *</label>
+              <textarea class="field-textarea" id="bio" name="bio" required>Passionate about creating delightful user experiences. Specialized in digital product design with 5+ years of experience in fintech, SaaS, and e-commerce. Always excited about new challenges and collaborative projects.</textarea>
             </div>
 
-            <!-- LOCATION & AVAILABILITY -->
-            <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-top: 2.5rem; margin-bottom: 1rem">Location & Availability</h3>
+            <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-top: 2.5rem; margin-bottom: 1rem">Location &amp; Availability</h3>
 
             <div class="row g-3 mb-4">
               <div class="col-md-6">
-                <div class="dj-field">
-                  <label class="dj-label" for="city">City *</label>
-                  <input class="dj-input" id="city" type="text" name="city" value="Vienna" required>
+                <div class="field-group">
+                  <label class="field-label" for="city">City *</label>
+                  <input class="field-input" id="city" type="text" name="city" value="Vienna" required>
                 </div>
               </div>
               <div class="col-md-6">
-                <div class="dj-field">
-                  <label class="dj-label" for="country">Country *</label>
-                  <input class="dj-input" id="country" type="text" name="country" value="Austria" required>
+                <div class="field-group">
+                  <label class="field-label" for="country">Country *</label>
+                  <input class="field-input" id="country" type="text" name="country" value="Austria" required>
                 </div>
               </div>
             </div>
 
-            <div class="dj-field">
-              <label class="dj-label">Availability Status *</label>
-              <div class="role-toggle">
-                <button class="role-toggle__btn active" type="button" data-status="available">Available Now</button>
-                <button class="role-toggle__btn" type="button" data-status="limited">Limited Capacity</button>
-                <button class="role-toggle__btn" type="button" data-status="unavailable">Not Available</button>
+            <div class="field-group">
+              <label class="field-label">Availability Status *</label>
+              <div class="type-switcher">
+                <button class="selected" type="button" data-status="available">Available Now</button>
+                <button type="button" data-status="limited">Limited Capacity</button>
+                <button type="button" data-status="unavailable">Not Available</button>
               </div>
               <input type="hidden" name="availability" value="available">
             </div>
 
-            <!-- RATES -->
             <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-top: 2.5rem; margin-bottom: 1rem">Rates</h3>
 
             <div class="row g-3 mb-4">
               <div class="col-md-6">
-                <div class="dj-field">
-                  <label class="dj-label" for="hourly-min">Hourly Rate (Min) €*</label>
-                  <input class="dj-input" id="hourly-min" type="number" name="hourlyMin" value="65" min="0" step="5" required>
+                <div class="field-group">
+                  <label class="field-label" for="hourly-min">Hourly Rate (Min) €*</label>
+                  <input class="field-input" id="hourly-min" type="number" name="hourlyMin" value="65" min="0" step="5" required>
                 </div>
               </div>
               <div class="col-md-6">
-                <div class="dj-field">
-                  <label class="dj-label" for="hourly-max">Hourly Rate (Max) €*</label>
-                  <input class="dj-input" id="hourly-max" type="number" name="hourlyMax" value="85" min="0" step="5" required>
+                <div class="field-group">
+                  <label class="field-label" for="hourly-max">Hourly Rate (Max) €*</label>
+                  <input class="field-input" id="hourly-max" type="number" name="hourlyMax" value="85" min="0" step="5" required>
                 </div>
               </div>
             </div>
 
-            <div class="dj-field">
-              <label class="dj-label" for="project-min">Minimum Project Rate €*</label>
-              <input class="dj-input" id="project-min" type="number" name="projectMin" value="2500" min="0" step="100" required>
+            <div class="field-group">
+              <label class="field-label" for="project-min">Minimum Project Rate €*</label>
+              <input class="field-input" id="project-min" type="number" name="projectMin" value="2500" min="0" step="100" required>
             </div>
 
-            <!-- SKILLS -->
             <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-top: 2.5rem; margin-bottom: 1rem">Skills</h3>
 
-            <div class="dj-field">
-              <label class="dj-label" for="skills">Add Skills (comma-separated) *</label>
-              <textarea class="dj-textarea" id="skills" name="skills" style="min-height: 80px" placeholder="e.g., UI Design, UX Research, Figma, Prototyping, Design Systems" required>UI Design, UX Research, Figma, Prototyping, Design Systems, Accessibility, Adobe XD, Responsive Design</textarea>
+            <div class="field-group">
+              <label class="field-label" for="skills">Add Skills (comma-separated) *</label>
+              <textarea class="field-textarea" id="skills" name="skills" style="min-height: 80px"
+                        placeholder="e.g., UI Design, UX Research, Figma, Prototyping, Design Systems" required>UI Design, UX Research, Figma, Prototyping, Design Systems, Accessibility, Adobe XD, Responsive Design</textarea>
               <small style="color: var(--ink-soft); display: block; margin-top: .5rem">Separate skills with commas. These help clients find you in search.</small>
             </div>
 
-            <!-- PORTFOLIO SETTINGS -->
             <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-top: 2.5rem; margin-bottom: 1rem">Portfolio</h3>
 
-            <div class="dj-field">
-              <label class="dj-label">Portfolio Visibility *</label>
-              <div class="seg-control">
-                <button class="seg-control__btn active" type="button" data-visibility="public">Public</button>
-                <button class="seg-control__btn" type="button" data-visibility="clients-only">Clients Only</button>
-                <button class="seg-control__btn" type="button" data-visibility="private">Private</button>
+            <div class="field-group">
+              <label class="field-label">Portfolio Visibility *</label>
+              <div class="option-group">
+                <button class="selected" type="button" data-visibility="public">Public</button>
+                <button type="button" data-visibility="clients-only">Clients Only</button>
+                <button type="button" data-visibility="private">Private</button>
               </div>
               <input type="hidden" name="portfolioVisibility" value="public">
             </div>
 
-            <div class="dj-field" style="margin-top: 1.5rem">
-              <label class="dj-label" for="portfolio-url">Portfolio Website URL</label>
-              <input class="dj-input" id="portfolio-url" type="url" name="portfolioUrl" placeholder="https://yourportfolio.com">
+            <div class="field-group" style="margin-top: 1.5rem">
+              <label class="field-label" for="portfolio-url">Portfolio Website URL</label>
+              <input class="field-input" id="portfolio-url" type="url" name="portfolioUrl" placeholder="https://yourportfolio.com">
             </div>
 
-            <!-- SOCIAL LINKS -->
             <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-top: 2.5rem; margin-bottom: 1rem">Social Links (Optional)</h3>
 
-            <div class="dj-field">
-              <label class="dj-label" for="twitter">Twitter Handle</label>
-              <input class="dj-input" id="twitter" type="text" name="twitter" placeholder="@yourhandle">
+            <div class="field-group">
+              <label class="field-label" for="twitter">Twitter Handle</label>
+              <input class="field-input" id="twitter" type="text" name="twitter" placeholder="@yourhandle">
             </div>
 
-            <div class="dj-field">
-              <label class="dj-label" for="linkedin">LinkedIn Profile</label>
-              <input class="dj-input" id="linkedin" type="url" name="linkedin" placeholder="https://linkedin.com/in/yourprofile">
+            <div class="field-group">
+              <label class="field-label" for="linkedin">LinkedIn Profile</label>
+              <input class="field-input" id="linkedin" type="url" name="linkedin" placeholder="https://linkedin.com/in/yourprofile">
             </div>
 
-            <div class="dj-field">
-              <label class="dj-label" for="instagram">Instagram Handle</label>
-              <input class="dj-input" id="instagram" type="text" name="instagram" placeholder="@yourhandle">
+            <div class="field-group">
+              <label class="field-label" for="instagram">Instagram Handle</label>
+              <input class="field-input" id="instagram" type="text" name="instagram" placeholder="@yourhandle">
             </div>
 
-            <!-- FORM ACTIONS -->
             <div style="display: flex; gap: 1rem; margin-top: 2.5rem; flex-wrap: wrap">
-              <button class="stamp-btn stamp-btn--filled" type="submit">Save Changes</button>
-              <a href="profile.html" class="stamp-btn stamp-btn--inverse">View Profile</a>
-              <button class="stamp-btn stamp-btn--inverse" type="button" data-action="delete">Delete Profile</button>
+              <button class="stamp-btn filled" type="submit">Save Changes</button>
+              <a href="profile.html" class="stamp-btn on-violet">View Profile</a>
+              <button class="stamp-btn on-violet" type="button" data-action="delete">Delete Profile</button>
             </div>
           </form>
         </div>
 
-        <!-- RIGHT COLUMN: PREVIEW & TIPS -->
+        <!-- PREVIEW & TIPS -->
         <div class="col-lg-4">
           <div style="position: sticky; top: 2rem">
-            <!-- PREVIEW CARD -->
             <div style="background: var(--bg-soft); border: var(--stroke) solid var(--primary); border-radius: var(--r-lg); padding: 2rem; margin-bottom: 2rem">
               <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-top: 0; margin-bottom: 1rem">Profile Preview</h3>
               <div style="background: var(--primary); border-radius: var(--r-md); padding: 1.5rem; color: var(--on-primary); text-align: center">
@@ -168,7 +164,6 @@
               </div>
             </div>
 
-            <!-- TIPS & GUIDELINES -->
             <div style="background: var(--bg-soft); border: var(--stroke) solid var(--primary); border-radius: var(--r-lg); padding: 1.5rem">
               <h4 style="font-family: var(--font-ui); font-size: var(--fs-sm); letter-spacing: .2em; text-transform: uppercase; margin-top: 0; margin-bottom: 1rem; color: var(--accent)">Profile Tips</h4>
               <ul style="font-size: var(--fs-sm); color: var(--ink-soft); margin: 0; padding-left: 1.5rem">
@@ -181,6 +176,7 @@
             </div>
           </div>
         </div>
+
       </div>
     </section>
   </main>
@@ -192,8 +188,8 @@
     document.querySelectorAll('[data-status]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
         document.querySelector('input[name="availability"]').value = btn.dataset.status;
       });
     });
@@ -202,8 +198,8 @@
     document.querySelectorAll('[data-visibility]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        document.querySelectorAll('[data-visibility]').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        document.querySelectorAll('[data-visibility]').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
         document.querySelector('input[name="portfolioVisibility"]').value = btn.dataset.visibility;
       });
     });
@@ -225,4 +221,3 @@
   </script>
 </body>
 </html>
-

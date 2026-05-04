@@ -2,6 +2,25 @@
 
 FH-Campus-Wien/VZ2028/SoSe26/web/2-Group AF
 
+## Frontend
+
+Two static HTML/CSS/JS designs — no build step, no bundler.
+
+```sh
+cd frontend
+python3 -m http.server 8080
+# Visit http://localhost:8080
+```
+
+`frontend/index.html` redirects to `design1/`. To preview design2 instead, open `frontend/design2/index.html` directly.
+
+Both designs use an **iframe shell**: `index.html` is the persistent shell (navbar + footer). All other pages are inner content loaded into an `<iframe>` on navigation — no full-page reloads. See `frontend/design1/docu.md` for the full explanation.
+
+| Design | Approach |
+|--------|----------|
+| `design1/` | CSS-first — all layout defined in `styles.css`; Bootstrap used for grid and collapse |
+| `design2/` | Bootstrap-first — spacing via utility classes in HTML; `styles_bootstrap+.css` handles only the visual identity |
+
 ## Backend
 
 spring boot REST api for storing and searching job listings. data persists in `jobs.json`. seeds 60 randomised job listings on first run.

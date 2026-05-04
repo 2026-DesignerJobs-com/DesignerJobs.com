@@ -16,209 +16,210 @@
 <body>
 
   <main>
-    <!-- PROFILE HERO -->
-    <section class="page-section" style="margin-top: 3rem" aria-labelledby="profile-name">
-      <div class="profile-hero">
-        <div class="profile-hero__avatar">JD</div>
+
+    <!-- DESIGNER HEADER -->
+    <section class="wide-section mt-5 px-3 px-md-4" aria-labelledby="profile-name">
+      <div class="designer-header">
+        <div class="avatar">JD</div>
         <div>
-          <h1 class="profile-hero__name" id="profile-name">Jane Doe</h1>
-          <div class="profile-hero__role">Product Designer</div>
-          <div class="profile-hero__meta">
-            <span class="tag-pill tag-pill--on-primary">Vienna, Austria</span>
-            <span class="tag-pill tag-pill--on-primary">Available</span>
-            <span class="tag-pill tag-pill--accent">Verified</span>
+          <h1 id="profile-name" class="mb-1">Jane Doe</h1>
+          <p class="specialty mb-2">Product Designer</p>
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <span class="tag on-violet">Vienna, Austria</span>
+            <span class="tag on-violet">Available</span>
+            <span class="tag green">Verified</span>
           </div>
-          <p class="profile-hero__bio">
+          <p class="mb-0" style="font-size:var(--fs-base);opacity:.88;max-width:600px;line-height:1.65">
             Passionate about creating delightful user experiences. Specialized in digital product design with 5+ years of experience in fintech, SaaS, and e-commerce. Always excited about new challenges and collaborative projects.
           </p>
         </div>
-        <div class="profile-hero__actions">
-          <a href="#" class="stamp-btn stamp-btn--filled">Send Message</a>
-          <a href="#" class="stamp-btn stamp-btn--inverse">View Profile</a>
+        <div class="d-flex flex-column gap-2 align-items-end">
+          <a href="#" class="stamp-btn filled">Send Message</a>
+          <a href="#" class="stamp-btn on-violet">View Profile</a>
         </div>
       </div>
     </section>
 
     <!-- STATS -->
-    <section class="page-section">
-      <div class="stat-bar">
-        <div class="stat-bar__item">
+    <section class="wide-section px-3 px-md-4">
+      <div class="stats-strip d-flex flex-wrap gap-4 py-4">
+        <div class="stat">
           <strong>12</strong>
           <span>Projects Completed</span>
         </div>
-        <div class="stat-bar__item">
+        <div class="stat">
           <strong>4.9</strong>
           <span>Average Rating</span>
         </div>
-        <div class="stat-bar__item">
+        <div class="stat">
           <strong>€45k</strong>
           <span>Total Earnings</span>
         </div>
-        <div class="stat-bar__item">
+        <div class="stat">
           <strong>98%</strong>
           <span>On-Time Delivery</span>
         </div>
       </div>
     </section>
 
-    <!-- ABOUT SECTION -->
-    <section class="page-section" aria-labelledby="about-h">
-      <div class="page-section__head">
+    <!-- ABOUT -->
+    <section class="wide-section my-5 px-3 px-md-4" aria-labelledby="about-h">
+      <div class="d-flex align-items-baseline gap-3 pb-2 mb-4" style="border-bottom: var(--stroke) solid var(--ink)">
         <h2 id="about-h">About</h2>
       </div>
       <div class="row g-5">
         <div class="col-lg-8">
-          <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-bottom: 1rem">Experience</h3>
-          <p style="color: var(--ink-soft); margin-bottom: 1.5rem">
+          <h3 style="font-family:var(--font-ui);font-size:var(--fs-md);margin-bottom:1rem">Experience</h3>
+          <p class="mb-4" style="color:var(--ink-soft)">
             I've worked with startups and established companies to design intuitive digital experiences. My expertise spans user research, wireframing, prototyping, and high-fidelity design. I'm comfortable working in Figma, Adobe XD, and Sketch, and always follow best practices for accessibility and responsive design.
           </p>
-          <p style="color: var(--ink-soft)">
+          <p style="color:var(--ink-soft)">
             I thrive in collaborative environments and enjoy working closely with developers and product managers to bring designs to life. I'm also passionate about mentoring junior designers and sharing knowledge within the design community.
           </p>
 
-          <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-bottom: 1rem; margin-top: 2rem">Skills</h3>
-          <div style="display: flex; flex-wrap: wrap; gap: .5rem">
-            <span class="tag-pill tag-pill--outline">UI Design</span>
-            <span class="tag-pill tag-pill--outline">UX Research</span>
-            <span class="tag-pill tag-pill--outline">Figma</span>
-            <span class="tag-pill tag-pill--outline">Prototyping</span>
-            <span class="tag-pill tag-pill--outline">Design Systems</span>
-            <span class="tag-pill tag-pill--outline">Accessibility</span>
-            <span class="tag-pill tag-pill--outline">Adobe XD</span>
-            <span class="tag-pill tag-pill--outline">Responsive Design</span>
+          <h3 class="mt-5 mb-3" style="font-family:var(--font-ui);font-size:var(--fs-md)">Skills</h3>
+          <div class="d-flex flex-wrap gap-2">
+            <span class="tag outline">UI Design</span>
+            <span class="tag outline">UX Research</span>
+            <span class="tag outline">Figma</span>
+            <span class="tag outline">Prototyping</span>
+            <span class="tag outline">Design Systems</span>
+            <span class="tag outline">Accessibility</span>
+            <span class="tag outline">Adobe XD</span>
+            <span class="tag outline">Responsive Design</span>
           </div>
         </div>
         <div class="col-lg-4">
-          <div style="background: var(--bg-soft); border: var(--stroke) solid var(--primary); border-radius: var(--r-lg); padding: 2rem">
-            <h3 style="font-family: var(--font-ui); font-size: var(--fs-md); margin-top: 0; margin-bottom: 1rem">Rates</h3>
-            <div style="margin-bottom: 1.2rem">
-              <div style="font-family: var(--font-ui); font-size: var(--fs-xs); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: .5rem">Hourly</div>
-              <div style="font-size: var(--fs-lg); font-weight: 600; color: var(--primary)">€65–€85/hr</div>
+          <div style="background:var(--bg-soft);border:var(--stroke) solid var(--primary);border-radius:var(--r-lg);padding:2rem">
+            <h3 class="mt-0 mb-4" style="font-family:var(--font-ui);font-size:var(--fs-md)">Rates</h3>
+            <div class="mb-4">
+              <div class="mb-2" style="font-family:var(--font-ui);font-size:var(--fs-xs);letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft)">Hourly</div>
+              <div style="font-size:var(--fs-lg);font-weight:600;color:var(--primary)">€65–€85/hr</div>
             </div>
             <div>
-              <div style="font-family: var(--font-ui); font-size: var(--fs-xs); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: .5rem">Project-based</div>
-              <div style="font-size: var(--fs-lg); font-weight: 600; color: var(--primary)">€2,500+</div>
+              <div class="mb-2" style="font-family:var(--font-ui);font-size:var(--fs-xs);letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft)">Project-based</div>
+              <div style="font-size:var(--fs-lg);font-weight:600;color:var(--primary)">€2,500+</div>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- PORTFOLIO SECTION -->
-    <section class="page-section" aria-labelledby="portfolio-h">
-      <div class="page-section__head">
+    <!-- PORTFOLIO -->
+    <section class="wide-section my-5 px-3 px-md-4" aria-labelledby="portfolio-h">
+      <div class="d-flex align-items-baseline gap-3 pb-2 mb-4" style="border-bottom: var(--stroke) solid var(--ink)">
         <h2 id="portfolio-h">Portfolio</h2>
-        <span class="count">6 projects</span>
+        <span class="count ms-auto">6 projects</span>
       </div>
 
-      <div class="portfolio-grid">
-        <div class="portfolio-card">
-          <div class="portfolio-card__thumb">Portfolio Item 1</div>
-          <div class="portfolio-card__body">
-            <div class="portfolio-card__title">SaaS Dashboard Redesign</div>
-            <div class="portfolio-card__tags">
-              <span class="tag-pill tag-pill--on-primary">UI Design</span>
-              <span class="tag-pill tag-pill--on-primary">SaaS</span>
+      <div class="gallery">
+        <div class="work-item">
+          <div class="work-preview">Portfolio Item 1</div>
+          <div class="p-3 flex-grow-1 d-flex flex-column">
+            <div class="work-title mb-2">SaaS Dashboard Redesign</div>
+            <div class="mt-auto d-flex flex-wrap gap-1">
+              <span class="tag on-violet">UI Design</span>
+              <span class="tag on-violet">SaaS</span>
             </div>
           </div>
         </div>
 
-        <div class="portfolio-card">
-          <div class="portfolio-card__thumb">Portfolio Item 2</div>
-          <div class="portfolio-card__body">
-            <div class="portfolio-card__title">E-commerce Mobile App</div>
-            <div class="portfolio-card__tags">
-              <span class="tag-pill tag-pill--on-primary">UX Design</span>
-              <span class="tag-pill tag-pill--on-primary">Mobile</span>
+        <div class="work-item">
+          <div class="work-preview">Portfolio Item 2</div>
+          <div class="p-3 flex-grow-1 d-flex flex-column">
+            <div class="work-title mb-2">E-commerce Mobile App</div>
+            <div class="mt-auto d-flex flex-wrap gap-1">
+              <span class="tag on-violet">UX Design</span>
+              <span class="tag on-violet">Mobile</span>
             </div>
           </div>
         </div>
 
-        <div class="portfolio-card">
-          <div class="portfolio-card__thumb">Portfolio Item 3</div>
-          <div class="portfolio-card__body">
-            <div class="portfolio-card__title">Banking App Concept</div>
-            <div class="portfolio-card__tags">
-              <span class="tag-pill tag-pill--on-primary">Fintech</span>
-              <span class="tag-pill tag-pill--on-primary">Prototyping</span>
+        <div class="work-item">
+          <div class="work-preview">Portfolio Item 3</div>
+          <div class="p-3 flex-grow-1 d-flex flex-column">
+            <div class="work-title mb-2">Banking App Concept</div>
+            <div class="mt-auto d-flex flex-wrap gap-1">
+              <span class="tag on-violet">Fintech</span>
+              <span class="tag on-violet">Prototyping</span>
             </div>
           </div>
         </div>
 
-        <div class="portfolio-card">
-          <div class="portfolio-card__thumb">Portfolio Item 4</div>
-          <div class="portfolio-card__body">
-            <div class="portfolio-card__title">Design System Components</div>
-            <div class="portfolio-card__tags">
-              <span class="tag-pill tag-pill--on-primary">Design System</span>
-              <span class="tag-pill tag-pill--on-primary">Figma</span>
+        <div class="work-item">
+          <div class="work-preview">Portfolio Item 4</div>
+          <div class="p-3 flex-grow-1 d-flex flex-column">
+            <div class="work-title mb-2">Design System Components</div>
+            <div class="mt-auto d-flex flex-wrap gap-1">
+              <span class="tag on-violet">Design System</span>
+              <span class="tag on-violet">Figma</span>
             </div>
           </div>
         </div>
 
-        <div class="portfolio-card">
-          <div class="portfolio-card__thumb">Portfolio Item 5</div>
-          <div class="portfolio-card__body">
-            <div class="portfolio-card__title">Travel Booking Platform</div>
-            <div class="portfolio-card__tags">
-              <span class="tag-pill tag-pill--on-primary">UX Research</span>
-              <span class="tag-pill tag-pill--on-primary">Web</span>
+        <div class="work-item">
+          <div class="work-preview">Portfolio Item 5</div>
+          <div class="p-3 flex-grow-1 d-flex flex-column">
+            <div class="work-title mb-2">Travel Booking Platform</div>
+            <div class="mt-auto d-flex flex-wrap gap-1">
+              <span class="tag on-violet">UX Research</span>
+              <span class="tag on-violet">Web</span>
             </div>
           </div>
         </div>
 
-        <div class="portfolio-card">
-          <div class="portfolio-card__thumb">Portfolio Item 6</div>
-          <div class="portfolio-card__body">
-            <div class="portfolio-card__title">Healthcare Dashboard</div>
-            <div class="portfolio-card__tags">
-              <span class="tag-pill tag-pill--on-primary">Accessibility</span>
-              <span class="tag-pill tag-pill--on-primary">Healthcare</span>
+        <div class="work-item">
+          <div class="work-preview">Portfolio Item 6</div>
+          <div class="p-3 flex-grow-1 d-flex flex-column">
+            <div class="work-title mb-2">Healthcare Dashboard</div>
+            <div class="mt-auto d-flex flex-wrap gap-1">
+              <span class="tag on-violet">Accessibility</span>
+              <span class="tag on-violet">Healthcare</span>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- REVIEWS SECTION -->
-    <section class="page-section" aria-labelledby="reviews-h">
-      <div class="page-section__head">
+    <!-- REVIEWS -->
+    <section class="wide-section my-5 px-3 px-md-4" aria-labelledby="reviews-h">
+      <div class="d-flex align-items-baseline gap-3 pb-2 mb-4" style="border-bottom: var(--stroke) solid var(--ink)">
         <h2 id="reviews-h">Reviews</h2>
-        <span class="count">4.9 / 5 (8 reviews)</span>
+        <span class="count ms-auto">4.9 / 5 (8 reviews)</span>
       </div>
 
-      <div style="display: grid; gap: 1.5rem">
-        <div style="background: var(--bg-soft); border: var(--stroke) solid var(--primary); border-radius: var(--r-md); padding: 1.5rem">
-          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem">
+      <div class="d-flex flex-column gap-4">
+        <div style="background:var(--bg-soft);border:var(--stroke) solid var(--primary);border-radius:var(--r-md);padding:1.5rem">
+          <div class="d-flex justify-content-between align-items-start mb-3">
             <div>
-              <div style="font-weight: 600; color: var(--ink)">Amazing work on our product redesign</div>
-              <div style="font-family: var(--font-ui); font-size: var(--fs-xs); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft); margin-top: .3rem">by Alex Chen</div>
+              <div class="fw-semibold" style="color:var(--ink)">Amazing work on our product redesign</div>
+              <div class="mt-1" style="font-family:var(--font-ui);font-size:var(--fs-xs);letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft)">by Alex Chen</div>
             </div>
-            <div style="font-size: var(--fs-lg); color: var(--accent)">★★★★★</div>
+            <div style="font-size:var(--fs-lg);color:var(--accent)">★★★★★</div>
           </div>
-          <p style="color: var(--ink-soft); margin: 0">Jane delivered exactly what we needed. Her attention to detail, accessibility considerations, and collaborative approach made the whole process smooth. Highly recommended!</p>
+          <p class="mb-0" style="color:var(--ink-soft)">Jane delivered exactly what we needed. Her attention to detail, accessibility considerations, and collaborative approach made the whole process smooth. Highly recommended!</p>
         </div>
 
-        <div style="background: var(--bg-soft); border: var(--stroke) solid var(--primary); border-radius: var(--r-md); padding: 1.5rem">
-          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem">
+        <div style="background:var(--bg-soft);border:var(--stroke) solid var(--primary);border-radius:var(--r-md);padding:1.5rem">
+          <div class="d-flex justify-content-between align-items-start mb-3">
             <div>
-              <div style="font-weight: 600; color: var(--ink)">Professional and thorough approach</div>
-              <div style="font-family: var(--font-ui); font-size: var(--fs-xs); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft); margin-top: .3rem">by Maria Schmidt</div>
+              <div class="fw-semibold" style="color:var(--ink)">Professional and thorough approach</div>
+              <div class="mt-1" style="font-family:var(--font-ui);font-size:var(--fs-xs);letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft)">by Maria Schmidt</div>
             </div>
-            <div style="font-size: var(--fs-lg); color: var(--accent)">★★★★★</div>
+            <div style="font-size:var(--fs-lg);color:var(--accent)">★★★★★</div>
           </div>
-          <p style="color: var(--ink-soft); margin: 0">Great communication and very responsive to feedback. Jane went above and beyond to ensure the design system would scale for our growing team.</p>
+          <p class="mb-0" style="color:var(--ink-soft)">Great communication and very responsive to feedback. Jane went above and beyond to ensure the design system would scale for our growing team.</p>
         </div>
 
-        <div style="background: var(--bg-soft); border: var(--stroke) solid var(--primary); border-radius: var(--r-md); padding: 1.5rem">
-          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem">
+        <div style="background:var(--bg-soft);border:var(--stroke) solid var(--primary);border-radius:var(--r-md);padding:1.5rem">
+          <div class="d-flex justify-content-between align-items-start mb-3">
             <div>
-              <div style="font-weight: 600; color: var(--ink)">Exceeded expectations on timeline & quality</div>
-              <div style="font-family: var(--font-ui); font-size: var(--fs-xs); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft); margin-top: .3rem">by Thomas Weber</div>
+              <div class="fw-semibold" style="color:var(--ink)">Exceeded expectations on timeline &amp; quality</div>
+              <div class="mt-1" style="font-family:var(--font-ui);font-size:var(--fs-xs);letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft)">by Thomas Weber</div>
             </div>
-            <div style="font-size: var(--fs-lg); color: var(--accent)">★★★★☆</div>
+            <div style="font-size:var(--fs-lg);color:var(--accent)">★★★★☆</div>
           </div>
-          <p style="color: var(--ink-soft); margin: 0">Delivered ahead of schedule with deliverables that were better than expected. Would definitely work with Jane again on future projects.</p>
+          <p class="mb-0" style="color:var(--ink-soft)">Delivered ahead of schedule with deliverables that were better than expected. Would definitely work with Jane again on future projects.</p>
         </div>
       </div>
     </section>
@@ -229,4 +230,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-

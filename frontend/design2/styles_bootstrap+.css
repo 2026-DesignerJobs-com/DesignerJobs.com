@@ -1,8 +1,14 @@
 /* ================================================================
    DESIGNJOBS.COM — styles_bootstrap+.css
-   Bootstrap-first approach (450 lines, -43% vs original)
+   Bootstrap handles layout, grid, and spacing via utilities in HTML.
+   Every block here explains why Bootstrap cannot do it alone.
+   One property per line. No !important except where Bootstrap's own
+   dark-theme JS forces a colour override.
    ================================================================ */
 
+
+/* DESIGN TOKENS ─────────────────────────────────────────────────
+   Bootstrap has no token system; these variables drive the brand. */
 :root {
   --primary:      #7C3AED;
   --primary-deep: #6D28D9;
@@ -27,6 +33,7 @@
   --max-w:        1280px;
 }
 
+/* Swap only the bg/text tokens in dark mode; violet stays violet. */
 [data-bs-theme="dark"] {
   --bg:       #0C0A14;
   --bg-soft:  #161225;
@@ -35,8 +42,10 @@
 }
 
 
-/* BASE STYLES */
-html, body {
+/* BASE ──────────────────────────────────────────────────────────
+   Bootstrap sets font-size and line-height but not our brand fonts. */
+html,
+body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-body);
@@ -44,6 +53,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Grain noise overlay; no Bootstrap equivalent. */
 body::before {
   content: "";
   position: fixed;
@@ -60,11 +70,15 @@ body::before {
   opacity: .03;
 }
 
-main, nav, footer {
+/* The noise pseudo-element is z-index 1; real content must be above it. */
+main,
+nav,
+footer {
   position: relative;
   z-index: 2;
 }
 
+/* Bootstrap's headings use the system font; brand uses Space Mono. */
 h1, h2, h3, h4, h5 {
   font-family: var(--font-ui);
   font-weight: 700;
@@ -73,6 +87,7 @@ h1, h2, h3, h4, h5 {
   margin: 0;
 }
 
+/* Bootstrap's default link colour is blue; override to violet. */
 a {
   color: var(--primary);
   text-decoration: none;
@@ -82,6 +97,7 @@ a:hover {
   color: var(--primary-deep);
 }
 
+/* Bootstrap's focus ring is blue; use accent green instead. */
 :focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 2px;
@@ -89,9 +105,11 @@ a:hover {
 }
 
 
-/* NAVBAR */
+/* NAVBAR ────────────────────────────────────────────────────────
+   Bootstrap handles collapse, toggler, and responsive breakpoints.
+   We only add brand colour and the sliding-underline active state. */
 .top-nav {
-  background: var(--primary) !important;
+  background: var(--primary) !important; /* Bootstrap's dark theme would override without !important */
   min-height: 80px;
   border-bottom: var(--stroke) solid var(--primary-deep);
 }
@@ -109,10 +127,11 @@ a:hover {
   font-size: var(--fs-sm);
   letter-spacing: .18em;
   text-transform: uppercase;
-  color: var(--on-primary) !important;
+  color: var(--on-primary) !important; /* Bootstrap's dark-theme JS resets nav-link colour */
   position: relative;
 }
 
+/* Sliding underline on hover/active; no Bootstrap utility can do this. */
 .top-nav .nav-link::after {
   content: "";
   position: absolute;
@@ -132,6 +151,7 @@ a:hover {
 }
 
 @media (max-width: 991.98px) {
+  /* Collapsed menu inherits the violet body colour without this. */
   .top-nav .navbar-collapse {
     background: var(--primary);
     padding: 1rem 0;
@@ -139,8 +159,12 @@ a:hover {
 }
 
 
-/* BUTTONS */
+/* BUTTONS ───────────────────────────────────────────────────────
+   Built from scratch — not extending Bootstrap .btn — so there are
+   no inherited defaults to fight. Pill-shaped, monospace, uppercase. */
 .stamp-btn {
+  display: inline-flex;
+  align-items: center;
   font-family: var(--font-ui);
   font-size: var(--fs-sm);
   font-weight: 700;
@@ -151,6 +175,7 @@ a:hover {
   border: var(--stroke) solid var(--primary);
   background: transparent;
   color: var(--primary);
+  cursor: pointer;
   transition: background 120ms, color 120ms;
 }
 
@@ -159,46 +184,64 @@ a:hover {
   color: var(--on-primary);
 }
 
-.stamp-btn--inverse {
+/* For buttons sitting on a violet background (nav, job cards). */
+.stamp-btn.on-violet {
   border-color: var(--on-primary);
   color: var(--on-primary);
 }
 
-.stamp-btn--inverse:hover {
+.stamp-btn.on-violet:hover {
   background: var(--on-primary);
   color: var(--primary);
 }
 
-.stamp-btn--filled {
+/* Solid fill variant for primary calls to action. */
+.stamp-btn.filled {
   background: var(--primary);
   color: var(--on-primary);
 }
 
-.stamp-btn--filled:hover {
+.stamp-btn.filled:hover {
   background: var(--primary-deep);
   color: var(--on-primary);
 }
 
 
-/* BANNER/HERO */
-.search-banner {
-  margin: 3rem auto;
+/* SECTION WRAPPER ───────────────────────────────────────────────
+   Bootstrap .container caps at 1320px (container-xxl); brand width
+   is 1280px. Bootstrap padding and vertical margin go to HTML. */
+.wide-section {
   max-width: var(--max-w);
-  padding: 0 2rem;
+  margin-inline: auto;
 }
 
-.search-banner__panel {
+/* Small accent count label beside section headings. */
+.count {
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  letter-spacing: .2em;
+  color: var(--accent);
+}
+
+
+/* SEARCH BANNER ─────────────────────────────────────────────────
+   SVG blob with 3-layer paint order (outline → gap → fill).
+   No Bootstrap equivalent for this layout. */
+
+/* Violet panel; horizontal padding goes to HTML as px-3 px-md-4. */
+.search-panel {
   background: var(--primary);
   border-radius: var(--r-lg);
   overflow: hidden;
-  padding: 5rem 2rem;
   min-height: 560px;
   display: grid;
   place-items: center;
   position: relative;
+  padding: 5rem 2rem;
 }
 
-.search-banner__stamp {
+/* Decorative corner stamps (absolute position, no layout role). */
+.stamp-corner {
   position: absolute;
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
@@ -208,23 +251,25 @@ a:hover {
   text-transform: uppercase;
 }
 
-.search-banner__stamp--tl {
+.stamp-corner.top-left {
   top: 1.5rem;
   left: 1.8rem;
 }
 
-.search-banner__stamp--br {
+.stamp-corner.bottom-right {
   bottom: 1.5rem;
   right: 1.8rem;
 }
 
-.search-banner__cutout {
+/* Constrains the SVG blob and its content layer. */
+.blob-area {
   position: relative;
   width: min(100%, 880px);
   aspect-ratio: 16/10;
 }
 
-.search-banner__cutout svg {
+/* SVG fills the blob-area so all three paths cover the same shape. */
+.blob-area svg {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -232,23 +277,27 @@ a:hover {
   pointer-events: none;
 }
 
-.search-banner__cutout-outline {
+/* Layer 1 — wide light stroke creates the visible outline. */
+.blob-outline {
   fill: none;
   stroke: var(--on-primary);
   stroke-width: 60;
 }
 
-.search-banner__cutout-gap {
+/* Layer 2 — narrower violet stroke cuts the gap between outline and fill. */
+.blob-gap {
   fill: none;
   stroke: var(--primary);
   stroke-width: 40;
 }
 
-.search-banner__cutout-fill {
+/* Layer 3 — solid fill in the page background colour. */
+.blob-fill {
   fill: var(--bg);
 }
 
-.search-banner__cutout-content {
+/* Content sits above the SVG layers, centred inside the blob shape. */
+.blob-content {
   position: absolute;
   inset: 0;
   display: flex;
@@ -260,7 +309,8 @@ a:hover {
   text-align: center;
 }
 
-.search-banner__or {
+/* "OR" word with flanking lines; Bootstrap has no matching component. */
+.or-divider {
   font-family: var(--font-ui);
   font-weight: 700;
   font-size: var(--fs-md);
@@ -268,8 +318,8 @@ a:hover {
   color: var(--accent);
 }
 
-.search-banner__or::before,
-.search-banner__or::after {
+.or-divider::before,
+.or-divider::after {
   content: "";
   display: inline-block;
   width: 26px;
@@ -279,6 +329,7 @@ a:hover {
   margin: 0 .7rem;
 }
 
+/* Pill-shaped search bar on the dark violet background. */
 .search-bar {
   display: flex;
   align-items: center;
@@ -290,13 +341,14 @@ a:hover {
   border: var(--stroke) solid var(--primary-deep);
 }
 
-.search-bar__icon {
+.search-icon {
   color: var(--on-primary);
   margin-right: .8rem;
   flex-shrink: 0;
 }
 
-.search-bar__input {
+/* Fully transparent input; Bootstrap form-control would fight this. */
+.search-input {
   flex: 1;
   background: transparent;
   border: 0;
@@ -309,20 +361,21 @@ a:hover {
   padding: .6rem 0;
 }
 
-.search-bar__input::placeholder {
+.search-input::placeholder {
   color: var(--on-primary);
   opacity: .75;
 }
 
-.search-banner__cutout-content > * {
+/* Staggered entry for blob content; no Bootstrap animation utility. */
+.blob-content > * {
   opacity: 0;
   animation: rise 600ms ease-out forwards;
 }
 
-.search-banner__cutout-content > *:nth-child(1) { animation-delay: 80ms; }
-.search-banner__cutout-content > *:nth-child(2) { animation-delay: 200ms; }
-.search-banner__cutout-content > *:nth-child(3) { animation-delay: 320ms; }
-.search-banner__cutout-content > *:nth-child(4) { animation-delay: 440ms; }
+.blob-content > *:nth-child(1) { animation-delay:  80ms; }
+.blob-content > *:nth-child(2) { animation-delay: 200ms; }
+.blob-content > *:nth-child(3) { animation-delay: 320ms; }
+.blob-content > *:nth-child(4) { animation-delay: 440ms; }
 
 @keyframes rise {
   from {
@@ -336,35 +389,54 @@ a:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .search-banner__cutout-content > * {
+  .blob-content > * {
     opacity: 1;
     animation: none;
   }
 }
 
+@media (max-width: 768px) {
+  .search-panel {
+    padding: 2rem 1rem;
+    min-height: 0;
+  }
 
-/* SECTION HEADER */
-.page-section {
-  max-width: var(--max-w);
-  margin: 4rem auto;
-  padding: 0 2rem;
+  /* Replace the SVG blob with a plain background rectangle. */
+  .blob-area {
+    aspect-ratio: auto;
+    background: var(--bg);
+    border-radius: var(--r-md);
+    padding: .5rem;
+  }
+
+  .blob-area svg {
+    display: none;
+  }
+
+  .blob-content {
+    position: static;
+    padding: 2rem 1rem;
+  }
+
+  .search-input {
+    font-size: var(--fs-base);
+  }
 }
 
-.page-section__head h2 { font-size: var(--fs-xl); }
-.page-section__head .count { font-family: var(--font-ui); font-size: var(--fs-sm); letter-spacing: .2em; color: var(--accent); }
 
-
-/* JOB CARD */
+/* JOB CARD ──────────────────────────────────────────────────────
+   Violet background card; Bootstrap .card is white by default.
+   Internal padding kept here — it's structural, not layout spacing. */
 .job-card {
   background: var(--primary);
   color: var(--on-primary);
   border-radius: var(--r-lg);
   padding: 2rem;
   border: var(--stroke) solid var(--primary);
-  transition: transform 180ms, border-color 180ms;
   height: 100%;
   display: flex;
   flex-direction: column;
+  transition: transform 180ms, border-color 180ms;
 }
 
 .job-card:hover {
@@ -372,18 +444,19 @@ a:hover {
   border-color: var(--accent);
 }
 
-.job-card__title {
+/* Card title: monospace uppercase on violet. */
+.job-title {
   font-family: var(--font-ui);
   font-weight: 700;
   font-size: var(--fs-lg);
   letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--on-primary);
-  margin-bottom: 1rem;
-  margin-top: 0;
+  margin: 0;
 }
 
-.job-card__body {
+/* Line-clamp: no Bootstrap utility; needs webkit prefix. */
+.job-body {
   font-size: var(--fs-base);
   color: var(--on-primary);
   opacity: .9;
@@ -394,9 +467,8 @@ a:hover {
   flex-grow: 1;
 }
 
-.job-card__meta {
-  margin-top: auto;
-  padding-top: 1.4rem;
+/* Meta row; flex and gap go to HTML as Bootstrap utilities. */
+.job-meta {
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
   letter-spacing: .18em;
@@ -405,61 +477,47 @@ a:hover {
   text-transform: uppercase;
 }
 
-.job-card__meta span::after {
+/* Dot separator between inline meta spans. */
+.job-meta span::after {
   content: "·";
   margin-left: .6rem;
 }
 
-.job-card__meta span:last-child::after {
+.job-meta span:last-child::after {
   content: "";
 }
 
-.job-card__more {
-  align-self: flex-end;
-  margin-top: 1rem;
-}
 
-
-/* FOOTER */
-.site-footer {
+/* FOOTER ────────────────────────────────────────────────────────
+   Bootstrap provides no footer styling; we add violet colour and
+   the monospace font. Layout (flex, gap, spacing) goes to HTML. */
+.main-footer {
   background: var(--primary);
   color: var(--on-primary);
-  padding: 2.5rem 2rem;
-  margin-top: 5rem;
-}
-
-.site-footer__inner {
-  max-width: var(--max-w);
-  margin: 0 auto;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
-  align-items: center;
-  justify-content: space-between;
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
   letter-spacing: .2em;
   text-transform: uppercase;
 }
 
-.site-footer a {
+.main-footer a {
   color: var(--on-primary);
 }
 
-.site-footer a:hover {
+.main-footer a:hover {
   color: var(--accent);
 }
 
-.site-footer__brand {
+.footer-brand {
   font-weight: 700;
 }
 
 
-/* TAG PILL */
-.tag-pill {
+/* TAGS ──────────────────────────────────────────────────────────
+   Bootstrap badges lack the pill border and monospace combination. */
+.tag {
   display: inline-flex;
   align-items: center;
-  gap: .35rem;
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
   letter-spacing: .18em;
@@ -470,98 +528,111 @@ a:hover {
   border: var(--stroke) solid currentColor;
 }
 
-.tag-pill--on-primary {
+/* Tag on a violet background (job cards, job header). */
+.tag.on-violet {
   color: var(--on-primary);
   border-color: rgba(237,233,248,.45);
 }
 
-.tag-pill--accent {
+/* Accent green filled tag for status badges. */
+.tag.green {
   background: var(--accent);
   color: #fff;
   border-color: var(--accent);
 }
 
-.tag-pill--outline {
+/* Outline tag on a soft background (profile skills). */
+.tag.outline {
   color: var(--primary);
   border-color: var(--primary);
 }
 
 
-/* FORMS */
-.form-page {
+/* AUTH FORM ─────────────────────────────────────────────────────
+   Bootstrap's form layout is grid-based; we need a centred card
+   for the register/login pages. */
+.auth-page {
   min-height: calc(100svh - 80px);
   display: grid;
   place-items: center;
   padding: 3rem 1rem;
 }
 
-.form-card {
+/* Card box; padding goes to HTML as Bootstrap p-4 p-md-5. */
+.auth-box {
   background: var(--bg-soft);
   border: var(--stroke) solid var(--primary);
   border-radius: var(--r-lg);
-  padding: 3rem 2.5rem;
   width: 100%;
   max-width: 480px;
 }
 
-@media (max-width: 768px) {
-  .form-card {
-    padding: 2rem 1.4rem;
-  }
-}
-
-.form-card__eyebrow {
+/* Small green label above the form heading. */
+.eyebrow {
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
   letter-spacing: .3em;
   text-transform: uppercase;
   color: var(--accent);
-  margin-bottom: .6rem;
+  margin: 0;
 }
 
-.form-card__title {
-  font-size: var(--fs-xl);
-  margin-bottom: 2rem;
-}
-
-.dj-label {
+/* Monospace field label; Bootstrap's .form-label lacks tracking. */
+.field-label {
+  display: block;
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
   letter-spacing: .22em;
   text-transform: uppercase;
   color: var(--ink-soft);
+  margin-bottom: .4rem;
 }
 
-.dj-input,
-.dj-textarea,
-.dj-select {
-  border: var(--stroke) solid var(--primary) !important;
-  border-radius: var(--r-md) !important;
+/* Built from scratch — not extending .form-control — so no !important
+   is needed to override Bootstrap's border or border-radius. */
+.field-input,
+.field-textarea,
+.field-select {
+  display: block;
+  width: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  padding: .75rem 1rem;
+  border: var(--stroke) solid var(--primary);
+  border-radius: var(--r-md);
+  outline: none;
   transition: border-color 140ms;
 }
 
-.dj-input:focus,
-.dj-textarea:focus,
-.dj-select:focus {
-  border-color: var(--accent) !important;
-  box-shadow: none;
+.field-input:focus,
+.field-textarea:focus,
+.field-select:focus {
+  border-color: var(--accent);
 }
 
-.dj-textarea {
+.field-textarea {
   resize: vertical;
   min-height: 130px;
 }
 
-.dj-select {
+/* Reset appearance to allow custom chevron background-image. */
+.field-select {
   appearance: none;
   cursor: pointer;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' fill='none' stroke='%237C3AED' stroke-width='2' stroke-linecap='round'/></svg>");
   background-repeat: no-repeat;
   background-position: right 1.2rem center;
-  padding-right: 2.8rem !important;
+  padding-right: 2.8rem;
 }
 
-.role-toggle {
+
+/* TYPE SWITCHER ─────────────────────────────────────────────────
+   Pill segmented control (e.g. Designer / Client).
+   Bootstrap's btn-group rounds only the outer edges; here every
+   button is individually pill-shaped within a pill container. */
+.type-switcher {
   display: flex;
   gap: .4rem;
   border: var(--stroke) solid var(--primary);
@@ -569,7 +640,7 @@ a:hover {
   padding: .3rem;
 }
 
-.role-toggle__btn {
+.type-switcher button {
   flex: 1;
   padding: .65rem 1rem;
   border: none;
@@ -584,20 +655,22 @@ a:hover {
   transition: background 140ms, color 140ms;
 }
 
-.role-toggle__btn.active {
+.type-switcher button.selected {
   background: var(--primary);
   color: var(--on-primary);
 }
 
-.seg-control {
+
+/* OPTION GROUP ──────────────────────────────────────────────────
+   Pill segmented control for multi-option fields (e.g. visibility). */
+.option-group {
   display: flex;
-  gap: 0;
   border: var(--stroke) solid var(--primary);
   border-radius: var(--r-pill);
   padding: .25rem;
 }
 
-.seg-control__btn {
+.option-group button {
   flex: 1;
   padding: .6rem .5rem;
   border: none;
@@ -613,14 +686,41 @@ a:hover {
   white-space: nowrap;
 }
 
-.seg-control__btn.active {
+.option-group button.selected {
   background: var(--primary);
   color: var(--on-primary);
 }
 
 
-/* PROFILE SECTIONS */
-.profile-hero {
+/* TEXT DIVIDER ──────────────────────────────────────────────────
+   "or" row between a form action and an alternative link.
+   Bootstrap's <hr> has no built-in centred text. */
+.text-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.text-divider::before,
+.text-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--primary);
+  opacity: .3;
+}
+
+
+/* DESIGNER HEADER ───────────────────────────────────────────────
+   Three-column grid: avatar | info | actions.
+   Bootstrap's 12-col system needs explicit column counts; CSS Grid
+   auto-sizes the avatar and action columns naturally. */
+.designer-header {
   background: var(--primary);
   color: var(--on-primary);
   border-radius: var(--r-lg);
@@ -632,19 +732,20 @@ a:hover {
 }
 
 @media (max-width: 991px) {
-  .profile-hero {
+  .designer-header {
     grid-template-columns: auto 1fr;
   }
 }
 
 @media (max-width: 600px) {
-  .profile-hero {
+  .designer-header {
     grid-template-columns: 1fr;
     padding: 2rem 1.5rem;
   }
 }
 
-.profile-hero__avatar {
+/* Fixed-size avatar tile; centred initials fallback. */
+.avatar {
   width: 108px;
   height: 108px;
   border-radius: var(--r-md);
@@ -661,84 +762,67 @@ a:hover {
   letter-spacing: .04em;
 }
 
-.profile-hero__name {
-  font-size: var(--fs-xl);
-  margin-bottom: .25rem;
-}
-
-.profile-hero__role {
+/* Green monospace label showing the designer's field. */
+.specialty {
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
   letter-spacing: .3em;
   text-transform: uppercase;
   color: var(--accent);
-  margin-bottom: .8rem;
+  margin: 0;
 }
 
-.profile-hero__bio {
-  font-size: var(--fs-base);
-  opacity: .88;
-  max-width: 600px;
-  line-height: 1.65;
-}
 
-.profile-hero__actions {
-  display: flex;
-  flex-direction: column;
-  gap: .6rem;
-  align-items: flex-end;
-}
-
-@media (max-width: 991px) {
-  .profile-hero__actions {
-    flex-direction: row;
-    grid-column: 1 / -1;
-  }
-}
-
-.stat-bar {
+/* STATS STRIP ───────────────────────────────────────────────────
+   Horizontal rule above and below the stats row.
+   The row layout (flex, gap, padding) goes to HTML. */
+.stats-strip {
   border-top: var(--stroke) solid var(--primary);
   border-bottom: var(--stroke) solid var(--primary);
-  padding: 1.4rem 0;
 }
 
-.stat-bar__item {
+.stat {
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
   letter-spacing: .2em;
   text-transform: uppercase;
 }
 
-.stat-bar__item strong {
+/* Stat number — larger and violet. */
+.stat strong {
   display: block;
   font-size: var(--fs-md);
   color: var(--primary);
-  margin-bottom: .1rem;
 }
 
-.portfolio-grid {
+
+/* PORTFOLIO GALLERY ─────────────────────────────────────────────
+   CSS grid auto-fill: Bootstrap column classes need explicit counts.
+   auto-fill wraps items at a natural minimum width without JS. */
+.gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 1.2rem;
 }
 
-.portfolio-card {
+.work-item {
   background: var(--bg-soft);
   border: var(--stroke) solid var(--primary);
   border-radius: var(--r-md);
   overflow: hidden;
-  transition: transform 180ms, border-color 180ms;
-  cursor: pointer;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
+  transition: transform 180ms, border-color 180ms;
 }
 
-.portfolio-card:hover {
+.work-item:hover {
   transform: translateY(-3px);
   border-color: var(--accent);
 }
 
-.portfolio-card__thumb {
+/* Image placeholder; aspect-ratio has no Bootstrap utility. */
+.work-preview {
   width: 100%;
   aspect-ratio: 4/3;
   display: flex;
@@ -753,28 +837,20 @@ a:hover {
   background: var(--primary);
 }
 
-.portfolio-card__body {
-  padding: 1rem 1.2rem;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.portfolio-card__title {
+/* Work title inside the card. */
+.work-title {
   font-family: var(--font-ui);
   font-size: var(--fs-sm);
   letter-spacing: .1em;
   text-transform: uppercase;
-  margin-bottom: .5rem;
-}
-
-.portfolio-card__tags {
-  margin-top: auto;
+  margin: 0;
 }
 
 
-/* JOB DETAIL */
-.job-detail-hero {
+/* JOB DETAIL ────────────────────────────────────────────────────
+   Violet hero card for the job detail page.
+   Internal padding stays here; vertical spacing goes to HTML. */
+.job-header {
   background: var(--primary);
   color: var(--on-primary);
   border-radius: var(--r-lg);
@@ -782,56 +858,53 @@ a:hover {
 }
 
 @media (max-width: 768px) {
-  .job-detail-hero {
+  .job-header {
     padding: 2rem 1.5rem;
   }
 }
 
-.job-detail-hero__title {
-  font-size: var(--fs-xl);
-  margin-bottom: 1.2rem;
-  margin-top: 0;
-}
-
-.job-detail__section {
-  margin-top: 2.5rem;
-}
-
-.job-detail__section-label {
+/* Accent-coloured underlined section label. */
+.section-label {
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
   letter-spacing: .3em;
   text-transform: uppercase;
   color: var(--accent);
-  margin-bottom: 1rem;
   padding-bottom: .6rem;
   border-bottom: var(--stroke) solid var(--primary);
+  margin: 0;
 }
 
-.job-detail__body {
+/* Body copy in job descriptions; slightly larger than base. */
+.job-description {
   font-size: var(--fs-md);
   line-height: 1.7;
 }
 
-.info-card {
+
+/* SIDE PANEL ────────────────────────────────────────────────────
+   Sticky info card in the job detail sidebar.
+   Internal padding goes to HTML as Bootstrap p-4. */
+.side-panel {
   background: var(--bg-soft);
   border: var(--stroke) solid var(--primary);
   border-radius: var(--r-md);
-  padding: 1.8rem;
   position: sticky;
   top: 1.5rem;
 }
 
-.info-card__label {
+/* Panel heading in accent green. */
+.panel-label {
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
   letter-spacing: .3em;
   text-transform: uppercase;
   color: var(--accent);
-  margin-bottom: 1.2rem;
+  margin: 0;
 }
 
-.info-card__row {
+/* Key-value row with a faint bottom border. */
+.panel-row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -839,11 +912,11 @@ a:hover {
   border-bottom: 1px solid rgba(124,58,237,.15);
 }
 
-.info-card__row:last-of-type {
+.panel-row:last-of-type {
   border-bottom: none;
 }
 
-.info-card__key {
+.panel-key {
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
   letter-spacing: .2em;
@@ -851,56 +924,8 @@ a:hover {
   color: var(--ink-soft);
 }
 
-.info-card__val {
+.panel-val {
   font-family: var(--font-body);
   font-size: var(--fs-base);
   font-weight: 600;
 }
-
-.post-form {
-  max-width: 720px;
-}
-
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .search-banner {
-    margin: 1.5rem auto;
-    padding: 0 1rem;
-  }
-
-  .search-banner__panel {
-    padding: 2rem 1rem;
-    min-height: 0;
-  }
-
-  .search-banner__cutout {
-    aspect-ratio: auto;
-    background: var(--bg);
-    border-radius: var(--r-md);
-    padding: .5rem;
-  }
-
-  .search-banner__cutout svg {
-    display: none;
-  }
-
-  .search-banner__cutout-content {
-    position: static;
-    padding: 2rem 1rem;
-  }
-
-  .search-bar__input {
-    font-size: var(--fs-base);
-  }
-
-  .page-section {
-    margin: 2.5rem auto;
-    padding: 0 1rem;
-  }
-
-  .page-section__head h2 {
-    font-size: var(--fs-lg);
-  }
-}
-

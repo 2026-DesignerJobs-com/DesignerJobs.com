@@ -15,47 +15,47 @@
 </head>
 <body>
 
-  <main class="form-page" style="align-items: start; padding-top: 3rem">
-    <div class="form-card" style="max-width: 520px">
+  <main class="auth-page" style="align-items: start; padding-top: 3rem">
+    <div class="auth-box p-4 p-md-5" style="max-width: 520px">
 
-      <p class="form-card__eyebrow">Create your account</p>
-      <h1 class="form-card__title">Join the Platform</h1>
+      <p class="eyebrow mb-2">Create your account</p>
+      <h1 class="mb-5" style="font-size:var(--fs-xl)">Join the Platform</h1>
 
       <!-- Role selector -->
-      <div class="dj-field">
-        <p class="dj-label">I am a…</p>
-        <div class="role-toggle" id="role-toggle" role="group" aria-label="Account type">
-          <button type="button" class="role-toggle__btn active" data-role="designer">Designer</button>
-          <button type="button" class="role-toggle__btn" data-role="client">Client</button>
+      <div class="mb-3">
+        <p class="field-label">I am a…</p>
+        <div class="type-switcher" id="role-toggle" role="group" aria-label="Account type">
+          <button type="button" class="selected" data-role="designer">Designer</button>
+          <button type="button" data-role="client">Client</button>
         </div>
       </div>
 
       <form id="register-form" action="#" method="post" novalidate>
         <input type="hidden" name="role" id="role-input" value="designer">
 
-        <div class="dj-field">
-          <label class="dj-label" for="full-name">Full name</label>
-          <input class="dj-input" type="text" id="full-name" name="name"
+        <div class="mb-3">
+          <label class="field-label" for="full-name">Full name</label>
+          <input class="field-input" type="text" id="full-name" name="name"
                  placeholder="Ada Lovelace" autocomplete="name" required>
         </div>
 
-        <div class="dj-field">
-          <label class="dj-label" for="email">Email address</label>
-          <input class="dj-input" type="email" id="email" name="email"
+        <div class="mb-3">
+          <label class="field-label" for="email">Email address</label>
+          <input class="field-input" type="email" id="email" name="email"
                  placeholder="you@example.com" autocomplete="email" required>
         </div>
 
-        <div class="dj-field">
-          <label class="dj-label" for="password">Password</label>
-          <input class="dj-input" type="password" id="password" name="password"
+        <div class="mb-3">
+          <label class="field-label" for="password">Password</label>
+          <input class="field-input" type="password" id="password" name="password"
                  placeholder="at least 8 characters" autocomplete="new-password" required>
         </div>
 
         <!-- Designer-only fields -->
         <div id="designer-fields">
-          <div class="dj-field">
-            <label class="dj-label" for="design-type">Primary design type</label>
-            <select class="dj-input dj-select" id="design-type" name="designType">
+          <div class="mb-3">
+            <label class="field-label" for="design-type">Primary design type</label>
+            <select class="field-select" id="design-type" name="designType">
               <option value="">Select…</option>
               <option>UI/UX Design</option>
               <option>Graphic Design</option>
@@ -68,25 +68,24 @@
             </select>
           </div>
 
-          <div class="dj-field">
-            <label class="dj-label" for="skills">
+          <div class="mb-3">
+            <label class="field-label" for="skills">
               Skills
               <span style="opacity:.5;text-transform:none;letter-spacing:0">(comma-separated)</span>
             </label>
-            <input class="dj-input" type="text" id="skills" name="skills"
+            <input class="field-input" type="text" id="skills" name="skills"
                    placeholder="Figma, Typography, Branding, Prototyping…">
           </div>
         </div>
 
-        <button type="submit" class="stamp-btn stamp-btn--filled w-100 mt-1"
-                style="justify-content: center">
+        <button type="submit" class="stamp-btn filled w-100 mt-2" style="justify-content: center">
           Create Account
         </button>
       </form>
 
-      <div class="form-divider">or</div>
+      <div class="text-divider my-4">or</div>
 
-      <p style="text-align:center;font-family:var(--font-ui);font-size:var(--fs-xs);letter-spacing:.18em;text-transform:uppercase">
+      <p class="text-center mb-0" style="font-family:var(--font-ui);font-size:var(--fs-xs);letter-spacing:.18em;text-transform:uppercase">
         Already a member? <a href="login.html">Login</a>
       </p>
 
@@ -96,14 +95,14 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
   <script src="app.js"></script>
   <script>
-    const btns = document.querySelectorAll('.role-toggle__btn');
+    const btns = document.querySelectorAll('.type-switcher button');
     const designerFields = document.getElementById('designer-fields');
     const roleInput = document.getElementById('role-input');
 
     btns.forEach(btn => {
       btn.addEventListener('click', () => {
-        btns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        btns.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
         const role = btn.dataset.role;
         roleInput.value = role;
         designerFields.style.display = role === 'designer' ? '' : 'none';

@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register — DESIGNJOBS.COM</title>
+
+  <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light')</script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+  <main class="py-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+          <div class="card border-primary border-2 rounded-4 p-2">
+            <div class="card-body p-4">
+
+              <p class="text-success font-monospace text-uppercase fw-bold mb-1" style="font-size:.72rem; letter-spacing:.3em">Create your account</p>
+              <h1 class="font-monospace text-uppercase fw-bold mb-4" style="font-size:2rem; letter-spacing:.06em">Join the Platform</h1>
+
+              <!-- Role selector -->
+              <div class="mb-4">
+                <p class="font-monospace text-uppercase fw-bold mb-2 text-secondary" style="font-size:.72rem; letter-spacing:.22em">I am a…</p>
+                <div class="d-flex border border-primary border-2 rounded-pill p-1 gap-1" role="group" aria-label="Account type" id="role-toggle">
+                  <input type="radio" class="btn-check" name="role-radio" id="role-designer" value="designer" checked autocomplete="off">
+                  <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center" for="role-designer" style="letter-spacing:.18em; font-size:.8rem">Designer</label>
+                  <input type="radio" class="btn-check" name="role-radio" id="role-client" value="client" autocomplete="off">
+                  <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center" for="role-client" style="letter-spacing:.18em; font-size:.8rem">Client</label>
+                </div>
+              </div>
+
+              <form id="register-form" action="#" method="post" novalidate>
+                <input type="hidden" name="role" id="role-input" value="designer">
+
+                <div class="mb-3">
+                  <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="full-name" style="font-size:.72rem; letter-spacing:.22em">Full name</label>
+                  <input class="form-control border-primary border-2 rounded-3" type="text" id="full-name" name="name" placeholder="Ada Lovelace" autocomplete="name" required>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="email" style="font-size:.72rem; letter-spacing:.22em">Email address</label>
+                  <input class="form-control border-primary border-2 rounded-3" type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="password" style="font-size:.72rem; letter-spacing:.22em">Password</label>
+                  <input class="form-control border-primary border-2 rounded-3" type="password" id="password" name="password" placeholder="at least 8 characters" autocomplete="new-password" required>
+                </div>
+
+                <!-- Designer-only fields -->
+                <div id="designer-fields">
+                  <div class="mb-3">
+                    <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="design-type" style="font-size:.72rem; letter-spacing:.22em">Primary design type</label>
+                    <select class="form-select border-primary border-2 rounded-3" id="design-type" name="designType">
+                      <option value="">Select…</option>
+                      <option>UI/UX Design</option>
+                      <option>Graphic Design</option>
+                      <option>Web Design</option>
+                      <option>Interior Design</option>
+                      <option>Motion Design</option>
+                      <option>Illustration</option>
+                      <option>Brand Identity</option>
+                      <option>Logo Design</option>
+                    </select>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="skills" style="font-size:.72rem; letter-spacing:.22em">
+                      Skills <span class="fw-normal text-lowercase" style="letter-spacing:0">(comma-separated)</span>
+                    </label>
+                    <input class="form-control border-primary border-2 rounded-3" type="text" id="skills" name="skills" placeholder="Figma, Typography, Branding, Prototyping…">
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary rounded-pill w-100 fw-bold text-uppercase py-3 mt-1" style="letter-spacing:.16em">
+                  Create Account
+                </button>
+              </form>
+
+              <!-- OR divider -->
+              <div class="d-flex align-items-center gap-3 my-4">
+                <hr class="flex-grow-1 m-0 opacity-25 border-primary">
+                <span class="font-monospace text-uppercase text-secondary" style="font-size:.72rem; letter-spacing:.3em">or</span>
+                <hr class="flex-grow-1 m-0 opacity-25 border-primary">
+              </div>
+
+              <p class="text-center font-monospace text-uppercase mb-0" style="font-size:.72rem; letter-spacing:.18em">
+                Already a member? <a href="login.html" class="text-primary fw-bold">Login</a>
+              </p>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="app.js"></script>
+  <script>
+    const designerRadio = document.getElementById('role-designer');
+    const clientRadio   = document.getElementById('role-client');
+    const designerFields = document.getElementById('designer-fields');
+    const roleInput = document.getElementById('role-input');
+
+    function syncRole() {
+      const role = clientRadio.checked ? 'client' : 'designer';
+      roleInput.value = role;
+      designerFields.style.display = role === 'designer' ? '' : 'none';
+    }
+
+    designerRadio.addEventListener('change', syncRole);
+    clientRadio.addEventListener('change', syncRole);
+
+    document.getElementById('register-form').addEventListener('submit', e => {
+      e.preventDefault();
+      console.log('register:', Object.fromEntries(new FormData(e.target)));
+    });
+  </script>
+</body>
+</html>

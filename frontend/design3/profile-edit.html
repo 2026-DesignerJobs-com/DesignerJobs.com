@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edit Profile — DESIGNJOBS.COM</title>
+
+  <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light')</script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+  <!-- PAGE HEADER -->
+  <section class="container-xxl px-3 my-4" aria-label="Edit profile header">
+    <div class="bg-primary rounded-4 d-flex align-items-center justify-content-center text-center text-white py-5" style="min-height:200px">
+      <div>
+        <p class="font-monospace text-uppercase mb-2 opacity-70" style="font-size:.78rem; letter-spacing:.2em">Your Profile</p>
+        <h1 class="font-monospace text-uppercase fw-bold text-white mb-0" style="letter-spacing:.06em">Edit Your Profile</h1>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section class="container-xxl px-3 my-4" aria-labelledby="edit-form-h">
+      <div class="row g-5">
+
+        <!-- FORM -->
+        <div class="col-lg-8">
+          <form id="edit-form" method="POST" action="/api/profile">
+
+            <h2 id="edit-form-h" class="font-monospace text-uppercase fw-bold mb-4" style="font-size:1.1rem; letter-spacing:.06em">Basic Information</h2>
+
+            <div class="mb-3">
+              <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="full-name" style="font-size:.72rem; letter-spacing:.22em">Full Name *</label>
+              <input class="form-control border-primary border-2 rounded-3" id="full-name" type="text" name="fullName" value="Jane Doe" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="title" style="font-size:.72rem; letter-spacing:.22em">Professional Title *</label>
+              <input class="form-control border-primary border-2 rounded-3" id="title" type="text" name="title" value="Product Designer" placeholder="e.g., UX Designer, Graphic Designer" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="bio" style="font-size:.72rem; letter-spacing:.22em">Bio *</label>
+              <textarea class="form-control border-primary border-2 rounded-3" id="bio" name="bio" style="min-height:130px" required>Passionate about creating delightful user experiences. Specialized in digital product design with 5+ years of experience in fintech, SaaS, and e-commerce. Always excited about new challenges and collaborative projects.</textarea>
+            </div>
+
+            <h3 class="font-monospace text-uppercase fw-bold mt-5 mb-4" style="font-size:1.1rem; letter-spacing:.06em">Location &amp; Availability</h3>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="city" style="font-size:.72rem; letter-spacing:.22em">City *</label>
+                <input class="form-control border-primary border-2 rounded-3" id="city" type="text" name="city" value="Vienna" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="country" style="font-size:.72rem; letter-spacing:.22em">Country *</label>
+                <input class="form-control border-primary border-2 rounded-3" id="country" type="text" name="country" value="Austria" required>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label font-monospace text-uppercase fw-bold text-secondary d-block" style="font-size:.72rem; letter-spacing:.22em">Availability Status *</label>
+              <div class="d-flex flex-wrap border border-primary border-2 rounded-pill p-1 gap-1" role="group" aria-label="Availability status">
+                <input type="radio" class="btn-check" name="availability" id="avail-1" value="available" checked autocomplete="off">
+                <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center" for="avail-1" style="font-size:.72rem; letter-spacing:.16em">Available Now</label>
+                <input type="radio" class="btn-check" name="availability" id="avail-2" value="limited" autocomplete="off">
+                <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center" for="avail-2" style="font-size:.72rem; letter-spacing:.16em">Limited</label>
+                <input type="radio" class="btn-check" name="availability" id="avail-3" value="unavailable" autocomplete="off">
+                <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center" for="avail-3" style="font-size:.72rem; letter-spacing:.16em">Not Available</label>
+              </div>
+            </div>
+
+            <h3 class="font-monospace text-uppercase fw-bold mt-5 mb-4" style="font-size:1.1rem; letter-spacing:.06em">Rates</h3>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="hourly-min" style="font-size:.72rem; letter-spacing:.22em">Hourly Rate (Min) €*</label>
+                <input class="form-control border-primary border-2 rounded-3" id="hourly-min" type="number" name="hourlyMin" value="65" min="0" step="5" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="hourly-max" style="font-size:.72rem; letter-spacing:.22em">Hourly Rate (Max) €*</label>
+                <input class="form-control border-primary border-2 rounded-3" id="hourly-max" type="number" name="hourlyMax" value="85" min="0" step="5" required>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="project-min" style="font-size:.72rem; letter-spacing:.22em">Minimum Project Rate €*</label>
+              <input class="form-control border-primary border-2 rounded-3" id="project-min" type="number" name="projectMin" value="2500" min="0" step="100" required>
+            </div>
+
+            <h3 class="font-monospace text-uppercase fw-bold mt-5 mb-4" style="font-size:1.1rem; letter-spacing:.06em">Skills</h3>
+
+            <div class="mb-1">
+              <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="skills" style="font-size:.72rem; letter-spacing:.22em">Add Skills (comma-separated) *</label>
+              <textarea class="form-control border-primary border-2 rounded-3" id="skills" name="skills" style="min-height:80px" placeholder="e.g., UI Design, UX Research, Figma" required>UI Design, UX Research, Figma, Prototyping, Design Systems, Accessibility, Adobe XD, Responsive Design</textarea>
+              <div class="form-text">Separate skills with commas. These help clients find you in search.</div>
+            </div>
+
+            <h3 class="font-monospace text-uppercase fw-bold mt-5 mb-4" style="font-size:1.1rem; letter-spacing:.06em">Portfolio</h3>
+
+            <div class="mb-3">
+              <label class="form-label font-monospace text-uppercase fw-bold text-secondary d-block" style="font-size:.72rem; letter-spacing:.22em">Portfolio Visibility *</label>
+              <div class="d-flex border border-primary border-2 rounded-pill p-1 gap-1" role="group" aria-label="Portfolio visibility">
+                <input type="radio" class="btn-check" name="portfolioVisibility" id="vis-public" value="public" checked autocomplete="off">
+                <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center" for="vis-public" style="font-size:.72rem; letter-spacing:.16em">Public</label>
+                <input type="radio" class="btn-check" name="portfolioVisibility" id="vis-clients" value="clients-only" autocomplete="off">
+                <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center" for="vis-clients" style="font-size:.72rem; letter-spacing:.16em">Clients Only</label>
+                <input type="radio" class="btn-check" name="portfolioVisibility" id="vis-private" value="private" autocomplete="off">
+                <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center" for="vis-private" style="font-size:.72rem; letter-spacing:.16em">Private</label>
+              </div>
+            </div>
+
+            <div class="mb-3 mt-4">
+              <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="portfolio-url" style="font-size:.72rem; letter-spacing:.22em">Portfolio Website URL</label>
+              <input class="form-control border-primary border-2 rounded-3" id="portfolio-url" type="url" name="portfolioUrl" placeholder="https://yourportfolio.com">
+            </div>
+
+            <h3 class="font-monospace text-uppercase fw-bold mt-5 mb-4" style="font-size:1.1rem; letter-spacing:.06em">Social Links (Optional)</h3>
+
+            <div class="mb-3">
+              <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="twitter" style="font-size:.72rem; letter-spacing:.22em">Twitter Handle</label>
+              <input class="form-control border-primary border-2 rounded-3" id="twitter" type="text" name="twitter" placeholder="@yourhandle">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="linkedin" style="font-size:.72rem; letter-spacing:.22em">LinkedIn Profile</label>
+              <input class="form-control border-primary border-2 rounded-3" id="linkedin" type="url" name="linkedin" placeholder="https://linkedin.com/in/yourprofile">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="instagram" style="font-size:.72rem; letter-spacing:.22em">Instagram Handle</label>
+              <input class="form-control border-primary border-2 rounded-3" id="instagram" type="text" name="instagram" placeholder="@yourhandle">
+            </div>
+
+            <div class="d-flex gap-3 flex-wrap mt-5 pb-5">
+              <button class="btn btn-primary rounded-pill fw-bold text-uppercase px-4 py-2" type="submit" style="letter-spacing:.16em">Save Changes</button>
+              <a href="profile.html" class="btn btn-outline-primary rounded-pill fw-bold text-uppercase px-4 py-2" style="letter-spacing:.16em">View Profile</a>
+              <button class="btn btn-outline-danger rounded-pill fw-bold text-uppercase px-4 py-2" type="button" data-action="delete" style="letter-spacing:.16em">Delete Profile</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- PREVIEW & TIPS -->
+        <div class="col-lg-4">
+          <div class="position-sticky" style="top:2rem">
+
+            <div class="card border-primary border-2 rounded-4 p-2 mb-4">
+              <div class="card-body">
+                <h3 class="font-monospace text-uppercase fw-bold mt-0 mb-3" style="font-size:1rem; letter-spacing:.06em">Profile Preview</h3>
+                <div class="bg-primary rounded-3 p-4 text-white text-center">
+                  <div class="d-flex align-items-center justify-content-center rounded-3 fw-bold font-monospace mx-auto mb-3"
+                       style="width:80px; height:80px; background:rgba(0,0,0,.25); font-size:1.8rem; border:2px solid rgba(255,255,255,.35)">JD</div>
+                  <div class="fw-bold font-monospace text-uppercase mb-1" style="font-size:1.1rem; letter-spacing:.06em">Jane Doe</div>
+                  <div class="text-success font-monospace text-uppercase mb-1" style="font-size:.75rem; letter-spacing:.2em">Product Designer</div>
+                  <div class="opacity-70 small">Vienna, Austria</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card border-primary border-2 rounded-4 p-2">
+              <div class="card-body">
+                <h4 class="text-success font-monospace text-uppercase fw-bold mt-0 mb-3" style="font-size:.75rem; letter-spacing:.2em">Profile Tips</h4>
+                <ul class="text-secondary mb-0" style="font-size:.9rem; padding-left:1.4rem">
+                  <li class="mb-2">Write a compelling bio that highlights your unique skills</li>
+                  <li class="mb-2">Choose realistic rates to attract more clients</li>
+                  <li class="mb-2">Keep your portfolio up-to-date with recent work</li>
+                  <li class="mb-2">Add relevant skills for better searchability</li>
+                  <li>Link to your personal website and social profiles</li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="app.js"></script>
+  <script>
+    document.querySelector('[data-action="delete"]').addEventListener('click', () => {
+      if (confirm('Are you sure you want to delete your profile? This cannot be undone.')) {
+        console.log('Delete profile');
+      }
+    });
+
+    document.getElementById('edit-form').addEventListener('submit', e => {
+      e.preventDefault();
+      console.log('Form submitted');
+    });
+  </script>
+</body>
+</html>

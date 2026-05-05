@@ -1,7 +1,7 @@
 # design1
 
 Poster-aesthetic frontend for DesignerJobs.com.
-Bootstrap 5.3 grid · Space Mono + Fraunces · vanilla JS · no build step.
+Bootstrap 5.3 grid · Space Mono + Fraunces · vanilla JS
 
 ## Run
 

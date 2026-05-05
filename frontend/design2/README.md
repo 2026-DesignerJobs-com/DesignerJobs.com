@@ -1,7 +1,7 @@
 # design2
 
 Bootstrap-first frontend for DesignerJobs.com.
-Maximises Bootstrap 5.3 utilities · Space Mono + Fraunces · vanilla JS · no build step.
+Maximises Bootstrap 5.3 utilities · Space Mono + Fraunces · vanilla JS
 
 ## Run
 

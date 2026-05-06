@@ -35,28 +35,28 @@ html, body{
 /* Bootstrap scoped button variables don't inherit --bs-primary-rgb by default */
 .btn-primary {
     --bs-btn-color: #EDE9F8;
-    --bs-btn-bg: #7C3AED;
-    --bs-btn-border-color: #7C3AED;
+    --bs-btn-bg: #a60d3e;
+    --bs-btn-border-color: #a60d3e;
     --bs-btn-hover-color: #EDE9F8;
-    --bs-btn-hover-bg: #6D28D9;
-    --bs-btn-hover-border-color: #6D28D9;
+    --bs-btn-hover-bg: #7c0d2e;
+    --bs-btn-hover-border-color: #7c0d2e;
     --bs-btn-active-color: #EDE9F8;
-    --bs-btn-active-bg: #6D28D9;
-    --bs-btn-active-border-color: #6D28D9;
+    --bs-btn-active-bg: #7c0d2e;
+    --bs-btn-active-border-color: #7c0d2e;
     --bs-btn-focus-shadow-rgb: 124, 58, 237;
-    --bs-btn-disabled-bg: #7C3AED;
-    --bs-btn-disabled-border-color: #7C3AED;
+    --bs-btn-disabled-bg: #7c0d2e;
+    --bs-btn-disabled-border-color: #7c0d2e;
 }
 
 .btn-outline-primary {
-    --bs-btn-color: #7C3AED;
-    --bs-btn-border-color: #7C3AED;
+    --bs-btn-color: #a60d3e;
+    --bs-btn-border-color: #a60d3e;
     --bs-btn-hover-color: #EDE9F8;
-    --bs-btn-hover-bg: #7C3AED;
-    --bs-btn-hover-border-color: #7C3AED;
+    --bs-btn-hover-bg: #a60d3e;
+    --bs-btn-hover-border-color: #a60d3e;
     --bs-btn-active-color: #EDE9F8;
-    --bs-btn-active-bg: #6D28D9;
-    --bs-btn-active-border-color: #6D28D9;
+    --bs-btn-active-bg: #7c0d2e;
+    --bs-btn-active-border-color: #7c0d2e;
     --bs-btn-focus-shadow-rgb: 124, 58, 237;
 }
 

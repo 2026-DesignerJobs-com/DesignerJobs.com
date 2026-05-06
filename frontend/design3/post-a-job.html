@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Post a Job — DESIGNJOBS.COM</title>
+
+  <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light')</script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+  <main class="py-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+          <div class="card border-primary border-2 rounded-4 p-2">
+            <div class="card-body p-4">
+
+              <p class="text-success font-monospace text-uppercase fw-bold mb-1" style="font-size:.72rem; letter-spacing:.3em">For clients &amp; companies</p>
+              <h1 class="font-monospace text-uppercase fw-bold mb-4" style="font-size:2rem; letter-spacing:.06em">Post a Job</h1>
+
+              <form id="post-job-form" action="#" method="post" novalidate>
+
+                <!-- Company / client name -->
+                <div class="mb-3">
+                  <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="company-name" style="font-size:.72rem; letter-spacing:.22em">Company / client name</label>
+                  <input class="form-control border-primary border-2 rounded-3" type="text" id="company-name" name="company" placeholder="Studio Noir, Acme Inc., Your Name…" autocomplete="organization" required>
+                </div>
+
+                <!-- Contact email -->
+                <div class="mb-3">
+                  <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="contact-email" style="font-size:.72rem; letter-spacing:.22em">Contact email</label>
+                  <input class="form-control border-primary border-2 rounded-3" type="email" id="contact-email" name="email" placeholder="you@example.com" autocomplete="email" required>
+                </div>
+
+                <!-- Job title -->
+                <div class="mb-3">
+                  <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="job-title" style="font-size:.72rem; letter-spacing:.22em">Job title</label>
+                  <input class="form-control border-primary border-2 rounded-3" type="text" id="job-title" name="title" placeholder="e.g. Brand Identity Designer" required>
+                </div>
+
+                <!-- Design category -->
+                <div class="mb-4">
+                  <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="category" style="font-size:.72rem; letter-spacing:.22em">Design category</label>
+                  <select class="form-select border-primary border-2 rounded-3" id="category" name="category" required>
+                    <option value="">Select…</option>
+                    <option>UI/UX Design</option>
+                    <option>Web Design</option>
+                    <option>Graphic Design</option>
+                    <option>Motion Design</option>
+                    <option>Brand Identity</option>
+                    <option>Illustration</option>
+                    <option>Interior Design</option>
+                    <option>Logo Design</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+
+                <!-- Location type -->
+                <div class="mb-4">
+                  <p class="form-label font-monospace text-uppercase fw-bold text-secondary mb-2" style="font-size:.72rem; letter-spacing:.22em">Location</p>
+                  <div class="d-flex border border-primary border-2 rounded-pill p-1 gap-1" role="group" aria-label="Location type">
+                    <input type="radio" class="btn-check" name="location" id="loc-remote" value="remote" checked autocomplete="off">
+                    <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center" for="loc-remote" style="letter-spacing:.18em; font-size:.8rem">Remote</label>
+
+                    <input type="radio" class="btn-check" name="location" id="loc-onsite" value="onsite" autocomplete="off">
+                    <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center" for="loc-onsite" style="letter-spacing:.18em; font-size:.8rem">On-site</label>
+
+                    <input type="radio" class="btn-check" name="location" id="loc-hybrid" value="hybrid" autocomplete="off">
+                    <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center" for="loc-hybrid" style="letter-spacing:.18em; font-size:.8rem">Hybrid</label>
+                  </div>
+                </div>
+
+                <!-- Budget tier -->
+                <div class="mb-4">
+                  <p class="form-label font-monospace text-uppercase fw-bold text-secondary mb-2" style="font-size:.72rem; letter-spacing:.22em">Budget range</p>
+                  <div class="d-flex border border-primary border-2 rounded-pill p-1 gap-1" role="group" aria-label="Budget tier">
+                    <input type="radio" class="btn-check" name="budget" id="budget-low" value="€" checked autocomplete="off">
+                    <label class="btn btn-outline-primary rounded-pill fw-bold flex-grow-1 text-center" for="budget-low" style="font-size:1rem; letter-spacing:.06em">€</label>
+
+                    <input type="radio" class="btn-check" name="budget" id="budget-mid" value="€€" autocomplete="off">
+                    <label class="btn btn-outline-primary rounded-pill fw-bold flex-grow-1 text-center" for="budget-mid" style="font-size:1rem; letter-spacing:.06em">€€</label>
+
+                    <input type="radio" class="btn-check" name="budget" id="budget-high" value="€€€" autocomplete="off">
+                    <label class="btn btn-outline-primary rounded-pill fw-bold flex-grow-1 text-center" for="budget-high" style="font-size:1rem; letter-spacing:.06em">€€€</label>
+                  </div>
+                </div>
+
+                <!-- Project description -->
+                <div class="mb-3">
+                  <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="description" style="font-size:.72rem; letter-spacing:.22em">Project description</label>
+                  <textarea class="form-control border-primary border-2 rounded-3" id="description" name="description" rows="5" placeholder="Describe the project, deliverables, vibe…" required></textarea>
+                </div>
+
+                <!-- Deadline (optional) -->
+                <div class="mb-4">
+                  <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="deadline" style="font-size:.72rem; letter-spacing:.22em">
+                    Deadline <span class="fw-normal text-lowercase" style="letter-spacing:0">(optional)</span>
+                  </label>
+                  <input class="form-control border-primary border-2 rounded-3" type="date" id="deadline" name="deadline">
+                </div>
+
+                <button type="submit" class="btn btn-primary rounded-pill w-100 fw-bold text-uppercase py-3 mt-1" style="letter-spacing:.16em">
+                  Publish Listing
+                </button>
+              </form>
+
+              <!-- OR divider -->
+              <div class="d-flex align-items-center gap-3 my-4">
+                <hr class="flex-grow-1 m-0 opacity-25 border-primary">
+                <span class="font-monospace text-uppercase text-secondary" style="font-size:.72rem; letter-spacing:.3em">or</span>
+                <hr class="flex-grow-1 m-0 opacity-25 border-primary">
+              </div>
+
+              <p class="text-center font-monospace text-uppercase mb-0" style="font-size:.72rem; letter-spacing:.18em">
+                Looking for work? <a href="#" class="text-primary fw-bold" data-page="register.html">Join as a designer</a>
+              </p>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.getElementById('post-job-form').addEventListener('submit', e => {
+      e.preventDefault();
+      console.log('post-a-job:', Object.fromEntries(new FormData(e.target)));
+    });
+  </script>
+</body>
+</html>

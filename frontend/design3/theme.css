@@ -6,19 +6,30 @@
     --bs-success: #10B981;
     --bs-success-rgb: 16, 185, 129;
     --bs-link-color: #a60d3e;
-    --bs-link-color-rgb: 124, 58, 237
+    --bs-link-color-rgb: 166, 13, 62;
     --bs-link-hover-color: #7c0d2e;
     --bs-font-monospace: "Space Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     --bs-body-font-family: "Fraunces", Georgia, serif;
+    --font-body: "Fraunces", Georgia, serif;
+    --font-ui: "Space Mono", monospace;
     --bs-body-bg: #FAFAFA;
     --bs-body-color: #1E1B2E;
 }
 
 [data-bs-theme="dark"] {
+    --bs-primary: #a60d3e;
+    --bs-primary-rgb: 166, 13, 62;
     --bs-body-bg: #0C0A14;
     --bs-secondary-bg: #161225;
     --bs-tertiary-bg: #1c1a2e;
     --bs-body-color: #EDE9F8;
+}
+
+html, body{
+    font-family: var(--font-body);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* Bootstrap scoped button variables don't inherit --bs-primary-rgb by default */

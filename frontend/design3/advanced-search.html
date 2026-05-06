@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Advanced Search — DESIGNJOBS.COM</title>
+
+  <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light')</script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="theme.css">
+
+  <style>
+    .filter-card {
+      border: 1.5px solid var(--bs-border-color);
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+    .filter-section-label {
+      font-size: .72rem;
+      letter-spacing: .3em;
+    }
+    .check-tile input[type="checkbox"],
+    .check-tile input[type="radio"] {
+      display: none;
+    }
+    .check-tile label {
+      display: block;
+      cursor: pointer;
+      border: 1.5px solid var(--bs-border-color);
+      border-radius: 2rem;
+      padding: .35rem 1rem;
+      font-size: .8rem;
+      letter-spacing: .12em;
+      transition: background .15s, border-color .15s, color .15s;
+      user-select: none;
+    }
+    .check-tile input:checked + label {
+      background: #7C3AED;
+      border-color: #7C3AED;
+      color: #EDE9F8;
+    }
+    [data-bs-theme="dark"] .check-tile label {
+      color: #EDE9F8;
+    }
+    .budget-track {
+      accent-color: #10B981;
+    }
+    .divider-line {
+      border-top: 1.5px solid var(--bs-border-color);
+      margin: 1.25rem 0;
+    }
+  </style>
+</head>
+<body>
+<main>
+
+  <!-- PAGE HEADER -->
+  <section class="container-xxl px-3 my-4" aria-label="Advanced search header">
+    <div class="bg-primary rounded-4 overflow-hidden position-relative py-5 px-4 text-white" style="min-height:200px">
+      <span class="position-absolute top-0 start-0 p-3 font-monospace text-uppercase opacity-50" style="font-size:.72rem; letter-spacing:.3em">Find Your Match</span>
+      <span class="position-absolute bottom-0 end-0 p-3 font-monospace text-uppercase opacity-50" style="font-size:.72rem; letter-spacing:.3em">Design Platform</span>
+      <div class="d-flex flex-column gap-3" style="max-width:640px">
+        <p class="font-monospace text-uppercase fw-bold opacity-75 mb-0" style="font-size:.72rem; letter-spacing:.3em">Search</p>
+        <h1 class="font-monospace text-uppercase fw-bold mb-0" style="letter-spacing:.06em; font-size:2.6rem; line-height:1.1">Advanced<br>Search</h1>
+        <p class="opacity-80 mb-0" style="font-size:1rem">Narrow down exactly the kind of work you're looking for.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORM BODY -->
+  <section class="container-xxl px-3 my-5" aria-label="Search filters">
+    <form action="search-results.html" method="get" id="advanced-search-form">
+      <div class="row g-4">
+
+        <!-- LEFT COLUMN: main filters -->
+        <div class="col-lg-8 d-flex flex-column gap-4">
+
+          <!-- Keywords -->
+          <div class="filter-card">
+            <p class="font-monospace text-uppercase fw-bold filter-section-label text-success mb-3">Keywords</p>
+            <div class="input-group">
+              <span class="input-group-text bg-transparent border-end-0 pe-1">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+                </svg>
+              </span>
+              <input
+                type="search"
+                name="q"
+                class="form-control border-start-0 rounded-end-3 font-monospace fw-bold text-uppercase shadow-none ps-1"
+                value="Web Designer"
+                placeholder="e.g. Logo Design, Branding…"
+                aria-label="Search keywords"
+                style="letter-spacing:.08em"
+              >
+            </div>
+          </div>
+
+          <!-- Discipline -->
+          <div class="filter-card">
+            <p class="font-monospace text-uppercase fw-bold filter-section-label text-success mb-3">Discipline</p>
+            <div class="d-flex flex-wrap gap-2">
+              <div class="check-tile">
+                <input type="checkbox" name="discipline" value="web" id="d-web" checked>
+                <label for="d-web" class="font-monospace text-uppercase fw-bold">Web Design</label>
+              </div>
+              <div class="check-tile">
+                <input type="checkbox" name="discipline" value="graphic" id="d-graphic">
+                <label for="d-graphic" class="font-monospace text-uppercase fw-bold">Graphic Design</label>
+              </div>
+              <div class="check-tile">
+                <input type="checkbox" name="discipline" value="ux" id="d-ux">
+                <label for="d-ux" class="font-monospace text-uppercase fw-bold">UX / UI</label>
+              </div>
+              <div class="check-tile">
+                <input type="checkbox" name="discipline" value="interior" id="d-interior">
+                <label for="d-interior" class="font-monospace text-uppercase fw-bold">Interior Design</label>
+              </div>
+              <div class="check-tile">
+                <input type="checkbox" name="discipline" value="motion" id="d-motion">
+                <label for="d-motion" class="font-monospace text-uppercase fw-bold">Motion Design</label>
+              </div>
+              <div class="check-tile">
+                <input type="checkbox" name="discipline" value="illustration" id="d-illustration">
+                <label for="d-illustration" class="font-monospace text-uppercase fw-bold">Illustration</label>
+              </div>
+              <div class="check-tile">
+                <input type="checkbox" name="discipline" value="photography" id="d-photo">
+                <label for="d-photo" class="font-monospace text-uppercase fw-bold">Photography</label>
+              </div>
+              <div class="check-tile">
+                <input type="checkbox" name="discipline" value="branding" id="d-branding">
+                <label for="d-branding" class="font-monospace text-uppercase fw-bold">Branding</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Work Type & Location -->
+          <div class="filter-card">
+            <div class="row g-4">
+              <div class="col-sm-6">
+                <p class="font-monospace text-uppercase fw-bold filter-section-label text-success mb-3">Work Type</p>
+                <div class="d-flex flex-wrap gap-2">
+                  <div class="check-tile">
+                    <input type="checkbox" name="type" value="remote" id="t-remote" checked>
+                    <label for="t-remote" class="font-monospace text-uppercase fw-bold">Remote</label>
+                  </div>
+                  <div class="check-tile">
+                    <input type="checkbox" name="type" value="onsite" id="t-onsite">
+                    <label for="t-onsite" class="font-monospace text-uppercase fw-bold">On-Site</label>
+                  </div>
+                  <div class="check-tile">
+                    <input type="checkbox" name="type" value="hybrid" id="t-hybrid">
+                    <label for="t-hybrid" class="font-monospace text-uppercase fw-bold">Hybrid</label>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <p class="font-monospace text-uppercase fw-bold filter-section-label text-success mb-3">City / Region</p>
+                <input
+                  type="text"
+                  name="location"
+                  class="form-control rounded-3 font-monospace"
+                  placeholder="Vienna, Graz…"
+                  aria-label="City or region"
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Budget -->
+          <div class="filter-card">
+            <p class="font-monospace text-uppercase fw-bold filter-section-label text-success mb-3">Budget Range</p>
+            <div class="d-flex flex-wrap gap-2 mb-4">
+              <div class="check-tile">
+                <input type="checkbox" name="budget" value="1" id="b-1">
+                <label for="b-1" class="font-monospace fw-bold">€</label>
+              </div>
+              <div class="check-tile">
+                <input type="checkbox" name="budget" value="2" id="b-2" checked>
+                <label for="b-2" class="font-monospace fw-bold">€€</label>
+              </div>
+              <div class="check-tile">
+                <input type="checkbox" name="budget" value="3" id="b-3">
+                <label for="b-3" class="font-monospace fw-bold">€€€</label>
+              </div>
+            </div>
+            <div class="divider-line"></div>
+            <p class="font-monospace text-uppercase fw-bold filter-section-label opacity-50 mb-3">Or set a custom range</p>
+            <div class="row g-3 align-items-center">
+              <div class="col">
+                <label for="budget-min" class="form-label font-monospace text-uppercase fw-bold" style="font-size:.72rem; letter-spacing:.2em">Min (€)</label>
+                <input type="number" id="budget-min" name="budget_min" class="form-control rounded-3 font-monospace" placeholder="0" min="0">
+              </div>
+              <div class="col-auto pt-3 opacity-50 font-monospace fw-bold">—</div>
+              <div class="col">
+                <label for="budget-max" class="form-label font-monospace text-uppercase fw-bold" style="font-size:.72rem; letter-spacing:.2em">Max (€)</label>
+                <input type="number" id="budget-max" name="budget_max" class="form-control rounded-3 font-monospace" placeholder="5000" min="0">
+              </div>
+            </div>
+          </div>
+
+          <!-- Posted & Experience -->
+          <div class="filter-card">
+            <div class="row g-4">
+              <div class="col-sm-6">
+                <label for="posted" class="font-monospace text-uppercase fw-bold filter-section-label text-success d-block mb-3">Posted Within</label>
+                <select id="posted" name="posted" class="form-select rounded-3 font-monospace">
+                  <option value="">Any time</option>
+                  <option value="24h">Past 24 hours</option>
+                  <option value="week" selected>Past week</option>
+                  <option value="month">Past month</option>
+                  <option value="3months">Past 3 months</option>
+                </select>
+              </div>
+              <div class="col-sm-6">
+                <label for="exp" class="font-monospace text-uppercase fw-bold filter-section-label text-success d-block mb-3">Experience Level</label>
+                <select id="exp" name="experience" class="form-select rounded-3 font-monospace">
+                  <option value="">Any level</option>
+                  <option value="junior">Junior</option>
+                  <option value="mid">Mid-level</option>
+                  <option value="senior">Senior</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: sort + actions -->
+        <div class="col-lg-4 d-flex flex-column gap-4">
+
+          <!-- Sort -->
+          <div class="filter-card">
+            <label for="sort" class="font-monospace text-uppercase fw-bold filter-section-label text-success d-block mb-3">Sort Results By</label>
+            <div class="d-flex flex-column gap-2">
+              <div class="check-tile">
+                <input type="radio" name="sort" value="recent" id="s-recent" checked>
+                <label for="s-recent" class="font-monospace text-uppercase fw-bold">Most Recent</label>
+              </div>
+              <div class="check-tile">
+                <input type="radio" name="sort" value="budget-desc" id="s-bdesc">
+                <label for="s-bdesc" class="font-monospace text-uppercase fw-bold">Budget: High → Low</label>
+              </div>
+              <div class="check-tile">
+                <input type="radio" name="sort" value="budget-asc" id="s-basc">
+                <label for="s-basc" class="font-monospace text-uppercase fw-bold">Budget: Low → High</label>
+              </div>
+              <div class="check-tile">
+                <input type="radio" name="sort" value="relevant" id="s-rel">
+                <label for="s-rel" class="font-monospace text-uppercase fw-bold">Most Relevant</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips -->
+          <div class="filter-card" style="border-color:#10B981; background: rgba(16,185,129,.07)">
+            <p class="font-monospace text-uppercase fw-bold filter-section-label text-success mb-3">Search Tips</p>
+            <ul class="list-unstyled d-flex flex-column gap-2 mb-0" style="font-size:.88rem">
+              <li class="d-flex gap-2">
+                <span class="text-success fw-bold mt-1" style="font-size:.6rem">&#9650;</span>
+                <span>Leave fields blank to keep them open — narrower is not always better.</span>
+              </li>
+              <li class="d-flex gap-2">
+                <span class="text-success fw-bold mt-1" style="font-size:.6rem">&#9650;</span>
+                <span>Select multiple disciplines to cast a wider net.</span>
+              </li>
+              <li class="d-flex gap-2">
+                <span class="text-success fw-bold mt-1" style="font-size:.6rem">&#9650;</span>
+                <span>Remote jobs appear regardless of the city field.</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex flex-column gap-3 sticky-top" style="top:1rem">
+            <button type="submit" class="btn btn-primary rounded-pill fw-bold text-uppercase px-4 py-3 w-100" style="letter-spacing:.16em">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="me-2" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+              </svg>
+              Search Jobs
+            </button>
+            <button type="reset" class="btn btn-outline-primary rounded-pill fw-bold text-uppercase px-4 py-2 w-100" style="letter-spacing:.16em">Clear All</button>
+            <a href="jobs.html" class="btn btn-outline-secondary rounded-pill fw-bold text-uppercase px-4 py-2 w-100" style="letter-spacing:.12em; font-size:.85rem">Browse All Jobs</a>
+          </div>
+
+        </div>
+      </div>
+    </form>
+  </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

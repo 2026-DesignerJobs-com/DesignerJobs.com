@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Search Results — DESIGNJOBS.COM</title>
+
+  <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light')</script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="theme.css">
+
+  <style>
+    .filter-pill-active {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      background: #7C3AED;
+      color: #EDE9F8;
+      border-radius: 2rem;
+      padding: .3rem .85rem;
+      font-size: .75rem;
+      letter-spacing: .12em;
+      font-family: var(--bs-font-monospace);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .filter-pill-active .remove-btn {
+      background: none;
+      border: none;
+      color: inherit;
+      opacity: .7;
+      padding: 0;
+      line-height: 1;
+      cursor: pointer;
+      font-size: .9rem;
+    }
+    .filter-pill-active .remove-btn:hover { opacity: 1; }
+
+    .result-card {
+      border: 1.5px solid var(--bs-border-color);
+      border-radius: 1rem;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .result-card:hover {
+      border-color: #7C3AED;
+      box-shadow: 0 4px 18px rgba(124,58,237,.12);
+    }
+    .sidebar-filter {
+      border: 1.5px solid var(--bs-border-color);
+      border-radius: 1rem;
+      padding: 1.25rem;
+    }
+    .filter-section-label {
+      font-size: .72rem;
+      letter-spacing: .3em;
+    }
+    .check-tile input[type="checkbox"],
+    .check-tile input[type="radio"] { display: none; }
+    .check-tile label {
+      display: block;
+      cursor: pointer;
+      border: 1.5px solid var(--bs-border-color);
+      border-radius: 2rem;
+      padding: .28rem .85rem;
+      font-size: .78rem;
+      letter-spacing: .1em;
+      transition: background .15s, border-color .15s, color .15s;
+      user-select: none;
+    }
+    .check-tile input:checked + label {
+      background: #7C3AED;
+      border-color: #7C3AED;
+      color: #EDE9F8;
+    }
+    [data-bs-theme="dark"] .check-tile label { color: #EDE9F8; }
+
+    .no-results-illustration {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: rgba(124,58,237,.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .page-link {
+      font-family: var(--bs-font-monospace);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      font-size: .8rem;
+    }
+  </style>
+</head>
+<body>
+<main>
+
+  <!-- PAGE HEADER -->
+  <section class="container-xxl px-3 my-4" aria-label="Search results header">
+    <div class="bg-primary rounded-4 overflow-hidden position-relative py-5 px-4 text-white" style="min-height:180px">
+      <span class="position-absolute top-0 start-0 p-3 font-monospace text-uppercase opacity-50" style="font-size:.72rem; letter-spacing:.3em">Search Results</span>
+      <span class="position-absolute bottom-0 end-0 p-3 font-monospace text-uppercase opacity-50" style="font-size:.72rem; letter-spacing:.3em">Design Platform</span>
+      <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-4 justify-content-between">
+        <div>
+          <p class="font-monospace text-uppercase fw-bold opacity-75 mb-1" style="font-size:.72rem; letter-spacing:.3em">Results for</p>
+          <h1 class="font-monospace text-uppercase fw-bold mb-0" style="letter-spacing:.06em; font-size:2.2rem" id="results-heading">"Web Designer"</h1>
+        </div>
+        <!-- quick search re-run -->
+        <form role="search" class="d-flex align-items-center rounded-pill gap-2 px-3 py-2 flex-grow-1" style="background:rgba(0,0,0,.22); max-width:380px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+          </svg>
+          <input type="search" name="q" class="form-control bg-transparent border-0 text-white fw-bold font-monospace text-uppercase p-0 shadow-none" placeholder="Refine search…" aria-label="Refine search" style="letter-spacing:.1em; font-size:.9rem">
+          <button type="submit" class="btn btn-outline-light rounded-pill btn-sm fw-bold text-uppercase px-3" style="letter-spacing:.12em; white-space:nowrap">Go</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACTIVE FILTERS + CONTROLS BAR -->
+  <section class="container-xxl px-3 mb-4" aria-label="Active filters">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+
+      <!-- active filter chips -->
+      <div class="d-flex flex-wrap gap-2 align-items-center me-2" id="active-filters" aria-label="Active filters">
+        <span class="filter-pill-active">
+          Web Design
+          <button class="remove-btn" aria-label="Remove Web Design filter" title="Remove">&#x2715;</button>
+        </span>
+        <span class="filter-pill-active">
+          Remote
+          <button class="remove-btn" aria-label="Remove Remote filter" title="Remove">&#x2715;</button>
+        </span>
+        <span class="filter-pill-active">
+          €€
+          <button class="remove-btn" aria-label="Remove budget filter" title="Remove">&#x2715;</button>
+        </span>
+        <span class="filter-pill-active">
+          Past week
+          <button class="remove-btn" aria-label="Remove date filter" title="Remove">&#x2715;</button>
+        </span>
+      </div>
+
+      <a href="advanced-search.html" class="btn btn-outline-secondary rounded-pill btn-sm fw-bold text-uppercase px-3" style="letter-spacing:.12em; font-size:.75rem">
+        Edit Filters
+      </a>
+      <button type="button" class="btn btn-link btn-sm text-danger fw-bold font-monospace text-uppercase px-2" style="letter-spacing:.12em; font-size:.72rem" id="clear-all-btn">
+        Clear All
+      </button>
+
+      <!-- spacer + count + sort -->
+      <div class="ms-auto d-flex align-items-center gap-3 flex-wrap justify-content-end">
+        <span class="font-monospace text-uppercase fw-bold text-success" style="font-size:.78rem; letter-spacing:.2em" aria-live="polite">07 Results</span>
+        <select class="form-select form-select-sm rounded-pill border-primary font-monospace fw-bold text-uppercase" style="width:auto; letter-spacing:.08em; font-size:.78rem" aria-label="Sort results">
+          <option value="recent">Most Recent</option>
+          <option value="budget-desc">Budget: High → Low</option>
+          <option value="budget-asc">Budget: Low → High</option>
+          <option value="relevant">Most Relevant</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN CONTENT: sidebar + results -->
+  <section class="container-xxl px-3 my-4" aria-label="Search results and filters">
+    <div class="row g-4">
+
+      <!-- SIDEBAR (desktop) -->
+      <aside class="col-lg-3 d-none d-lg-block" aria-label="Filter sidebar">
+        <div class="sidebar-filter mb-3">
+          <p class="font-monospace text-uppercase fw-bold filter-section-label text-success mb-3">Discipline</p>
+          <div class="d-flex flex-column gap-2">
+            <div class="check-tile">
+              <input type="checkbox" id="sf-web" checked>
+              <label for="sf-web" class="font-monospace text-uppercase fw-bold">Web Design</label>
+            </div>
+            <div class="check-tile">
+              <input type="checkbox" id="sf-graphic">
+              <label for="sf-graphic" class="font-monospace text-uppercase fw-bold">Graphic Design</label>
+            </div>
+            <div class="check-tile">
+              <input type="checkbox" id="sf-ux">
+              <label for="sf-ux" class="font-monospace text-uppercase fw-bold">UX / UI</label>
+            </div>
+            <div class="check-tile">
+              <input type="checkbox" id="sf-interior">
+              <label for="sf-interior" class="font-monospace text-uppercase fw-bold">Interior</label>
+            </div>
+            <div class="check-tile">
+              <input type="checkbox" id="sf-motion">
+              <label for="sf-motion" class="font-monospace text-uppercase fw-bold">Motion</label>
+            </div>
+            <div class="check-tile">
+              <input type="checkbox" id="sf-illustration">
+              <label for="sf-illustration" class="font-monospace text-uppercase fw-bold">Illustration</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-filter mb-3">
+          <p class="font-monospace text-uppercase fw-bold filter-section-label text-success mb-3">Work Type</p>
+          <div class="d-flex flex-column gap-2">
+            <div class="check-tile">
+              <input type="checkbox" id="sf-remote" checked>
+              <label for="sf-remote" class="font-monospace text-uppercase fw-bold">Remote</label>
+            </div>
+            <div class="check-tile">
+              <input type="checkbox" id="sf-onsite">
+              <label for="sf-onsite" class="font-monospace text-uppercase fw-bold">On-Site</label>
+            </div>
+            <div class="check-tile">
+              <input type="checkbox" id="sf-hybrid">
+              <label for="sf-hybrid" class="font-monospace text-uppercase fw-bold">Hybrid</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-filter mb-3">
+          <p class="font-monospace text-uppercase fw-bold filter-section-label text-success mb-3">Budget</p>
+          <div class="d-flex flex-column gap-2">
+            <div class="check-tile">
+              <input type="checkbox" id="sf-b1">
+              <label for="sf-b1" class="font-monospace fw-bold">€</label>
+            </div>
+            <div class="check-tile">
+              <input type="checkbox" id="sf-b2" checked>
+              <label for="sf-b2" class="font-monospace fw-bold">€€</label>
+            </div>
+            <div class="check-tile">
+              <input type="checkbox" id="sf-b3">
+              <label for="sf-b3" class="font-monospace fw-bold">€€€</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-filter mb-3">
+          <label for="sf-posted" class="font-monospace text-uppercase fw-bold filter-section-label text-success d-block mb-3">Posted Within</label>
+          <select id="sf-posted" class="form-select form-select-sm rounded-3 font-monospace">
+            <option value="">Any time</option>
+            <option value="24h">Past 24 hours</option>
+            <option value="week" selected>Past week</option>
+            <option value="month">Past month</option>
+          </select>
+        </div>
+
+        <a href="advanced-search.html" class="btn btn-outline-primary rounded-pill fw-bold text-uppercase w-100 py-2" style="letter-spacing:.14em">
+          Full Search Form
+        </a>
+      </aside>
+
+      <!-- RESULTS LIST -->
+      <div class="col-lg-9">
+
+        <!-- mobile filter toggle -->
+        <div class="d-lg-none mb-3">
+          <button class="btn btn-outline-primary rounded-pill fw-bold text-uppercase px-4 py-2 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#mobile-filters" aria-expanded="false" style="letter-spacing:.14em">
+            Filter &amp; Sort
+          </button>
+          <div class="collapse mt-3" id="mobile-filters">
+            <div class="sidebar-filter">
+              <p class="font-monospace text-uppercase fw-bold filter-section-label text-success mb-3">Discipline</p>
+              <div class="d-flex flex-wrap gap-2 mb-4">
+                <div class="check-tile"><input type="checkbox" id="mf-web" checked><label for="mf-web" class="font-monospace text-uppercase fw-bold">Web Design</label></div>
+                <div class="check-tile"><input type="checkbox" id="mf-ux"><label for="mf-ux" class="font-monospace text-uppercase fw-bold">UX / UI</label></div>
+                <div class="check-tile"><input type="checkbox" id="mf-graphic"><label for="mf-graphic" class="font-monospace text-uppercase fw-bold">Graphic</label></div>
+                <div class="check-tile"><input type="checkbox" id="mf-motion"><label for="mf-motion" class="font-monospace text-uppercase fw-bold">Motion</label></div>
+              </div>
+              <p class="font-monospace text-uppercase fw-bold filter-section-label text-success mb-3">Work Type</p>
+              <div class="d-flex flex-wrap gap-2">
+                <div class="check-tile"><input type="checkbox" id="mf-remote" checked><label for="mf-remote" class="font-monospace text-uppercase fw-bold">Remote</label></div>
+                <div class="check-tile"><input type="checkbox" id="mf-onsite"><label for="mf-onsite" class="font-monospace text-uppercase fw-bold">On-Site</label></div>
+                <div class="check-tile"><input type="checkbox" id="mf-hybrid"><label for="mf-hybrid" class="font-monospace text-uppercase fw-bold">Hybrid</label></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESULT CARDS -->
+        <div class="d-flex flex-column gap-3">
+
+          <!-- Card 1 — featured -->
+          <article class="result-card p-4 position-relative" style="border-color:#7C3AED">
+            <span class="position-absolute top-0 end-0 mt-3 me-3 badge bg-primary rounded-pill font-monospace text-uppercase fw-bold" style="letter-spacing:.1em; font-size:.65rem">Featured</span>
+            <div class="d-flex flex-column flex-sm-row gap-3 align-items-sm-start">
+              <div class="flex-grow-1">
+                <div class="d-flex gap-2 flex-wrap mb-2">
+                  <span class="badge rounded-pill border border-primary text-primary fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">Web Design</span>
+                  <span class="badge rounded-pill border border-success text-success fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">Remote</span>
+                </div>
+                <h2 class="font-monospace text-uppercase fw-bold mb-2" style="font-size:1.15rem; letter-spacing:.06em">Looking for a Webdesigner</h2>
+                <p class="mb-3" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:.95rem">My website is a whole mess. Need someone who can fix it! The whole site is about my rats — I love my rats — so people get the vibe.</p>
+                <div class="d-flex gap-3 flex-wrap font-monospace text-uppercase opacity-60" style="font-size:.72rem; letter-spacing:.18em">
+                  <span>Remote</span>
+                  <span>·</span>
+                  <span>€€</span>
+                  <span>·</span>
+                  <span>2d ago</span>
+                  <span>·</span>
+                  <span>Vienna</span>
+                </div>
+              </div>
+              <div class="d-flex flex-row flex-sm-column gap-2 align-items-sm-end">
+                <a href="job-random.html" class="btn btn-primary rounded-pill btn-sm fw-bold text-uppercase px-4 py-2" style="letter-spacing:.12em; white-space:nowrap">View Job</a>
+                <button type="button" class="btn btn-outline-secondary rounded-pill btn-sm fw-bold text-uppercase px-3 py-2" style="letter-spacing:.12em" aria-label="Save job">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 2 -->
+          <article class="result-card p-4">
+            <div class="d-flex flex-column flex-sm-row gap-3 align-items-sm-start">
+              <div class="flex-grow-1">
+                <div class="d-flex gap-2 flex-wrap mb-2">
+                  <span class="badge rounded-pill border border-primary text-primary fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">UX / UI</span>
+                  <span class="badge rounded-pill border border-success text-success fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">Hybrid</span>
+                </div>
+                <h2 class="font-monospace text-uppercase fw-bold mb-2" style="font-size:1.15rem; letter-spacing:.06em">UX Redesign for Mobile App</h2>
+                <p class="mb-3" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:.95rem">We need a UX designer to rethink our onboarding flow. Our current funnel drops 60% of users after step two. Figma prototypes required.</p>
+                <div class="d-flex gap-3 flex-wrap font-monospace text-uppercase opacity-60" style="font-size:.72rem; letter-spacing:.18em">
+                  <span>Hybrid</span>
+                  <span>·</span>
+                  <span>€€€</span>
+                  <span>·</span>
+                  <span>3d ago</span>
+                  <span>·</span>
+                  <span>Vienna</span>
+                </div>
+              </div>
+              <div class="d-flex flex-row flex-sm-column gap-2 align-items-sm-end">
+                <a href="job-random.html" class="btn btn-outline-primary rounded-pill btn-sm fw-bold text-uppercase px-4 py-2" style="letter-spacing:.12em; white-space:nowrap">View Job</a>
+                <button type="button" class="btn btn-outline-secondary rounded-pill btn-sm fw-bold text-uppercase px-3 py-2" style="letter-spacing:.12em" aria-label="Save job">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 3 -->
+          <article class="result-card p-4">
+            <div class="d-flex flex-column flex-sm-row gap-3 align-items-sm-start">
+              <div class="flex-grow-1">
+                <div class="d-flex gap-2 flex-wrap mb-2">
+                  <span class="badge rounded-pill border border-primary text-primary fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">Web Design</span>
+                  <span class="badge rounded-pill border border-success text-success fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">Remote</span>
+                </div>
+                <h2 class="font-monospace text-uppercase fw-bold mb-2" style="font-size:1.15rem; letter-spacing:.06em">Portfolio Website for Photographer</h2>
+                <p class="mb-3" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:.95rem">I shoot weddings and lifestyle. Need a clean, fast portfolio site. I like minimal — lots of white space, big images, simple nav.</p>
+                <div class="d-flex gap-3 flex-wrap font-monospace text-uppercase opacity-60" style="font-size:.72rem; letter-spacing:.18em">
+                  <span>Remote</span>
+                  <span>·</span>
+                  <span>€€</span>
+                  <span>·</span>
+                  <span>4d ago</span>
+                  <span>·</span>
+                  <span>Graz</span>
+                </div>
+              </div>
+              <div class="d-flex flex-row flex-sm-column gap-2 align-items-sm-end">
+                <a href="job-random.html" class="btn btn-outline-primary rounded-pill btn-sm fw-bold text-uppercase px-4 py-2" style="letter-spacing:.12em; white-space:nowrap">View Job</a>
+                <button type="button" class="btn btn-outline-secondary rounded-pill btn-sm fw-bold text-uppercase px-3 py-2" style="letter-spacing:.12em" aria-label="Save job">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 4 -->
+          <article class="result-card p-4">
+            <div class="d-flex flex-column flex-sm-row gap-3 align-items-sm-start">
+              <div class="flex-grow-1">
+                <div class="d-flex gap-2 flex-wrap mb-2">
+                  <span class="badge rounded-pill border border-primary text-primary fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">Web Design</span>
+                  <span class="badge rounded-pill border border-primary text-primary fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">Graphic Design</span>
+                  <span class="badge rounded-pill border border-success text-success fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">On-Site</span>
+                </div>
+                <h2 class="font-monospace text-uppercase fw-bold mb-2" style="font-size:1.15rem; letter-spacing:.06em">Café Rebrand + Web Presence</h2>
+                <p class="mb-3" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:.95rem">Small coffee shop in the 4th district needs a full refresh: new logo, menu design, and a simple one-pager website. Budget is flexible for the right fit.</p>
+                <div class="d-flex gap-3 flex-wrap font-monospace text-uppercase opacity-60" style="font-size:.72rem; letter-spacing:.18em">
+                  <span>On-Site</span>
+                  <span>·</span>
+                  <span>€€</span>
+                  <span>·</span>
+                  <span>5d ago</span>
+                  <span>·</span>
+                  <span>Vienna</span>
+                </div>
+              </div>
+              <div class="d-flex flex-row flex-sm-column gap-2 align-items-sm-end">
+                <a href="job-random.html" class="btn btn-outline-primary rounded-pill btn-sm fw-bold text-uppercase px-4 py-2" style="letter-spacing:.12em; white-space:nowrap">View Job</a>
+                <button type="button" class="btn btn-outline-secondary rounded-pill btn-sm fw-bold text-uppercase px-3 py-2" style="letter-spacing:.12em" aria-label="Save job">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 5 -->
+          <article class="result-card p-4">
+            <div class="d-flex flex-column flex-sm-row gap-3 align-items-sm-start">
+              <div class="flex-grow-1">
+                <div class="d-flex gap-2 flex-wrap mb-2">
+                  <span class="badge rounded-pill border border-primary text-primary fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">Web Design</span>
+                  <span class="badge rounded-pill border border-success text-success fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">Remote</span>
+                </div>
+                <h2 class="font-monospace text-uppercase fw-bold mb-2" style="font-size:1.15rem; letter-spacing:.06em">NGO Landing Page Revamp</h2>
+                <p class="mb-3" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:.95rem">We're a small environmental NGO. Our site is ancient. Need someone who cares about the cause and can build us something modern and accessible.</p>
+                <div class="d-flex gap-3 flex-wrap font-monospace text-uppercase opacity-60" style="font-size:.72rem; letter-spacing:.18em">
+                  <span>Remote</span>
+                  <span>·</span>
+                  <span>€</span>
+                  <span>·</span>
+                  <span>5d ago</span>
+                  <span>·</span>
+                  <span>Linz</span>
+                </div>
+              </div>
+              <div class="d-flex flex-row flex-sm-column gap-2 align-items-sm-end">
+                <a href="job-random.html" class="btn btn-outline-primary rounded-pill btn-sm fw-bold text-uppercase px-4 py-2" style="letter-spacing:.12em; white-space:nowrap">View Job</a>
+                <button type="button" class="btn btn-outline-secondary rounded-pill btn-sm fw-bold text-uppercase px-3 py-2" style="letter-spacing:.12em" aria-label="Save job">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 6 -->
+          <article class="result-card p-4">
+            <div class="d-flex flex-column flex-sm-row gap-3 align-items-sm-start">
+              <div class="flex-grow-1">
+                <div class="d-flex gap-2 flex-wrap mb-2">
+                  <span class="badge rounded-pill border border-primary text-primary fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">UX / UI</span>
+                  <span class="badge rounded-pill border border-success text-success fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">Remote</span>
+                </div>
+                <h2 class="font-monospace text-uppercase fw-bold mb-2" style="font-size:1.15rem; letter-spacing:.06em">Dashboard UI for SaaS Tool</h2>
+                <p class="mb-3" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:.95rem">We have an analytics dashboard that looks like it was built in 2012. Need a designer who can work in Figma and hand off clean specs to our dev team.</p>
+                <div class="d-flex gap-3 flex-wrap font-monospace text-uppercase opacity-60" style="font-size:.72rem; letter-spacing:.18em">
+                  <span>Remote</span>
+                  <span>·</span>
+                  <span>€€€</span>
+                  <span>·</span>
+                  <span>6d ago</span>
+                  <span>·</span>
+                  <span>Remote</span>
+                </div>
+              </div>
+              <div class="d-flex flex-row flex-sm-column gap-2 align-items-sm-end">
+                <a href="job-random.html" class="btn btn-outline-primary rounded-pill btn-sm fw-bold text-uppercase px-4 py-2" style="letter-spacing:.12em; white-space:nowrap">View Job</a>
+                <button type="button" class="btn btn-outline-secondary rounded-pill btn-sm fw-bold text-uppercase px-3 py-2" style="letter-spacing:.12em" aria-label="Save job">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 7 -->
+          <article class="result-card p-4">
+            <div class="d-flex flex-column flex-sm-row gap-3 align-items-sm-start">
+              <div class="flex-grow-1">
+                <div class="d-flex gap-2 flex-wrap mb-2">
+                  <span class="badge rounded-pill border border-primary text-primary fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">Web Design</span>
+                  <span class="badge rounded-pill border border-success text-success fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">Hybrid</span>
+                </div>
+                <h2 class="font-monospace text-uppercase fw-bold mb-2" style="font-size:1.15rem; letter-spacing:.06em">E-Commerce Redesign for Jewellery Brand</h2>
+                <p class="mb-3" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:.95rem">We sell handmade silver jewellery and our Shopify store looks generic. We want something editorial and luxurious. We know what we like — you just need to build it.</p>
+                <div class="d-flex gap-3 flex-wrap font-monospace text-uppercase opacity-60" style="font-size:.72rem; letter-spacing:.18em">
+                  <span>Hybrid</span>
+                  <span>·</span>
+                  <span>€€</span>
+                  <span>·</span>
+                  <span>7d ago</span>
+                  <span>·</span>
+                  <span>Salzburg</span>
+                </div>
+              </div>
+              <div class="d-flex flex-row flex-sm-column gap-2 align-items-sm-end">
+                <a href="job-random.html" class="btn btn-outline-primary rounded-pill btn-sm fw-bold text-uppercase px-4 py-2" style="letter-spacing:.12em; white-space:nowrap">View Job</a>
+                <button type="button" class="btn btn-outline-secondary rounded-pill btn-sm fw-bold text-uppercase px-3 py-2" style="letter-spacing:.12em" aria-label="Save job">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                </button>
+              </div>
+            </div>
+          </article>
+
+        </div>
+
+        <!-- PAGINATION -->
+        <nav class="mt-5" aria-label="Search results pagination">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <span class="font-monospace text-uppercase opacity-50 fw-bold" style="font-size:.72rem; letter-spacing:.2em">Page 1 of 1 · 7 results</span>
+            <ul class="pagination mb-0 gap-1">
+              <li class="page-item disabled">
+                <span class="page-link rounded-pill border-primary px-3" style="font-size:.75rem; letter-spacing:.12em">&#8592; Prev</span>
+              </li>
+              <li class="page-item active" aria-current="page">
+                <span class="page-link rounded-pill bg-primary border-primary px-3" style="font-size:.75rem; letter-spacing:.12em">1</span>
+              </li>
+              <li class="page-item disabled">
+                <span class="page-link rounded-pill border-primary px-3" style="font-size:.75rem; letter-spacing:.12em">Next &#8594;</span>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <!-- NO RESULTS STATE (hidden by default) -->
+        <div class="d-none text-center py-5 mt-3" id="no-results" aria-live="polite">
+          <div class="no-results-illustration mx-auto mb-4">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/><path d="M8 11h6M11 8v6" opacity=".4"/>
+            </svg>
+          </div>
+          <h2 class="font-monospace text-uppercase fw-bold mb-2" style="letter-spacing:.06em">No Results Found</h2>
+          <p class="opacity-60 mb-4">Try broadening your filters or searching for a different keyword.</p>
+          <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="advanced-search.html" class="btn btn-primary rounded-pill fw-bold text-uppercase px-4 py-2" style="letter-spacing:.14em">Edit Search</a>
+            <a href="jobs.html" class="btn btn-outline-primary rounded-pill fw-bold text-uppercase px-4 py-2" style="letter-spacing:.14em">Browse All Jobs</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="app.js"></script>
+<script>
+  // Remove active filter chip on × click
+  document.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', () => btn.closest('.filter-pill-active').remove());
+  });
+</script>
+</body>
+</html>

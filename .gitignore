@@ -167,3 +167,6 @@ dist
 .pnp.*
 
 /organisation/presentations/~$ProfPres1.pptx
+
+.DS_Store
+**/.DS_Store

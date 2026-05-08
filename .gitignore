@@ -1,6 +1,13 @@
 ### idea
 workspace.xml
-.idea
+.idea/
+frontend/design1/frontend-specs.md
+backend/
+organisation/
+
+### project-specific
+backend/jobs.json
+backend/target/
 ### Java template
 # Compiled class file
 *.class
@@ -159,3 +166,7 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+/organisation/presentations/~$ProfPres1.pptx
+
+.DS_Store
+**/.DS_Store

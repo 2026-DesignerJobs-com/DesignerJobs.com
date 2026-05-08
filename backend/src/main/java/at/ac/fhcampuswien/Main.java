@@ -7,5 +7,5 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class Main {
     public static void main(String[] args) {
         SpringApplication.run(Main.class, args);
-    } // starts the Spring Boot application, which will listen for HTTP requests and route them to controllers
+    } // starts the Spring Boot application, which will listen for HTTP requests and route themo to controllers
 }

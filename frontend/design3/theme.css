@@ -1,67 +1,151 @@
 /* design3/theme.css — Bootstrap CSS variable overrides only. No custom component styles. */
 
+/*
+   Design goal:
+   Softer, brighter and more friendly visual direction for DesignerJobs.
+   The existing HTML structure stays unchanged.
+   We only adjust Bootstrap variables, color tones, typography and focus states.
+*/
+
 :root {
-    --bs-primary: #a60d3e;
-    --bs-primary-rgb: 166, 13, 62;
-    --bs-success: #10B981;
-    --bs-success-rgb: 16, 185, 129;
-    --bs-link-color: #a60d3e;
-    --bs-link-color-rgb: 166, 13, 62;
-    --bs-link-hover-color: #7c0d2e;
+    /* Main brand color: softer wine / rose tone */
+    --bs-primary: #8F3F46;
+    --bs-primary-rgb: 143, 63, 70;
+
+    /* Accent color: warm terracotta for friendly highlights */
+    --bs-success: #C98F7A;
+    --bs-success-rgb: 201, 143, 122;
+
+    /* Links */
+    --bs-link-color: #8F3F46;
+    --bs-link-color-rgb: 143, 63, 70;
+    --bs-link-hover-color: #5F252C;
+
+    /* Typography */
     --bs-font-monospace: "Space Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     --bs-body-font-family: "Fraunces", Georgia, serif;
     --font-body: "Fraunces", Georgia, serif;
     --font-ui: "Space Mono", monospace;
-    --bs-body-bg: #FAFAFA;
-    --bs-body-color: #1E1B2E;
+
+    /* Light theme */
+    --bs-body-bg: #F8F4EF;
+    --bs-body-color: #222222;
+    --bs-secondary-bg: #FFFFFF;
+    --bs-tertiary-bg: #F1E7E1;
+
+    /* Soft borders and surfaces */
+    --bs-border-color: #E4D8D0;
+    --bs-border-radius: 1rem;
+    --bs-border-radius-lg: 1.5rem;
 }
 
 [data-bs-theme="dark"] {
-    --bs-primary: #a60d3e;
-    --bs-primary-rgb: 166, 13, 62;
-    --bs-body-bg: #0C0A14;
-    --bs-secondary-bg: #161225;
-    --bs-tertiary-bg: #1c1a2e;
-    --bs-body-color: #EDE9F8;
+    /* Dark mode keeps the brand identity, but less aggressive than before */
+    --bs-primary: #C98F9A;
+    --bs-primary-rgb: 201, 143, 154;
+
+    --bs-body-bg: #17131A;
+    --bs-secondary-bg: #211B24;
+    --bs-tertiary-bg: #2B232E;
+    --bs-body-color: #F4EFEA;
+
+    --bs-border-color: #3A303D;
+    --bs-link-color: #E6B6BF;
+    --bs-link-hover-color: #F4D3D8;
 }
 
-html, body{
+html, body {
     font-family: var(--font-body);
-    line-height: 1.55;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Bootstrap scoped button variables don't inherit --bs-primary-rgb by default */
+/* Bootstrap scoped button variables do not inherit --bs-primary-rgb by default */
 .btn-primary {
-    --bs-btn-color: #EDE9F8;
-    --bs-btn-bg: #a60d3e;
-    --bs-btn-border-color: #a60d3e;
-    --bs-btn-hover-color: #EDE9F8;
-    --bs-btn-hover-bg: #7c0d2e;
-    --bs-btn-hover-border-color: #7c0d2e;
-    --bs-btn-active-color: #EDE9F8;
-    --bs-btn-active-bg: #7c0d2e;
-    --bs-btn-active-border-color: #7c0d2e;
-    --bs-btn-focus-shadow-rgb: 124, 58, 237;
-    --bs-btn-disabled-bg: #7c0d2e;
-    --bs-btn-disabled-border-color: #7c0d2e;
+    --bs-btn-color: #FFFFFF;
+    --bs-btn-bg: #8F3F46;
+    --bs-btn-border-color: #8F3F46;
+
+    --bs-btn-hover-color: #FFFFFF;
+    --bs-btn-hover-bg: #5F252C;
+    --bs-btn-hover-border-color: #5F252C;
+
+    --bs-btn-active-color: #FFFFFF;
+    --bs-btn-active-bg: #5F252C;
+    --bs-btn-active-border-color: #5F252C;
+
+    --bs-btn-focus-shadow-rgb: 143, 63, 70;
+
+    --bs-btn-disabled-bg: #B98A90;
+    --bs-btn-disabled-border-color: #B98A90;
 }
 
 .btn-outline-primary {
-    --bs-btn-color: #a60d3e;
-    --bs-btn-border-color: #a60d3e;
-    --bs-btn-hover-color: #EDE9F8;
-    --bs-btn-hover-bg: #a60d3e;
-    --bs-btn-hover-border-color: #a60d3e;
-    --bs-btn-active-color: #EDE9F8;
-    --bs-btn-active-bg: #7c0d2e;
-    --bs-btn-active-border-color: #7c0d2e;
-    --bs-btn-focus-shadow-rgb: 124, 58, 237;
+    --bs-btn-color: #8F3F46;
+    --bs-btn-border-color: #8F3F46;
+
+    --bs-btn-hover-color: #FFFFFF;
+    --bs-btn-hover-bg: #8F3F46;
+    --bs-btn-hover-border-color: #8F3F46;
+
+    --bs-btn-active-color: #FFFFFF;
+    --bs-btn-active-bg: #5F252C;
+    --bs-btn-active-border-color: #5F252C;
+
+    --bs-btn-focus-shadow-rgb: 143, 63, 70;
 }
 
 .form-control:focus,
 .form-select:focus {
-    border-color: #10B981;
-    box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, .2);
+    border-color: #C98F7A;
+    box-shadow: 0 0 0 0.2rem rgba(201, 143, 122, .25);
+}
+
+/* Hero section with photo background */
+.hero-photo {
+    background-image:
+            linear-gradient(rgba(248, 244, 239, 0.45), rgba(248, 244, 239, 0.45)),
+            url("./images/hero-bg.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 1.5rem;
+    min-height: 540px;
+}
+
+/* Optional: make search field and content softer on image background */
+.hero-photo .form-control,
+.hero-photo .form-select {
+    background-color: rgba(255, 255, 255, 0.88);
+    border-color: rgba(255, 255, 255, 0.65);
+    color: #222222;
+}
+
+.hero-photo .form-control::placeholder {
+    color: #4f4a4a;
+}
+
+/* Buttons inside hero section */
+.hero-photo .btn-outline-primary {
+    --bs-btn-color: #FFFFFF;
+    --bs-btn-border-color: rgba(255, 255, 255, 0.9);
+    --bs-btn-hover-color: #8F3F46;
+    --bs-btn-hover-bg: #FFFFFF;
+    --bs-btn-hover-border-color: #FFFFFF;
+    --bs-btn-active-color: #8F3F46;
+    --bs-btn-active-bg: #F8F4EF;
+    --bs-btn-active-border-color: #F8F4EF;
+}
+
+.hero-photo .btn-primary {
+    --bs-btn-color: #8F3F46;
+    --bs-btn-bg: #FFFFFF;
+    --bs-btn-border-color: #FFFFFF;
+    --bs-btn-hover-color: #FFFFFF;
+    --bs-btn-hover-bg: #8F3F46;
+    --bs-btn-hover-border-color: #8F3F46;
+    --bs-btn-active-color: #FFFFFF;
+    --bs-btn-active-bg: #5F252C;
+    --bs-btn-active-border-color: #5F252C;
 }

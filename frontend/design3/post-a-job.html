@@ -131,9 +131,118 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    document.getElementById('post-job-form').addEventListener('submit', e => {
-      e.preventDefault();
-      console.log('post-a-job:', Object.fromEntries(new FormData(e.target)));
+    /*
+     * This script connects the "Post a Job" form with the Spring backend.
+     *
+     * File:
+     * frontend/design3/post-a-job.html
+     *
+     * Backend endpoint:
+     * POST http://localhost:8080/jobs
+     *
+     * When the user clicks "Publish Listing", the form data is collected,
+     * converted into a JSON object and sent to the backend.
+     */
+    document.getElementById('post-job-form').addEventListener('submit', async event => {
+      /*
+       * Prevents the browser from reloading the page after submitting the form.
+       * Without this line, the page would refresh and our JavaScript request
+       * would not work correctly.
+       */
+      event.preventDefault();
+
+      /*
+       * The submitted form is stored in the variable "form".
+       * This allows us to read all input values from the form.
+       */
+      const form = event.target;
+
+      /*
+       * FormData reads all form fields that have a "name" attribute.
+       * Example:
+       * <input name="title">
+       * can later be accessed with formData.get("title").
+       */
+      const formData = new FormData(form);
+
+      /*
+       * This object must match the fields in:
+       * backend/src/main/java/at/ac/fhcampuswien/Job.java
+       *
+       * id and createdAt are not included here because the backend creates them.
+       */
+      const job = {
+        clientId: "client-1",
+
+        companyName: formData.get("company"),
+        contactEmail: formData.get("email"),
+
+        title: formData.get("title"),
+        description: formData.get("description"),
+
+        category: formData.get("category"),
+
+        /*
+         * The current form has no separate designType field.
+         * Therefore we temporarily use the same value as category.
+         */
+        designType: formData.get("category"),
+
+        /*
+         * The current form uses the radio button name "location".
+         * The selected value can be remote, onsite, or hybrid.
+         */
+        location: formData.get("location"),
+        workMode: formData.get("location"),
+
+        budget: formData.get("budget"),
+        deadline: formData.get("deadline"),
+
+        /*
+         * Tags are not part of the current form yet.
+         * For now we send an empty string.
+         */
+        tags: ""
+      };
+
+      try {
+        /*
+         * Sends the job object as JSON to the Spring backend.
+         */
+        const response = await fetch("http://localhost:8080/jobs", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(job)
+        });
+
+        /*
+         * If the backend returns an error status, we stop here
+         * and jump to the catch block.
+         */
+        if (!response.ok) {
+          throw new Error("Job could not be saved.");
+        }
+
+        /*
+         * The backend returns the saved job.
+         * It should now contain an id and createdAt.
+         */
+        const savedJob = await response.json();
+
+        console.log("Saved job:", savedJob);
+        alert("Job was published successfully.");
+
+        /*
+         * Clears the form after successful saving.
+         */
+        form.reset();
+
+      } catch (error) {
+        console.error("Error while saving job:", error);
+        alert("The job could not be published. Please check if the backend is running.");
+      }
     });
   </script>
 </body>

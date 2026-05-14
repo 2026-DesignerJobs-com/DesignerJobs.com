@@ -149,8 +149,8 @@
         const data = await response.json();
 
         if (!response.ok) {
-          message.textContent = 'Register backend is reachable, but registration is not implemented yet.';
-          message.className = 'font-monospace small mb-3 text-warning';
+          message.textContent = data.error || 'Registration failed.';
+          message.className = 'font-monospace small mb-3 text-danger';
           console.log('Register response:', data);
           return;
         }

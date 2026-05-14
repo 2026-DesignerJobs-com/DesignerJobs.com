@@ -154,9 +154,15 @@
         return;
     }
 
-        console.log("Login successful:", data);
-        message.textContent = "Login successful.";
-        message.className = "font-monospace small mb-3 text-success";
+            // Stores the login response in the browser.
+// Later, the token will be a real JWT from the backend.
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("userId", data.userId);
+            localStorage.setItem("role", data.role);
+
+            console.log("Login successful:", data);
+            message.textContent = "Login successful.";
+            message.className = "font-monospace small mb-3 text-success";
 
     } catch (error) {
         console.error("Login error:", error);

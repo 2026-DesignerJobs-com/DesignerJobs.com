@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login — DESIGNJOBS.COM</title>
+
+    <script>
+        document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light');
+    </script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
+</head>
+
+<body>
+
+<main class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7">
+                <div class="card border-primary border-2 rounded-4 p-2">
+                    <div class="card-body p-4">
+
+                        <p class="text-success font-monospace text-uppercase fw-bold mb-1"
+                           style="font-size:.72rem; letter-spacing:.3em">
+                            Welcome back
+                        </p>
+
+                        <h1 class="font-monospace text-uppercase fw-bold mb-4"
+                            style="font-size:2rem; letter-spacing:.06em">
+                            Login
+                        </h1>
+
+                        <form id="login-form" action="#" method="post" novalidate>
+
+                            <!-- Email -->
+                            <div class="mb-3">
+                                <label class="form-label font-monospace text-uppercase fw-bold text-secondary"
+                                       for="login-email"
+                                       style="font-size:.72rem; letter-spacing:.22em">
+                                    Email
+                                </label>
+
+                                <input class="form-control border-primary border-2 rounded-3"
+                                       type="email"
+                                       id="login-email"
+                                       name="email"
+                                       placeholder="you@example.com"
+                                       autocomplete="email"
+                                       required>
+                            </div>
+
+                            <!-- Password -->
+                            <div class="mb-4">
+                                <label class="form-label font-monospace text-uppercase fw-bold text-secondary"
+                                       for="login-password"
+                                       style="font-size:.72rem; letter-spacing:.22em">
+                                    Password
+                                </label>
+
+                                <input class="form-control border-primary border-2 rounded-3"
+                                       type="password"
+                                       id="login-password"
+                                       name="password"
+                                       placeholder="Enter your password"
+                                       autocomplete="current-password"
+                                       required>
+                            </div>
+
+                            <!-- Message area for success or error feedback -->
+                            <p id="login-message"
+                               class="font-monospace small mb-3"
+                               aria-live="polite"></p>
+
+                            <button type="submit"
+                                    class="btn btn-primary rounded-pill w-100 fw-bold text-uppercase py-3"
+                                    style="letter-spacing:.16em">
+                                Login
+                            </button>
+                        </form>
+
+                        <!-- Register link -->
+                        <div class="d-flex align-items-center gap-3 my-4">
+                            <hr class="flex-grow-1 m-0 opacity-25 border-primary">
+                            <span class="font-monospace text-uppercase text-secondary"
+                                  style="font-size:.72rem; letter-spacing:.3em">
+                or
+              </span>
+                            <hr class="flex-grow-1 m-0 opacity-25 border-primary">
+                        </div>
+
+                        <p class="text-center font-monospace text-uppercase mb-0"
+                           style="font-size:.72rem; letter-spacing:.18em">
+                            New here?
+                            <a href="register.html" class="text-primary fw-bold">
+                                Create an account
+                            </a>
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+        /*
+        * Connects the login form with the Spring backend.
+        * The form data is sent as JSON to POST http://localhost:8080/auth/login.
+        *
+        * The backend endpoint currently exists, but JWT/session logic will be implemented separately.
+        */
+        document.getElementById("login-form").addEventListener("submit", async event => {
+        // Prevents the browser from reloading the page.
+        event.preventDefault();
+
+        // Reads all form fields from the login form.
+        const form = event.target;
+        const formData = new FormData(form);
+
+        // This object matches backend/src/main/java/at/ac/fhcampuswien/auth/AuthRequest.java.
+        const loginData = {
+        email: formData.get("email"),
+        password: formData.get("password")
+    };
+
+        const message = document.getElementById("login-message");
+
+        try {
+        // Sends the login data asynchronously to the backend.
+        const response = await fetch("http://localhost:8080/auth/login", {
+        method: "POST",
+        headers: {
+        "Content-Type": "application/json"
+    },
+        body: JSON.stringify(loginData)
+    });
+
+        const data = await response.json();
+
+        // The backend currently returns "not_implemented".
+        if (!response.ok) {
+        message.textContent = "Login backend is reachable, but login is not implemented yet.";
+        message.className = "font-monospace small mb-3 text-warning";
+        console.log("Login response:", data);
+        return;
+    }
+
+        console.log("Login successful:", data);
+        message.textContent = "Login successful.";
+        message.className = "font-monospace small mb-3 text-success";
+
+    } catch (error) {
+        console.error("Login error:", error);
+        message.textContent = "Login request failed. Please check if the backend is running.";
+        message.className = "font-monospace small mb-3 text-danger";
+    }
+    });
+
+</script>
+
+</body>
+</html>

@@ -29,15 +29,15 @@
               <div class="mb-4">
                 <p class="font-monospace text-uppercase fw-bold mb-2 text-secondary" style="font-size:.72rem; letter-spacing:.22em">I am a…</p>
                 <div class="d-flex border border-primary border-2 rounded-pill p-1 gap-1" role="group" aria-label="Account type" id="role-toggle">
-                  <input type="radio" class="btn-check" name="role-radio" id="role-designer" value="designer" checked autocomplete="off">
+                  <input type="radio" class="btn-check" name="role-radio" id="role-designer" value="DESIGNER" checked autocomplete="off">
                   <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center" for="role-designer" style="letter-spacing:.18em; font-size:.8rem">Designer</label>
-                  <input type="radio" class="btn-check" name="role-radio" id="role-client" value="client" autocomplete="off">
+                  <input type="radio" class="btn-check" name="role-radio" id="role-client" value="CLIENT" autocomplete="off">
                   <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center" for="role-client" style="letter-spacing:.18em; font-size:.8rem">Client</label>
                 </div>
               </div>
 
               <form id="register-form" action="#" method="post" novalidate>
-                <input type="hidden" name="role" id="role-input" value="designer">
+                <input type="hidden" name="role" id="role-input" value="DESIGNER">
 
                 <div class="mb-3">
                   <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="full-name" style="font-size:.72rem; letter-spacing:.22em">Full name</label>
@@ -78,7 +78,7 @@
                     <input class="form-control border-primary border-2 rounded-3" type="text" id="skills" name="skills" placeholder="Figma, Typography, Branding, Prototyping…">
                   </div>
                 </div>
-
+                <p id="register-message" class="font-monospace small mb-3" aria-live="polite"></p>
                 <button type="submit" class="btn btn-primary rounded-pill w-100 fw-bold text-uppercase py-3 mt-1" style="letter-spacing:.16em">
                   Create Account
                 </button>
@@ -106,23 +106,66 @@
   <script src="app.js"></script>
   <script>
     const designerRadio = document.getElementById('role-designer');
-    const clientRadio   = document.getElementById('role-client');
+    const clientRadio = document.getElementById('role-client');
     const designerFields = document.getElementById('designer-fields');
     const roleInput = document.getElementById('role-input');
 
     function syncRole() {
-      const role = clientRadio.checked ? 'client' : 'designer';
+      const role = clientRadio.checked ? 'CLIENT' : 'DESIGNER';
       roleInput.value = role;
-      designerFields.style.display = role === 'designer' ? '' : 'none';
+      designerFields.style.display = role === 'DESIGNER' ? '' : 'none';
     }
 
     designerRadio.addEventListener('change', syncRole);
     clientRadio.addEventListener('change', syncRole);
+    syncRole();
 
-    document.getElementById('register-form').addEventListener('submit', e => {
-      e.preventDefault();
-      console.log('register:', Object.fromEntries(new FormData(e.target)));
+    /*
+     * Connects the register form with the Spring backend.
+     * The form data is sent as JSON to POST http://localhost:8080/auth/register.
+     */
+    document.getElementById('register-form').addEventListener('submit', async event => {
+      event.preventDefault();
+
+      const form = event.target;
+      const formData = new FormData(form);
+      const message = document.getElementById('register-message');
+
+      const registerData = {
+        email: formData.get('email'),
+        password: formData.get('password'),
+        role: formData.get('role')
+      };
+
+      try {
+        const response = await fetch('http://localhost:8080/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(registerData)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          message.textContent = 'Register backend is reachable, but registration is not implemented yet.';
+          message.className = 'font-monospace small mb-3 text-warning';
+          console.log('Register response:', data);
+          return;
+        }
+
+        message.textContent = 'Account created successfully.';
+        message.className = 'font-monospace small mb-3 text-success';
+        console.log('Register successful:', data);
+
+      } catch (error) {
+        console.error('Register error:', error);
+        message.textContent = 'Register request failed. Please check if the backend is running.';
+        message.className = 'font-monospace small mb-3 text-danger';
+      }
     });
   </script>
+
 </body>
 </html>

@@ -1,249 +1,317 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Post a Job — DESIGNJOBS.COM</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Post a Job — DESIGNJOBS.COM</title>
 
-  <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light')</script>
+    <script>
+        document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light');
+    </script>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="theme.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
 </head>
+
 <body>
 
-  <main class="py-5">
+<main class="py-5">
     <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-lg-6 col-md-8">
-          <div class="card border-primary border-2 rounded-4 p-2">
-            <div class="card-body p-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="card border-primary border-2 rounded-4 p-2">
+                    <div class="card-body p-4">
 
-              <p class="text-success font-monospace text-uppercase fw-bold mb-1" style="font-size:.72rem; letter-spacing:.3em">For clients &amp; companies</p>
-              <h1 class="font-monospace text-uppercase fw-bold mb-4" style="font-size:2rem; letter-spacing:.06em">Post a Job</h1>
+                        <p class="text-success font-monospace text-uppercase fw-bold mb-1"
+                           style="font-size:.72rem; letter-spacing:.3em">
+                            For clients &amp; companies
+                        </p>
 
-              <form id="post-job-form" action="#" method="post" novalidate>
+                        <h1 class="font-monospace text-uppercase fw-bold mb-4"
+                            style="font-size:2rem; letter-spacing:.06em">
+                            Post a Job
+                        </h1>
 
-                <!-- Company / client name -->
-                <div class="mb-3">
-                  <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="company-name" style="font-size:.72rem; letter-spacing:.22em">Company / client name</label>
-                  <input class="form-control border-primary border-2 rounded-3" type="text" id="company-name" name="company" placeholder="Studio Noir, Acme Inc., Your Name…" autocomplete="organization" required>
+                        <form id="post-job-form" action="#" method="post" novalidate>
+
+                            <!-- Job title -->
+                            <div class="mb-3">
+                                <label class="form-label font-monospace text-uppercase fw-bold text-secondary"
+                                       for="job-title"
+                                       style="font-size:.72rem; letter-spacing:.22em">
+                                    Job title
+                                </label>
+
+                                <input class="form-control border-primary border-2 rounded-3"
+                                       type="text"
+                                       id="job-title"
+                                       name="title"
+                                       placeholder="e.g. Brand Identity Designer"
+                                       required>
+                            </div>
+
+                            <!-- Design category -->
+                            <div class="mb-4">
+                                <label class="form-label font-monospace text-uppercase fw-bold text-secondary"
+                                       for="category"
+                                       style="font-size:.72rem; letter-spacing:.22em">
+                                    Design category
+                                </label>
+
+                                <select class="form-select border-primary border-2 rounded-3"
+                                        id="category"
+                                        name="category"
+                                        required>
+                                    <option value="">Select…</option>
+                                    <option>UI/UX Design</option>
+                                    <option>Web Design</option>
+                                    <option>Graphic Design</option>
+                                    <option>Motion Design</option>
+                                    <option>Brand Identity</option>
+                                    <option>Illustration</option>
+                                    <option>Interior Design</option>
+                                    <option>Logo Design</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+
+                            <!-- Location type -->
+                            <div class="mb-4">
+                                <p class="form-label font-monospace text-uppercase fw-bold text-secondary mb-2"
+                                   style="font-size:.72rem; letter-spacing:.22em">
+                                    Location
+                                </p>
+
+                                <div class="d-flex border border-primary border-2 rounded-pill p-1 gap-1"
+                                     role="group"
+                                     aria-label="Location type">
+
+                                    <input type="radio"
+                                           class="btn-check"
+                                           name="location"
+                                           id="loc-remote"
+                                           value="remote"
+                                           checked
+                                           autocomplete="off">
+
+                                    <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center"
+                                           for="loc-remote"
+                                           style="letter-spacing:.18em; font-size:.8rem">
+                                        Remote
+                                    </label>
+
+                                    <input type="radio"
+                                           class="btn-check"
+                                           name="location"
+                                           id="loc-onsite"
+                                           value="on site"
+                                           autocomplete="off">
+
+                                    <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center"
+                                           for="loc-onsite"
+                                           style="letter-spacing:.18em; font-size:.8rem">
+                                        On-site
+                                    </label>
+
+                                    <input type="radio"
+                                           class="btn-check"
+                                           name="location"
+                                           id="loc-hybrid"
+                                           value="hybrid"
+                                           autocomplete="off">
+
+                                    <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center"
+                                           for="loc-hybrid"
+                                           style="letter-spacing:.18em; font-size:.8rem">
+                                        Hybrid
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Budget tier -->
+                            <div class="mb-4">
+                                <p class="form-label font-monospace text-uppercase fw-bold text-secondary mb-2"
+                                   style="font-size:.72rem; letter-spacing:.22em">
+                                    Budget range
+                                </p>
+
+                                <div class="d-flex border border-primary border-2 rounded-pill p-1 gap-1"
+                                     role="group"
+                                     aria-label="Budget tier">
+
+                                    <input type="radio"
+                                           class="btn-check"
+                                           name="budget"
+                                           id="budget-low"
+                                           value="small"
+                                           checked
+                                           autocomplete="off">
+
+                                    <label class="btn btn-outline-primary rounded-pill fw-bold flex-grow-1 text-center"
+                                           for="budget-low"
+                                           style="font-size:1rem; letter-spacing:.06em">
+                                        €
+                                    </label>
+
+                                    <input type="radio"
+                                           class="btn-check"
+                                           name="budget"
+                                           id="budget-mid"
+                                           value="medium"
+                                           autocomplete="off">
+
+                                    <label class="btn btn-outline-primary rounded-pill fw-bold flex-grow-1 text-center"
+                                           for="budget-mid"
+                                           style="font-size:1rem; letter-spacing:.06em">
+                                        €€
+                                    </label>
+
+                                    <input type="radio"
+                                           class="btn-check"
+                                           name="budget"
+                                           id="budget-high"
+                                           value="big"
+                                           autocomplete="off">
+
+                                    <label class="btn btn-outline-primary rounded-pill fw-bold flex-grow-1 text-center"
+                                           for="budget-high"
+                                           style="font-size:1rem; letter-spacing:.06em">
+                                        €€€
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Project description -->
+                            <div class="mb-3">
+                                <label class="form-label font-monospace text-uppercase fw-bold text-secondary"
+                                       for="description"
+                                       style="font-size:.72rem; letter-spacing:.22em">
+                                    Project description
+                                </label>
+
+                                <textarea class="form-control border-primary border-2 rounded-3"
+                                          id="description"
+                                          name="description"
+                                          rows="5"
+                                          placeholder="Describe the project, deliverables, vibe…"
+                                          required></textarea>
+                            </div>
+
+                            <!-- Deadline optional -->
+                            <div class="mb-4">
+                                <label class="form-label font-monospace text-uppercase fw-bold text-secondary"
+                                       for="deadline"
+                                       style="font-size:.72rem; letter-spacing:.22em">
+                                    Deadline
+                                    <span class="fw-normal text-lowercase" style="letter-spacing:0">
+                    (optional)
+                  </span>
+                                </label>
+
+                                <input class="form-control border-primary border-2 rounded-3"
+                                       type="date"
+                                       id="deadline"
+                                       name="deadline">
+                            </div>
+
+                            <button type="submit"
+                                    class="btn btn-primary rounded-pill w-100 fw-bold text-uppercase py-3 mt-1"
+                                    style="letter-spacing:.16em">
+                                Publish Listing
+                            </button>
+                        </form>
+
+                        <!-- OR divider -->
+                        <div class="d-flex align-items-center gap-3 my-4">
+                            <hr class="flex-grow-1 m-0 opacity-25 border-primary">
+                            <span class="font-monospace text-uppercase text-secondary"
+                                  style="font-size:.72rem; letter-spacing:.3em">
+                or
+              </span>
+                            <hr class="flex-grow-1 m-0 opacity-25 border-primary">
+                        </div>
+
+                        <p class="text-center font-monospace text-uppercase mb-0"
+                           style="font-size:.72rem; letter-spacing:.18em">
+                            Looking for work?
+                            <a href="#" class="text-primary fw-bold" data-page="register.html">
+                                Join as a designer
+                            </a>
+                        </p>
+
+                    </div>
                 </div>
-
-                <!-- Contact email -->
-                <div class="mb-3">
-                  <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="contact-email" style="font-size:.72rem; letter-spacing:.22em">Contact email</label>
-                  <input class="form-control border-primary border-2 rounded-3" type="email" id="contact-email" name="email" placeholder="you@example.com" autocomplete="email" required>
-                </div>
-
-                <!-- Job title -->
-                <div class="mb-3">
-                  <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="job-title" style="font-size:.72rem; letter-spacing:.22em">Job title</label>
-                  <input class="form-control border-primary border-2 rounded-3" type="text" id="job-title" name="title" placeholder="e.g. Brand Identity Designer" required>
-                </div>
-
-                <!-- Design category -->
-                <div class="mb-4">
-                  <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="category" style="font-size:.72rem; letter-spacing:.22em">Design category</label>
-                  <select class="form-select border-primary border-2 rounded-3" id="category" name="category" required>
-                    <option value="">Select…</option>
-                    <option>UI/UX Design</option>
-                    <option>Web Design</option>
-                    <option>Graphic Design</option>
-                    <option>Motion Design</option>
-                    <option>Brand Identity</option>
-                    <option>Illustration</option>
-                    <option>Interior Design</option>
-                    <option>Logo Design</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-
-                <!-- Location type -->
-                <div class="mb-4">
-                  <p class="form-label font-monospace text-uppercase fw-bold text-secondary mb-2" style="font-size:.72rem; letter-spacing:.22em">Location</p>
-                  <div class="d-flex border border-primary border-2 rounded-pill p-1 gap-1" role="group" aria-label="Location type">
-                    <input type="radio" class="btn-check" name="location" id="loc-remote" value="remote" checked autocomplete="off">
-                    <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center" for="loc-remote" style="letter-spacing:.18em; font-size:.8rem">Remote</label>
-
-                    <input type="radio" class="btn-check" name="location" id="loc-onsite" value="onsite" autocomplete="off">
-                    <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center" for="loc-onsite" style="letter-spacing:.18em; font-size:.8rem">On-site</label>
-
-                    <input type="radio" class="btn-check" name="location" id="loc-hybrid" value="hybrid" autocomplete="off">
-                    <label class="btn btn-outline-primary rounded-pill fw-bold text-uppercase flex-grow-1 text-center" for="loc-hybrid" style="letter-spacing:.18em; font-size:.8rem">Hybrid</label>
-                  </div>
-                </div>
-
-                <!-- Budget tier -->
-                <div class="mb-4">
-                  <p class="form-label font-monospace text-uppercase fw-bold text-secondary mb-2" style="font-size:.72rem; letter-spacing:.22em">Budget range</p>
-                  <div class="d-flex border border-primary border-2 rounded-pill p-1 gap-1" role="group" aria-label="Budget tier">
-                    <input type="radio" class="btn-check" name="budget" id="budget-low" value="€" checked autocomplete="off">
-                    <label class="btn btn-outline-primary rounded-pill fw-bold flex-grow-1 text-center" for="budget-low" style="font-size:1rem; letter-spacing:.06em">€</label>
-
-                    <input type="radio" class="btn-check" name="budget" id="budget-mid" value="€€" autocomplete="off">
-                    <label class="btn btn-outline-primary rounded-pill fw-bold flex-grow-1 text-center" for="budget-mid" style="font-size:1rem; letter-spacing:.06em">€€</label>
-
-                    <input type="radio" class="btn-check" name="budget" id="budget-high" value="€€€" autocomplete="off">
-                    <label class="btn btn-outline-primary rounded-pill fw-bold flex-grow-1 text-center" for="budget-high" style="font-size:1rem; letter-spacing:.06em">€€€</label>
-                  </div>
-                </div>
-
-                <!-- Project description -->
-                <div class="mb-3">
-                  <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="description" style="font-size:.72rem; letter-spacing:.22em">Project description</label>
-                  <textarea class="form-control border-primary border-2 rounded-3" id="description" name="description" rows="5" placeholder="Describe the project, deliverables, vibe…" required></textarea>
-                </div>
-
-                <!-- Deadline (optional) -->
-                <div class="mb-4">
-                  <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="deadline" style="font-size:.72rem; letter-spacing:.22em">
-                    Deadline <span class="fw-normal text-lowercase" style="letter-spacing:0">(optional)</span>
-                  </label>
-                  <input class="form-control border-primary border-2 rounded-3" type="date" id="deadline" name="deadline">
-                </div>
-
-                <button type="submit" class="btn btn-primary rounded-pill w-100 fw-bold text-uppercase py-3 mt-1" style="letter-spacing:.16em">
-                  Publish Listing
-                </button>
-              </form>
-
-              <!-- OR divider -->
-              <div class="d-flex align-items-center gap-3 my-4">
-                <hr class="flex-grow-1 m-0 opacity-25 border-primary">
-                <span class="font-monospace text-uppercase text-secondary" style="font-size:.72rem; letter-spacing:.3em">or</span>
-                <hr class="flex-grow-1 m-0 opacity-25 border-primary">
-              </div>
-
-              <p class="text-center font-monospace text-uppercase mb-0" style="font-size:.72rem; letter-spacing:.18em">
-                Looking for work? <a href="#" class="text-primary fw-bold" data-page="register.html">Join as a designer</a>
-              </p>
-
             </div>
-          </div>
         </div>
-      </div>
     </div>
-  </main>
+</main>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
     /*
-     * This script connects the "Post a Job" form with the Spring backend.
-     *
-     * File:
-     * frontend/design3/post-a-job.html
-     *
-     * Backend endpoint:
-     * POST http://localhost:8080/jobs
-     *
-     * When the user clicks "Publish Listing", the form data is collected,
-     * converted into a JSON object and sent to the backend.
+     * Connects the Post a Job form with the Spring backend.
+     * The form data is sent as JSON to POST http://localhost:8080/jobs.
      */
-    document.getElementById('post-job-form').addEventListener('submit', async event => {
-      /*
-       * Prevents the browser from reloading the page after submitting the form.
-       * Without this line, the page would refresh and our JavaScript request
-       * would not work correctly.
-       */
-      event.preventDefault();
+    document.getElementById("post-job-form").addEventListener("submit", async event => {
+        // Prevents the normal form submit and page reload.
+        event.preventDefault();
 
-      /*
-       * The submitted form is stored in the variable "form".
-       * This allows us to read all input values from the form.
-       */
-      const form = event.target;
+        // Reads all form fields that have a name attribute.
+        const form = event.target;
+        const formData = new FormData(form);
 
-      /*
-       * FormData reads all form fields that have a "name" attribute.
-       * Example:
-       * <input name="title">
-       * can later be accessed with formData.get("title").
-       */
-      const formData = new FormData(form);
+        // This object matches the fields in backend/src/main/java/at/ac/fhcampuswien/Job.java.
+        const job = {
+            clientId: "client-1",
 
-      /*
-       * This object must match the fields in:
-       * backend/src/main/java/at/ac/fhcampuswien/Job.java
-       *
-       * id and createdAt are not included here because the backend creates them.
-       */
-      const job = {
-        clientId: "client-1",
+            title: formData.get("title"),
+            description: formData.get("description"),
 
-        companyName: formData.get("company"),
-        contactEmail: formData.get("email"),
+            category: formData.get("category"),
+            designType: formData.get("category"),
 
-        title: formData.get("title"),
-        description: formData.get("description"),
+            location: formData.get("location"),
+            workMode: formData.get("location"),
 
-        category: formData.get("category"),
+            budget: formData.get("budget"),
+            deadline: formData.get("deadline"),
+            tags: ""
+        };
 
-        /*
-         * The current form has no separate designType field.
-         * Therefore we temporarily use the same value as category.
-         */
-        designType: formData.get("category"),
+        try {
+            // Sends the job data asynchronously to the backend.
+            const response = await fetch("http://localhost:8080/jobs", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(job)
+            });
 
-        /*
-         * The current form uses the radio button name "location".
-         * The selected value can be remote, onsite, or hybrid.
-         */
-        location: formData.get("location"),
-        workMode: formData.get("location"),
+            // If the backend returns an error, stop and show the error message.
+            if (!response.ok) {
+                throw new Error("Job could not be saved.");
+            }
 
-        budget: formData.get("budget"),
-        deadline: formData.get("deadline"),
+            // Reads the saved job returned by the backend.
+            const savedJob = await response.json();
 
-        /*
-         * Tags are not part of the current form yet.
-         * For now we send an empty string.
-         */
-        tags: ""
-      };
+            console.log("Saved job:", savedJob);
+            alert("Job was published successfully.");
 
-      try {
-        /*
-         * Sends the job object as JSON to the Spring backend.
-         */
-        const response = await fetch("http://localhost:8080/jobs", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(job)
-        });
+            // Clears the form after successful saving.
+            form.reset();
 
-        /*
-         * If the backend returns an error status, we stop here
-         * and jump to the catch block.
-         */
-        if (!response.ok) {
-          throw new Error("Job could not be saved.");
+        } catch (error) {
+            console.error("Error while saving job:", error);
+            alert("The job could not be published. Please check if the backend is running.");
         }
-
-        /*
-         * The backend returns the saved job.
-         * It should now contain an id and createdAt.
-         */
-        const savedJob = await response.json();
-
-        console.log("Saved job:", savedJob);
-        alert("Job was published successfully.");
-
-        /*
-         * Clears the form after successful saving.
-         */
-        form.reset();
-
-      } catch (error) {
-        console.error("Error while saving job:", error);
-        alert("The job could not be published. Please check if the backend is running.");
-      }
     });
-  </script>
+</script>
+
 </body>
 </html>

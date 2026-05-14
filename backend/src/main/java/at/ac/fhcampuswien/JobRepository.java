@@ -1,10 +1,13 @@
 package at.ac.fhcampuswien;
 
 import at.ac.fhcampuswien.Database.Database;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
+@Repository
 
 public class JobRepository {
 

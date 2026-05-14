@@ -7,28 +7,29 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
+@CrossOrigin(origins = {"http://localhost:63342", "http://localhost:63343"})
 @RequestMapping("/jobs")
 public class JobController {
 
-    private final JobStorage storage;
+    private final JobRepository jobRepository; // Uses the database repository instead of the old JSON storage
 
-    public JobController(JobStorage storage) {
-        this.storage = storage;
+    public JobController(JobRepository jobRepository) {
+        this.jobRepository = jobRepository;
     }
 
-    // store a new job
+    // Stores a new job in the database
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Job store(@RequestBody Job job) {
-        job.id = UUID.randomUUID().toString();
-        job.createdAt = Instant.now().toString();
-        return storage.add(job);
+        job.id = UUID.randomUUID().toString();      // Backend generates a unique ID
+        job.createdAt = Instant.now().toString();   // Backend generates the creation timestamp
+
+        return jobRepository.add(job);              // Saves the job in the database
     }
 
-    // search/list jobs — all params optional
+    // Searches or lists jobs from the database; all query parameters are optional
     @GetMapping
     public List<Job> search(
             @RequestParam(required = false) String q,
@@ -39,41 +40,51 @@ public class JobController {
             @RequestParam(required = false) String workMode,
             @RequestParam(required = false) String tags) {
 
-        return storage.load().stream()
-                .filter(j -> q == null || like(j.title, q) || like(j.description, q))
-                .filter(j -> category == null || eq(j.category, category))
-                .filter(j -> designType == null || eq(j.designType, designType))
-                .filter(j -> location == null || like(j.location, location))
-                .filter(j -> budget == null || eq(j.budget, budget))
-                .filter(j -> workMode == null || eq(j.workMode, workMode))
-                .filter(j -> tags == null || like(j.tags, tags))
-                .collect(Collectors.toList());
+        return jobRepository.search(q, category, designType, location, budget, workMode, tags);
     }
 
+    // Returns one job by its ID
     @GetMapping("/{id}")
     public ResponseEntity<Job> getById(@PathVariable String id) {
-        return storage.load().stream()
-                .filter(j -> id.equals(j.id))
-                .findFirst()
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Job job = jobRepository.findById(id);
+
+        if (job == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(job);
     }
 
+    // Updates an existing job in the database
     @PutMapping("/{id}")
     public ResponseEntity<Job> update(@PathVariable String id, @RequestBody Job updated) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        Job existingJob = jobRepository.findById(id);
+
+        if (existingJob == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        updated.id = id;
+        updated.createdAt = existingJob.createdAt;
+
+        Job savedJob = jobRepository.update(id, updated);
+
+        if (savedJob == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return ResponseEntity.ok(savedJob);
     }
 
+    // Deletes an existing job from the database
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-    }
+        boolean deleted = jobRepository.deleteById(id);
 
-    private boolean like(String field, String value) {
-        return field != null && field.toLowerCase().contains(value.toLowerCase());
-    }
+        if (!deleted) {
+            return ResponseEntity.notFound().build();
+        }
 
-    private boolean eq(String field, String value) {
-        return value != null && value.equalsIgnoreCase(field);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -60,7 +60,13 @@ public class DummyGenerator implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (!storage.load().isEmpty()) return; // if not empty, assume jobs.json already seeded
+        // Load existing jobs from storage. The result can be null if loading fails.
+        List<Job> existingJobs = storage.load();
+
+        // If jobs already exist, we do not generate dummy data again.
+        if (existingJobs != null && !existingJobs.isEmpty()) {
+            return;
+        }
 
         List<Job> jobs = new ArrayList<>();
         for (int i = 0; i < 15; i++) {

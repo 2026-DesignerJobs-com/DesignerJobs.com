@@ -10,10 +10,6 @@ public class Job {
 
     public String clientId;     // ID of the client who posted the job, later connected to login/session
 
-    public String companyName;  // Company or client name from the post-a-job form
-
-    public String contactEmail; // Contact email from the post-a-job form
-
     public String title;        // Job title, for example "Brand Identity Designer"
 
     public String description;  // Detailed project description entered by the client

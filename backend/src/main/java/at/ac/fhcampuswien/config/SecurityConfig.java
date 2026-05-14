@@ -13,6 +13,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .headers(headers -> headers
+                        // ADD THIS LINE: It allows the iframe shell to load your inner pages
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin())
+                )
             .authorizeHttpRequests(auth -> auth
                 // Phase 1: all routes public (stubs return 501); tighten in Phase 2
                 .anyRequest().permitAll()

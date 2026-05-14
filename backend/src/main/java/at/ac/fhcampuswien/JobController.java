@@ -10,12 +10,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:63342")
 @RequestMapping("/jobs")
 public class JobController {
 
     private final JobStorage storage;
-
 
     public JobController(JobStorage storage) {
         this.storage = storage;

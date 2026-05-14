@@ -7,17 +7,12 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/jobs")
 public class JobController {
 
-    private final JobStorage storage;
-
-    public JobController(JobStorage storage) {
-        this.storage = storage;
-    }
+    private final JobRepository jobRepository = new JobRepository();
 
     // store a new job
     @PostMapping
@@ -25,7 +20,8 @@ public class JobController {
     public Job store(@RequestBody Job job) {
         job.id = UUID.randomUUID().toString();
         job.createdAt = Instant.now().toString();
-        return storage.add(job);
+
+        return jobRepository.add(job);
     }
 
     // search/list jobs — all params optional
@@ -39,41 +35,74 @@ public class JobController {
             @RequestParam(required = false) String workMode,
             @RequestParam(required = false) String tags) {
 
-        return storage.load().stream()
-                .filter(j -> q == null || like(j.title, q) || like(j.description, q))
-                .filter(j -> category == null || eq(j.category, category))
-                .filter(j -> designType == null || eq(j.designType, designType))
-                .filter(j -> location == null || like(j.location, location))
-                .filter(j -> budget == null || eq(j.budget, budget))
-                .filter(j -> workMode == null || eq(j.workMode, workMode))
-                .filter(j -> tags == null || like(j.tags, tags))
-                .collect(Collectors.toList());
+        return jobRepository.search(
+                q,
+                category,
+                designType,
+                location,
+                budget,
+                workMode,
+                tags
+        );
     }
 
+    // get one random job
+    @GetMapping("/random")
+    public ResponseEntity<Job> getRandomJob() {
+        Job randomJob = jobRepository.getRandomJob();
+
+        if (randomJob == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(randomJob);
+    }
+
+    // get one job by id
     @GetMapping("/{id}")
     public ResponseEntity<Job> getById(@PathVariable String id) {
-        return storage.load().stream()
-                .filter(j -> id.equals(j.id))
-                .findFirst()
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Job job = jobRepository.findById(id);
+
+        if (job == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(job);
     }
 
+    // update one job
     @PutMapping("/{id}")
     public ResponseEntity<Job> update(@PathVariable String id, @RequestBody Job updated) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        Job existingJob = jobRepository.findById(id);
+
+        if (existingJob == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        updated.id = id;
+
+        if (updated.createdAt == null) {
+            updated.createdAt = existingJob.createdAt;
+        }
+
+        Job savedJob = jobRepository.update(id, updated);
+
+        if (savedJob == null) {
+            return ResponseEntity.internalServerError().build();
+        }
+
+        return ResponseEntity.ok(savedJob);
     }
 
+    // delete one job
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-    }
+        boolean deleted = jobRepository.deleteById(id);
 
-    private boolean like(String field, String value) {
-        return field != null && field.toLowerCase().contains(value.toLowerCase());
-    }
+        if (!deleted) {
+            return ResponseEntity.notFound().build();
+        }
 
-    private boolean eq(String field, String value) {
-        return value != null && value.equalsIgnoreCase(field);
+        return ResponseEntity.noContent().build();
     }
 }

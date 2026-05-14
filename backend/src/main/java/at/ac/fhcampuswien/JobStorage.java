@@ -17,13 +17,16 @@ public class JobStorage {
     private final ObjectMapper mapper = new ObjectMapper();
 
     public List<Job> load() {
-        File f = new File(FILE);
+        /*File f = new File(FILE);
         if (!f.exists()) return new ArrayList<>();
         try {
             return mapper.readValue(f, new TypeReference<List<Job>>() {});
         } catch (IOException e) {
             return new ArrayList<>();
         }
+
+        */
+        return null;
     }
 
     public void save(List<Job> jobs) {

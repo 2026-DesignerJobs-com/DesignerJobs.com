@@ -1,9 +1,7 @@
 ### idea
 workspace.xml
 .idea/
-frontend/design1/frontend-specs.md
-backend/
-organisation/
+.vs
 
 ### project-specific
 backend/jobs.json

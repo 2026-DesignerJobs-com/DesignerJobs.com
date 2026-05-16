@@ -23,7 +23,7 @@ Both designs use an **iframe shell**: `index.html` is the persistent shell (navb
 
 ## Backend
 
-spring boot REST api for storing and searching job listings. data persists in `jobs.json`. seeds 60 randomised job listings on first run.
+Spring Boot 3.2 REST API on Java 17. Job listings and user accounts persist to an embedded H2 file database at `backend/data/projectdb.mv.db`. Auth is JWT-based (stateless) — see `backend/src/main/java/at/ac/fhcampuswien/session/README.md`.
 
 ## run
 
@@ -32,9 +32,21 @@ cd backend
 mvn spring-boot:run
 ```
 
-requires java 17 and maven. server starts on `http://localhost:8080`.
+Server starts on `http://localhost:8080`. To reset state: delete `backend/data/projectdb.mv.db` and restart.
 
-to reseed: delete `backend/jobs.json` and restart.
+## CORS
+
+The backend serves the API and the static frontend from one Spring process, but the team frequently runs the frontend from a different origin during development (IntelliJ's built-in HTTP server on `63342`/`63343`, VS Code Live Server on `5500`, etc.). To make those flows work, CORS is configured centrally in `backend/src/main/java/at/ac/fhcampuswien/config/SecurityConfig.java` via a `CorsConfigurationSource` bean.
+
+The allowed origins are **not hardcoded** — they are read from `application.properties`:
+
+```properties
+app.cors.allowed-origins=${APP_CORS_ALLOWED_ORIGINS:http://localhost:8080,http://localhost:63342,http://localhost:63343,http://127.0.0.1:8080,http://127.0.0.1:5500}
+```
+
+Override per environment by setting the `APP_CORS_ALLOWED_ORIGINS` environment variable to a comma-separated list. Allowed methods (`GET, POST, PUT, DELETE, PATCH, OPTIONS`), allowed headers (`Authorization, Content-Type, Accept, Origin`), exposed headers (`Authorization`), credentials support, and the 1 h preflight cache live in `SecurityConfig` because they don't vary per environment.
+
+Per-controller `@CrossOrigin` annotations have been removed in favour of this single source — don't reintroduce them. Full details in `backend/src/main/java/at/ac/fhcampuswien/config/README.md`.
 
 ## endpoints
 

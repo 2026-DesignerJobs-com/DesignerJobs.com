@@ -12,6 +12,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="theme.css">
+
+  <!-- US-04: enforce session before any page content renders. -->
+  <script src="auth.js"></script>
+  <script>if (window.Auth && !Auth.requireAuth()) { /* navigation in flight */ }</script>
 </head>
 <body>
 

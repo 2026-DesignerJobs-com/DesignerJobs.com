@@ -1,38 +1,121 @@
 package at.ac.fhcampuswien.auth;
 
+import at.ac.fhcampuswien.session.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
-@CrossOrigin(origins = {"http://localhost:63342", "http://localhost:63343"})
 @RequestMapping("/auth")
 public class AuthController {
 
-    // Phase 1 — whole team
-    // POST /auth/register  → create user (CLIENT or DESIGNER)
-    // POST /auth/login     → return JWT token
-    // POST /auth/logout    → invalidate session
-    // GET  /auth/me        → return current user from token
+    private final UserRepository userRepository;
+    private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
+
+    public AuthController(UserRepository userRepository,
+                          JwtService jwtService,
+                          PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody AuthRequest req) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(Map.of("status", "not_implemented"));
+        if (req.email == null || req.email.isBlank()
+                || req.password == null || req.password.isBlank()
+                || req.role == null || req.role.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "email, password and role are required"
+            ));
+        }
+
+        if (userRepository.existsByEmail(req.email)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                    "error", "email already exists"
+            ));
+        }
+
+        UserModel user = new UserModel();
+        user.id = UUID.randomUUID().toString();
+        user.email = req.email;
+        user.passwordHash = passwordEncoder.encode(req.password);
+        user.role = req.role;
+        user.createdAt = Instant.now().toString();
+
+        UserModel saved = userRepository.save(user);
+
+        AuthResponse response = new AuthResponse();
+        response.token = jwtService.issue(saved.id, saved.role);
+        response.userId = saved.id;
+        response.role = saved.role;
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest req) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(Map.of("status", "not_implemented"));
+        if (req.email == null || req.email.isBlank()
+                || req.password == null || req.password.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "email and password are required"
+            ));
+        }
+
+        UserModel user = userRepository.findByEmail(req.email);
+
+        if (user == null || !passwordEncoder.matches(req.password, user.passwordHash)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "error", "invalid email or password"
+            ));
+        }
+
+        AuthResponse response = new AuthResponse();
+        response.token = jwtService.issue(user.id, user.role);
+        response.userId = user.id;
+        response.role = user.role;
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(Map.of("status", "not_implemented"));
+        // Stateless JWT: the client discards the token. Server has nothing to invalidate
+        // unless a blacklist is introduced — out of scope for the current iteration.
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> me() {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(Map.of("status", "not_implemented"));
+    public ResponseEntity<?> me(Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "error", "not authenticated"
+            ));
+        }
+
+        // With oauth2-resource-server + JwtAuthenticationConverter#setPrincipalClaimName("sub"),
+        // Authentication#getName() returns the JWT subject (= our userId).
+        String userId = auth.getName();
+        UserModel user = userRepository.findById(userId);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "error", "user no longer exists"
+            ));
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "userId", user.id,
+                "email", user.email,
+                "role", user.role,
+                "createdAt", user.createdAt
+        ));
     }
 }

@@ -164,7 +164,7 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-/organisation/presentations/~$ProfPres1.pptx
-
+# added
 .DS_Store
 **/.DS_Store
+backend/data/projectdb.trace.db

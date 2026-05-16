@@ -16,7 +16,7 @@ spring boot is a framework built on top of spring (a large java ecosystem for bu
 
 ```
 HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
-server.createContext("/api/jobs/", new JobController(jobs));
+server.createContext("/mapi/jobs/", new JobController(jobs));
 server.setExecutor(null);
 server.start();
 ```
@@ -107,6 +107,67 @@ spring boot includes jackson by default. it converts java objects to json and ba
 - returning a `Job` or `List<Job>` — jackson serialises it to json in the response
 
 `JobStorage` also uses jackson's `ObjectMapper` directly to read/write `jobs.json` on disk.
+
+---
+
+## CORS configuration
+
+CORS (cross-origin resource sharing) is the browser-enforced rule that blocks JavaScript on one origin from reading responses from a different origin unless the server opts in. In Spring Boot you opt in either per-controller (`@CrossOrigin`) or centrally (a `CorsConfigurationSource` bean wired into the security filter chain). This project uses **the central approach** — there is exactly one place to look for the policy:
+
+- **Bean:** `config/SecurityConfig#corsConfigurationSource`
+- **Origins:** read from `application.properties` via `app.cors.allowed-origins` (comma-separated string)
+- **Activation:** `http.cors(cors -> {})` in `SecurityConfig#filterChain` — Spring picks the bean up by type and registers a `CorsFilter` before the auth filters
+
+### `application.properties`
+
+```properties
+app.cors.allowed-origins=${APP_CORS_ALLOWED_ORIGINS:http://localhost:8080,http://localhost:63342,http://localhost:63343,http://127.0.0.1:8080,http://127.0.0.1:5500}
+```
+
+The `${VAR:default}` syntax means: if the `APP_CORS_ALLOWED_ORIGINS` environment variable is set, use it; otherwise use the developer-friendly default. Override the variable in deployment — never hardcode production origins into the file.
+
+| origin | when it matters |
+|---|---|
+| `http://localhost:8080` | Spring Boot itself — the API and the static frontend served by `WebConfig` are on this origin |
+| `http://localhost:63342` / `:63343` | IntelliJ's built-in HTTP server (used when someone opens a frontend file via "Open in Browser") |
+| `http://127.0.0.1:5500` | VS Code Live Server default |
+| the `127.0.0.1` variants | browsers treat `localhost` and `127.0.0.1` as different origins, so both must be listed |
+
+### what else is configured
+
+In code (in `SecurityConfig.corsConfigurationSource()`) because these don't vary per environment:
+
+| field | value | why |
+|---|---|---|
+| `allowedMethods` | `GET, POST, PUT, DELETE, PATCH, OPTIONS` | covers everything the REST API exposes; `OPTIONS` is required for preflight |
+| `allowedHeaders` | `Authorization, Content-Type, Accept, Origin` | minimal set the frontend actually sends |
+| `exposedHeaders` | `Authorization` | so the frontend can read tokens echoed back, if we ever return them in a header |
+| `allowCredentials` | `true` | the frontend may send credentials with future requests |
+| `maxAge` | `3600` seconds | caches the preflight result for 1 hour, cuts preflight traffic |
+
+### why central instead of `@CrossOrigin` annotations
+
+Before this audit, two controllers had `@CrossOrigin(origins = {"http://localhost:63342", "http://localhost:63343"})` annotations:
+- `JobController` — added by Lika in `8293fcb`
+- `AuthController` — also Lika
+
+The other controllers (`ApplicationController`, `ChatController`, `ContractController`, `UserController`, `ModerationController`) had **no CORS at all**. Frontend calls to those endpoints would have been silently blocked by the browser the moment the path moved off `8080`.
+
+Centralising CORS into the filter chain fixes that gap and removes the duplication. The annotations are gone. To change the policy, edit `application.properties` (origins) or the `corsConfigurationSource()` bean (methods/headers/credentials).
+
+### verifying it works
+
+```sh
+# preflight from an allowed origin — should return 200 with Access-Control-Allow-Origin echoed back
+curl -i -X OPTIONS http://localhost:8080/auth/login \
+  -H "Origin: http://localhost:63342" \
+  -H "Access-Control-Request-Method: POST"
+
+# preflight from a disallowed origin — should return 403
+curl -i -X OPTIONS http://localhost:8080/auth/login \
+  -H "Origin: http://evil.example.com" \
+  -H "Access-Control-Request-Method: POST"
+```
 
 ---
 

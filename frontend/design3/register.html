@@ -103,6 +103,7 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="auth.js"></script>
   <script src="app.js"></script>
   <script>
     const designerRadio = document.getElementById('role-designer');
@@ -149,15 +150,19 @@
         const data = await response.json();
 
         if (!response.ok) {
-          message.textContent = 'Register backend is reachable, but registration is not implemented yet.';
-          message.className = 'font-monospace small mb-3 text-warning';
-          console.log('Register response:', data);
+          message.textContent = data && data.error ? data.error : 'Registration failed.';
+          message.className = 'font-monospace small mb-3 text-danger';
           return;
         }
 
-        message.textContent = 'Account created successfully.';
+        // Backend returns {token, userId, role} on register — log the user in immediately.
+        if (window.Auth) {
+          Auth.saveSession({ token: data.token, userId: data.userId, role: data.role });
+        }
+
+        message.textContent = 'Account created. Redirecting…';
         message.className = 'font-monospace small mb-3 text-success';
-        console.log('Register successful:', data);
+        window.location.href = 'homepage.html';
 
       } catch (error) {
         console.error('Register error:', error);

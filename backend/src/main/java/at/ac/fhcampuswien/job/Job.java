@@ -1,4 +1,4 @@
-package at.ac.fhcampuswien;
+package at.ac.fhcampuswien.job;
 
 /**
  * Represents one job listing on the DesignerJobs platform.

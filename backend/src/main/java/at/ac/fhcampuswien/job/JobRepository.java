@@ -1,4 +1,4 @@
-package at.ac.fhcampuswien;
+package at.ac.fhcampuswien.job;
 
 import at.ac.fhcampuswien.Database.Database;
 import org.springframework.stereotype.Repository;

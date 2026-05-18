@@ -42,9 +42,47 @@
           <li class="nav-item"><a class="nav-link fw-bold text-uppercase font-monospace" href="#" data-page="post-a-job.html" style="letter-spacing:.18em; font-size:.88rem">Post a Job</a></li>
         </ul>
         <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
-          <button id="theme-toggle" type="button" class="btn btn-outline-light rounded-pill btn-sm fw-bold text-uppercase px-3" style="letter-spacing:.16em">☾ Dark</button>
-          <a href="#" class="btn btn-outline-light rounded-pill btn-sm fw-bold text-uppercase px-3" data-page="register.html" style="letter-spacing:.16em">Register</a>
-          <a href="#" class="btn btn-outline-light rounded-pill btn-sm fw-bold text-uppercase px-3" data-page="login.html" style="letter-spacing:.16em">Login</a>
+
+          <button id="theme-toggle"
+                  type="button"
+                  class="btn btn-outline-light rounded-pill btn-sm fw-bold text-uppercase px-3"
+                  style="letter-spacing:.16em">
+            ☾ Dark
+          </button>
+
+          <!-- visible before login -->
+          <a href="#"
+             id="register-link"
+             class="btn btn-outline-light rounded-pill btn-sm fw-bold text-uppercase px-3"
+             data-page="register.html"
+             style="letter-spacing:.16em">
+            Register
+          </a>
+
+          <a href="#"
+             id="login-link"
+             class="btn btn-outline-light rounded-pill btn-sm fw-bold text-uppercase px-3"
+             data-page="login.html"
+             style="letter-spacing:.16em">
+            Login
+          </a>
+
+          <!-- visible after login -->
+          <a href="#"
+             id="profile-link"
+             class="btn btn-outline-light rounded-pill btn-sm fw-bold text-uppercase px-3 d-none"
+             data-page="profile.html"
+             style="letter-spacing:.16em">
+            Profile
+          </a>
+
+          <button id="logout-button"
+                  type="button"
+                  class="btn btn-outline-light rounded-pill btn-sm fw-bold text-uppercase px-3 d-none"
+                  style="letter-spacing:.16em">
+            Logout
+          </button>
+
         </div>
       </div>
     </div>
@@ -75,6 +113,22 @@
     const frame  = document.getElementById('content-frame');
     const toggle = document.getElementById('theme-toggle');
     const allPageLinks = () => document.querySelectorAll('[data-page]');
+    const registerLink = document.getElementById('register-link');
+    const loginLink = document.getElementById('login-link');
+    const profileLink = document.getElementById('profile-link');
+    const logoutButton = document.getElementById('logout-button');
+
+    const updateAuthNavigation = () => {
+      const token = localStorage.getItem('token');
+
+      registerLink.classList.toggle('d-none', !!token);
+      loginLink.classList.toggle('d-none', !!token);
+
+      profileLink.classList.toggle('d-none', !token);
+      logoutButton.classList.toggle('d-none', !token);
+    };
+
+    updateAuthNavigation();
 
     const applyTheme = t => {
       document.documentElement.setAttribute('data-bs-theme', t);
@@ -89,7 +143,16 @@
       const next = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
       applyTheme(next);
     });
+    logoutButton.addEventListener('click', () => {
 
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('role');
+
+      updateAuthNavigation();
+
+      navigate('homepage.html');
+    });
     const navigate = (page, push = true) => {
       frame.src = page;
       if (push) history.pushState({ page }, '', '#' + page);

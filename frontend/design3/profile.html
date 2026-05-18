@@ -53,6 +53,13 @@
             <div class="col-12 col-lg-auto d-flex flex-lg-column gap-2">
               <a href="#" class="btn btn-light rounded-pill fw-bold text-uppercase text-primary px-4" style="letter-spacing:.16em">Send Message</a>
               <a href="#" class="btn btn-outline-light rounded-pill fw-bold text-uppercase px-4" style="letter-spacing:.16em">View Profile</a>
+
+              <button id="profile-logout-button"
+                      type="button"
+                      class="btn btn-outline-light rounded-pill fw-bold text-uppercase px-4"
+                      style="letter-spacing:.16em">
+                Logout
+              </button>
             </div>
 
           </div>
@@ -263,5 +270,20 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
   <script src="app.js"></script>
+  <script>
+    const profileLogoutButton = document.getElementById("profile-logout-button");
+
+    if (profileLogoutButton) {
+      profileLogoutButton.addEventListener("click", () => {
+        localStorage.removeItem("designer_jobs_token");
+        localStorage.removeItem("designer_jobs_userId");
+        localStorage.removeItem("designer_jobs_role");
+
+        window.location.href = "login.html";
+      });
+    }
+
+
+  </script>
 </body>
 </html>

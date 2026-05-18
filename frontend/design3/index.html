@@ -191,16 +191,25 @@
       frame.src = page;
       setActive(page);
     });
-
     allPageLinks().forEach(a => {
       a.addEventListener('click', () => {
         const collapse = document.getElementById('nav-menu');
+
         if (collapse.classList.contains('show')) {
           bootstrap.Collapse.getInstance(collapse)?.hide();
         }
       });
     });
+
+    window.addEventListener("message", event => {
+      if (event.data && event.data.type === "auth-changed") {
+        updateAuthNavigation();
+      }
+    });
+
   })();
+  </script>
+
   </script>
 </body>
 </html>

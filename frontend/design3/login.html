@@ -172,8 +172,11 @@
 
             const params = new URLSearchParams(window.location.search);
             const next = params.get("next");
-            window.location.href = next || "homepage.html";
 
+// Tell the parent index.html that the login state changed.
+            window.parent.postMessage({ type: "auth-changed" }, "*");
+
+            window.location.href = next || "homepage.html";
         } catch (error) {
             console.error("Login error:", error);
             message.textContent = "Login request failed. Please check if the backend is running.";

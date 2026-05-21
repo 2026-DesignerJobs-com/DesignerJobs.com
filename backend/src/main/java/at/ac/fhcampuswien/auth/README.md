@@ -129,4 +129,3 @@ works out of the box once method-security is enabled. Method-security is **not**
 
 - `session/README.md` — JWT issuance/verification details.
 - `config/README.md` — filter chain, CORS, BCrypt bean wiring.
-- `organisation/.overview/audit-lika.md` — provenance: register/login originated on `lika-auth-jwt`, ported in this audit with BCrypt + jjwt.

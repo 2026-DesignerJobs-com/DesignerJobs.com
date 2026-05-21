@@ -1,6 +1,6 @@
 # `chat/` — in-platform messaging
 
-REST-based polling chat between a client and a designer, scoped to a job. **Currently all endpoints are 501 stubs.** Owner: Bruno (per `backend-skeleton.md`).
+REST-based polling chat between a client and a designer, scoped to a job. **Currently all endpoints are 501 stubs.** Owner: Bruno.
 
 This README is a starter — it documents the contract the frontend already targets and what implementing it will need. It will grow as the package fills in.
 
@@ -91,4 +91,3 @@ Until `moderation/` is implemented, persist messages with `flagged = false` and 
 - `auth/README.md` — caller identity via `Authentication`.
 - `application/README.md` — applications are typically what triggers a conversation; `conversation.jobId` ties back to the job.
 - `moderation/Report.java` — the report shape for flagging a message after the fact.
-- `backend-skeleton.md` (in `organisation/.overview/`) — original feature spec.

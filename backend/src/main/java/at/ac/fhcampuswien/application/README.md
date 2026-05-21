@@ -69,7 +69,7 @@ public ResponseEntity<?> apply(@PathVariable String jobId,
 
 ## cross-module call: hire → contract
 
-When `POST /applications/{id}/hire` succeeds, it must create a `DRAFT` contract. The plan in `backend-skeleton.md` says: inject a `ContractService` (to be created in the `contract/` package) and call it directly — do not call `ContractController` from another controller.
+When `POST /applications/{id}/hire` succeeds, it must create a `DRAFT` contract. Inject a `ContractService` (to be created in the `contract/` package) and call it directly — do not call `ContractController` from another controller.
 
 Until `contract/` is implemented, leave a `// TODO: trigger contract creation` comment in the hire path and return 200 with the updated application.
 
@@ -98,4 +98,3 @@ CREATE TABLE IF NOT EXISTS applications (
 
 - `auth/README.md` — how to read the caller via `Authentication`.
 - `config/README.md` — where to add public route exceptions if any (probably none — apply/hire is private).
-- `backend-skeleton.md` (in `organisation/.overview/`) — original feature spec.

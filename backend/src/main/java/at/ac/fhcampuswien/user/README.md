@@ -1,6 +1,6 @@
 # `user/` — designer profiles & portfolio
 
-REST surface for designer profiles and portfolio items. **Currently all endpoints are 501 stubs.** Owner: Yarah (per `backend-skeleton.md`).
+REST surface for designer profiles and portfolio items. **Currently all endpoints are 501 stubs.** Owner: Yarah.
 
 This README is a starter — it documents the contract the frontend already targets and what implementing it will need. It will grow as the package fills in.
 
@@ -86,4 +86,3 @@ Profile id and user id are kept separate so a user can in principle have multipl
 
 - `auth/README.md` — how `/auth/me` exposes the current user, how `Authentication.getPrincipal()` carries the user id.
 - `application/README.md` — applications reference designer ids; ownership rules use the same pattern.
-- `backend-skeleton.md` (in `organisation/.overview/`) — original feature spec.

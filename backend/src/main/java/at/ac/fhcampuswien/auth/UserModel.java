@@ -6,4 +6,7 @@ public class UserModel {
     public String passwordHash;
     public String role;       // CLIENT or DESIGNER
     public String createdAt;
+    public String fullName;
+    public String designType;
+    public String skills;
 }

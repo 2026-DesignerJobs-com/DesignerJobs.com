@@ -29,14 +29,28 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody AuthRequest req) {
-        if (req.email == null || req.email.isBlank()
+
+        // Basic validation: fullName, email, password and role are required.
+        if (req.fullName == null || req.fullName.isBlank()
+                || req.email == null || req.email.isBlank()
                 || req.password == null || req.password.isBlank()
                 || req.role == null || req.role.isBlank()) {
+
             return ResponseEntity.badRequest().body(Map.of(
-                    "error", "email, password and role are required"
+                    "error", "fullName, email, password and role are required"
             ));
         }
 
+        // Normalize role to avoid problems like "designer" instead of "DESIGNER".
+        String normalizedRole = req.role.trim().toUpperCase();
+
+        if (!normalizedRole.equals("CLIENT") && !normalizedRole.equals("DESIGNER")) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "role must be CLIENT or DESIGNER"
+            ));
+        }
+
+        // Check if the email already exists.
         if (userRepository.existsByEmail(req.email)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
                     "error", "email already exists"
@@ -44,11 +58,22 @@ public class AuthController {
         }
 
         UserModel user = new UserModel();
+
         user.id = UUID.randomUUID().toString();
-        user.email = req.email;
+        user.fullName = req.fullName.trim();
+        user.email = req.email.trim().toLowerCase();
         user.passwordHash = passwordEncoder.encode(req.password);
-        user.role = req.role;
+        user.role = normalizedRole;
         user.createdAt = Instant.now().toString();
+
+        // Designer fields are only relevant for DESIGNER accounts.
+        if (normalizedRole.equals("DESIGNER")) {
+            user.designType = req.designType == null ? "" : req.designType.trim();
+            user.skills = req.skills == null ? "" : req.skills.trim();
+        } else {
+            user.designType = "";
+            user.skills = "";
+        }
 
         UserModel saved = userRepository.save(user);
 
@@ -91,7 +116,6 @@ public class AuthController {
         // unless a blacklist is introduced — out of scope for the current iteration.
         return ResponseEntity.noContent().build();
     }
-
     @GetMapping("/me")
     public ResponseEntity<?> me(Authentication auth) {
         if (auth == null || auth.getName() == null) {
@@ -100,8 +124,6 @@ public class AuthController {
             ));
         }
 
-        // With oauth2-resource-server + JwtAuthenticationConverter#setPrincipalClaimName("sub"),
-        // Authentication#getName() returns the JWT subject (= our userId).
         String userId = auth.getName();
         UserModel user = userRepository.findById(userId);
 
@@ -115,7 +137,10 @@ public class AuthController {
                 "userId", user.id,
                 "email", user.email,
                 "role", user.role,
-                "createdAt", user.createdAt
+                "createdAt", user.createdAt,
+                "fullName", user.fullName == null ? "" : user.fullName,
+                "designType", user.designType == null ? "" : user.designType,
+                "skills", user.skills == null ? "" : user.skills
         ));
     }
 }

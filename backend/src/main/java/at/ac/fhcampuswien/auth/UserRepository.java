@@ -20,9 +20,12 @@ public class UserRepository {
         String sql = """
             CREATE TABLE IF NOT EXISTS users (
                 id VARCHAR(255) PRIMARY KEY,
+                full_name VARCHAR(255),
                 email VARCHAR(255) NOT NULL UNIQUE,
                 password_hash VARCHAR(255) NOT NULL,
                 role VARCHAR(50) NOT NULL,
+                design_type VARCHAR(255),
+                skills VARCHAR(1000),
                 created_at VARCHAR(255) NOT NULL
             )
         """;
@@ -41,22 +44,28 @@ public class UserRepository {
         String sql = """
             INSERT INTO users (
                 id,
+                full_name,
                 email,
                 password_hash,
                 role,
+                design_type,
+                skills,
                 created_at
             )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
         try (Connection connection = Database.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, user.id);
-            statement.setString(2, user.email);
-            statement.setString(3, user.passwordHash);
-            statement.setString(4, user.role);
-            statement.setString(5, user.createdAt);
+            statement.setString(2, user.fullName);
+            statement.setString(3, user.email);
+            statement.setString(4, user.passwordHash);
+            statement.setString(5, user.role);
+            statement.setString(6, user.designType);
+            statement.setString(7, user.skills);
+            statement.setString(8, user.createdAt);
 
             statement.executeUpdate();
 
@@ -125,9 +134,12 @@ public class UserRepository {
         UserModel user = new UserModel();
 
         user.id = resultSet.getString("id");
+        user.fullName = resultSet.getString("full_name");
         user.email = resultSet.getString("email");
         user.passwordHash = resultSet.getString("password_hash");
         user.role = resultSet.getString("role");
+        user.designType = resultSet.getString("design_type");
+        user.skills = resultSet.getString("skills");
         user.createdAt = resultSet.getString("created_at");
 
         return user;

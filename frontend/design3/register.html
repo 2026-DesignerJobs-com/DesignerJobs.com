@@ -111,6 +111,7 @@
     const designerFields = document.getElementById('designer-fields');
     const roleInput = document.getElementById('role-input');
 
+
     function syncRole() {
       const role = clientRadio.checked ? 'CLIENT' : 'DESIGNER';
       roleInput.value = role;
@@ -133,10 +134,14 @@
       const message = document.getElementById('register-message');
 
       const registerData = {
+        fullName: formData.get('name'),
         email: formData.get('email'),
         password: formData.get('password'),
-        role: formData.get('role')
+        role: formData.get('role'),
+        designType: formData.get('designType'),
+        skills: formData.get('skills')
       };
+
 
       try {
         const response = await fetch('http://localhost:8080/auth/register', {
@@ -147,7 +152,8 @@
           body: JSON.stringify(registerData)
         });
 
-        const data = await response.json();
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : {};
 
         if (!response.ok) {
           message.textContent = data && data.error ? data.error : 'Registration failed.';

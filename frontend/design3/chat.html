@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Messages — DESIGNJOBS.COM</title>
+
+    <script>
+        document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light');
+    </script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
+
+    <script src="auth.js"></script>
+    <script>
+        if (window.Auth && !Auth.requireAuth()) {
+            // auth.js redirects unauthenticated users to login.html
+        }
+    </script>
+</head>
+
+<body>
+
+<main class="py-5">
+    <section class="container-xxl px-3">
+
+        <div class="bg-primary rounded-4 text-white p-4 p-md-5 mb-4">
+            <p class="font-monospace text-uppercase mb-2 opacity-70" style="font-size:.78rem; letter-spacing:.2em">
+                In-platform messaging
+            </p>
+            <h1 class="font-monospace text-uppercase fw-bold text-white mb-0" style="letter-spacing:.06em">
+                Messages
+            </h1>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- Conversation list -->
+            <div class="col-lg-4">
+                <div class="card border-primary border-2 rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h2 class="font-monospace text-uppercase fw-bold mb-3" style="font-size:1.1rem; letter-spacing:.06em">
+                            Conversations
+                        </h2>
+
+                        <div class="mb-3">
+                            <div class="font-monospace text-uppercase text-secondary mb-1"
+                                 style="font-size:.7rem; letter-spacing:.18em">
+                                Your user id
+                            </div>
+                            <div id="current-user-id" class="small text-primary" style="word-break:break-all">
+                                Loading...
+                            </div>
+                        </div>
+
+                        <div id="conversation-list" class="d-flex flex-column gap-2">
+                            <div class="text-secondary">
+                                No conversations loaded yet.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create conversation -->
+                <div class="card border-primary border-2 rounded-4">
+                    <div class="card-body p-4">
+                        <h2 class="font-monospace text-uppercase fw-bold mb-3" style="font-size:1.1rem; letter-spacing:.06em">
+                            Open Chat
+                        </h2>
+
+                        <p class="text-secondary small mb-3">
+                            Use the user ID of the other profile and a job ID to open a real conversation.
+                        </p>
+
+                        <form id="conversation-form">
+                            <div class="mb-3">
+                                <label class="form-label font-monospace text-uppercase fw-bold text-secondary"
+                                       for="other-user-id"
+                                       style="font-size:.72rem; letter-spacing:.22em">
+                                    Other user ID
+                                </label>
+                                <input id="other-user-id"
+                                       class="form-control border-primary border-2 rounded-3"
+                                       type="text"
+                                       placeholder="Paste other profile user ID"
+                                       required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label font-monospace text-uppercase fw-bold text-secondary"
+                                       for="job-id"
+                                       style="font-size:.72rem; letter-spacing:.22em">
+                                    Job ID
+                                </label>
+                                <input id="job-id"
+                                       class="form-control border-primary border-2 rounded-3"
+                                       type="text"
+                                       placeholder="e.g. test-job-1"
+                                       required>
+                            </div>
+
+                            <button class="btn btn-primary rounded-pill fw-bold text-uppercase px-4 w-100"
+                                    type="submit"
+                                    style="letter-spacing:.16em">
+                                Open Conversation
+                            </button>
+                        </form>
+
+                        <p id="conversation-info" class="font-monospace small mt-3 mb-0 text-secondary">
+                            No conversation opened yet.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="col-lg-8">
+                <div class="card border-primary border-2 rounded-4">
+                    <div class="card-body p-4">
+
+                        <div class="d-flex align-items-baseline gap-3 border-bottom border-2 pb-3 mb-4">
+                            <h2 class="font-monospace text-uppercase fw-bold mb-0" style="font-size:1.1rem; letter-spacing:.06em">
+                                Chat
+                            </h2>
+                            <span id="chat-status"
+                                  class="ms-auto text-success fw-bold font-monospace small"
+                                  style="letter-spacing:.2em">
+                ready
+              </span>
+                        </div>
+
+                        <div id="active-conversation-label"
+                             class="font-monospace text-uppercase text-secondary mb-3"
+                             style="font-size:.72rem; letter-spacing:.18em">
+                            No active conversation selected.
+                        </div>
+
+                        <div id="message-list" class="d-flex flex-column gap-3 mb-4" style="min-height:280px">
+                            <div class="text-secondary">
+                                Select or create a conversation to start messaging.
+                            </div>
+                        </div>
+
+                        <form id="message-form" class="d-flex gap-2">
+                            <input id="message-input"
+                                   class="form-control border-primary border-2 rounded-pill"
+                                   type="text"
+                                   placeholder="Write a message..."
+                                   autocomplete="off">
+
+                            <button class="btn btn-primary rounded-pill fw-bold text-uppercase px-4"
+                                    type="submit"
+                                    style="letter-spacing:.16em">
+                                Send
+                            </button>
+                        </form>
+
+                        <p id="message-info" class="font-monospace small mt-3 mb-0 text-secondary">
+                            Choose a conversation before sending a message.
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-4">
+            <a href="profile.html"
+               class="btn btn-outline-primary rounded-pill fw-bold text-uppercase px-4"
+               style="letter-spacing:.16em">
+                Back to Profile
+            </a>
+        </div>
+
+    </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="app.js"></script>
+
+<script>
+    let activeConversationId = null;
+    let currentUser = null;
+
+    function getCurrentUserId() {
+        return Auth.getUserId();
+    }
+
+    function getCurrentRole() {
+        return Auth.getRole();
+    }
+
+    function setMessageInfo(text, type = "secondary") {
+        const info = document.getElementById("message-info");
+        info.textContent = text;
+        info.className = "font-monospace small mt-3 mb-0 text-" + type;
+    }
+
+    function setConversationInfo(text, type = "secondary") {
+        const info = document.getElementById("conversation-info");
+        info.textContent = text;
+        info.className = "font-monospace small mt-3 mb-0 text-" + type;
+    }
+
+    function renderConversations(conversations) {
+        const conversationList = document.getElementById("conversation-list");
+        conversationList.innerHTML = "";
+
+        if (conversations.length === 0) {
+            conversationList.innerHTML = '<div class="text-secondary">No conversations yet.</div>';
+            return;
+        }
+
+        conversations.forEach(conversation => {
+            const item = document.createElement("button");
+            item.type = "button";
+            item.className = "btn btn-outline-primary rounded-3 text-start";
+
+            item.innerHTML = `
+        <div class="fw-bold font-monospace text-uppercase" style="font-size:.85rem; letter-spacing:.08em">
+          Job: ${conversation.jobId}
+        </div>
+        <div class="small text-secondary" style="word-break:break-all">
+          ${conversation.id}
+        </div>
+      `;
+
+            item.addEventListener("click", () => {
+                activeConversationId = conversation.id;
+                document.getElementById("active-conversation-label").textContent =
+                    "Active conversation: " + conversation.id;
+
+                loadMessages(conversation.id);
+            });
+
+            conversationList.appendChild(item);
+        });
+    }
+
+    function renderMessages(messages) {
+        const messageList = document.getElementById("message-list");
+        messageList.innerHTML = "";
+
+        if (messages.length === 0) {
+            messageList.innerHTML =
+                '<div class="text-secondary">No messages yet. Write the first message.</div>';
+            return;
+        }
+
+        messages.forEach(message => {
+            const isOwnMessage = message.senderId === getCurrentUserId();
+
+            const bubble = document.createElement("div");
+            bubble.className = isOwnMessage
+                ? "border border-primary rounded-4 p-3 ms-auto bg-primary text-white"
+                : "border border-primary rounded-4 p-3 me-auto";
+
+            bubble.style.maxWidth = "75%";
+
+            bubble.innerHTML = `
+        <div class="font-monospace text-uppercase mb-1"
+             style="font-size:.7rem; letter-spacing:.18em; opacity:.75">
+          ${isOwnMessage ? "You" : "Other user"}
+        </div>
+        <div>${message.content}</div>
+      `;
+
+            messageList.appendChild(bubble);
+        });
+    }
+
+    async function loadCurrentUser() {
+        const response = await Auth.authFetch("http://localhost:8080/auth/me");
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Could not load current user.");
+        }
+
+        currentUser = data;
+
+        document.getElementById("current-user-id").textContent = data.userId;
+    }
+
+    async function loadConversations() {
+        try {
+            const response = await Auth.authFetch("http://localhost:8080/conversations");
+            const conversations = await response.json();
+
+            if (!response.ok) {
+                throw new Error(conversations.error || "Could not load conversations.");
+            }
+
+            renderConversations(conversations);
+
+            setMessageInfo("Conversations endpoint works. Found: " + conversations.length + " conversation(s).", "success");
+
+            if (conversations.length > 0 && activeConversationId === null) {
+                activeConversationId = conversations[0].id;
+                document.getElementById("active-conversation-label").textContent =
+                    "Active conversation: " + conversations[0].id;
+
+                await loadMessages(activeConversationId);
+            }
+
+        } catch (error) {
+            console.error("Conversation loading failed:", error);
+            setMessageInfo("Could not load conversations. Please check login and backend.", "danger");
+        }
+    }
+
+    async function createConversation(otherUserId, jobId) {
+        const currentUserId = getCurrentUserId();
+        const currentRole = getCurrentRole();
+
+        const conversationData =
+            currentRole === "DESIGNER"
+                ? {
+                    clientId: otherUserId,
+                    designerId: currentUserId,
+                    jobId: jobId
+                }
+                : {
+                    clientId: currentUserId,
+                    designerId: otherUserId,
+                    jobId: jobId
+                };
+
+        const response = await Auth.authFetch("http://localhost:8080/conversations", {
+            method: "POST",
+            body: JSON.stringify(conversationData)
+        });
+
+        const conversation = await response.json();
+
+        if (!response.ok) {
+            throw new Error(conversation.error || "Could not create conversation.");
+        }
+
+        activeConversationId = conversation.id;
+
+        document.getElementById("active-conversation-label").textContent =
+            "Active conversation: " + conversation.id;
+
+        setConversationInfo("Conversation opened for job " + conversation.jobId + ".", "success");
+
+        await loadConversations();
+        await loadMessages(activeConversationId);
+
+        return conversation;
+    }
+
+    async function loadMessages(conversationId) {
+        try {
+            const response = await Auth.authFetch(
+                "http://localhost:8080/conversations/" + conversationId + "/messages"
+            );
+
+            const messages = await response.json();
+
+            if (!response.ok) {
+                throw new Error(messages.error || "Could not load messages.");
+            }
+
+            renderMessages(messages);
+
+        } catch (error) {
+            console.error("Message loading failed:", error);
+
+            document.getElementById("message-list").innerHTML =
+                '<div class="text-danger">Messages could not be loaded.</div>';
+        }
+    }
+
+    async function sendMessage(content) {
+        if (!activeConversationId) {
+            throw new Error("No active conversation selected.");
+        }
+
+        const response = await Auth.authFetch(
+            "http://localhost:8080/conversations/" + activeConversationId + "/messages",
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    content: content
+                })
+            }
+        );
+
+        const savedMessage = await response.json();
+
+        if (!response.ok) {
+            throw new Error(savedMessage.error || "Could not send message.");
+        }
+
+        await loadMessages(activeConversationId);
+
+        return savedMessage;
+    }
+
+    document.getElementById("conversation-form").addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const otherUserId = document.getElementById("other-user-id").value.trim();
+        const jobId = document.getElementById("job-id").value.trim();
+
+        if (!otherUserId || !jobId) {
+            setConversationInfo("Please enter the other user ID and job ID.", "danger");
+            return;
+        }
+
+        try {
+            await createConversation(otherUserId, jobId);
+        } catch (error) {
+            console.error("Create conversation failed:", error);
+            setConversationInfo("Conversation could not be opened. Please check the IDs.", "danger");
+        }
+    });
+
+    document.getElementById("message-form").addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const input = document.getElementById("message-input");
+        const content = input.value.trim();
+
+        if (!content) {
+            setMessageInfo("Please write a message first.", "danger");
+            return;
+        }
+
+        try {
+            await sendMessage(content);
+
+            setMessageInfo("Message sent and saved in backend.", "success");
+            input.value = "";
+
+        } catch (error) {
+            console.error("Send message failed:", error);
+            setMessageInfo("Message could not be sent. Please select or open a conversation first.", "danger");
+        }
+    });
+
+    async function initChatPage() {
+        try {
+            await loadCurrentUser();
+            await loadConversations();
+        } catch (error) {
+            console.error("Chat page initialization failed:", error);
+            setMessageInfo("Chat page could not be initialized. Please check login and backend.", "danger");
+        }
+    }
+
+    initChatPage();
+</script>
+
+</body>
+</html>

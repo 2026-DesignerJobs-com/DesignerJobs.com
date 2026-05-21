@@ -147,11 +147,7 @@ In code (in `SecurityConfig.corsConfigurationSource()`) because these don't vary
 
 ### why central instead of `@CrossOrigin` annotations
 
-Before this audit, two controllers had `@CrossOrigin(origins = {"http://localhost:63342", "http://localhost:63343"})` annotations:
-- `JobController` — added by Lika in `8293fcb`
-- `AuthController` — also Lika
-
-The other controllers (`ApplicationController`, `ChatController`, `ContractController`, `UserController`, `ModerationController`) had **no CORS at all**. Frontend calls to those endpoints would have been silently blocked by the browser the moment the path moved off `8080`.
+Earlier, two controllers (`JobController` and `AuthController`) had `@CrossOrigin(origins = {"http://localhost:63342", "http://localhost:63343"})` annotations. The other controllers (`ApplicationController`, `ChatController`, `ContractController`, `UserController`, `ModerationController`) had **no CORS at all**. Frontend calls to those endpoints would have been silently blocked by the browser the moment the path moved off `8080`.
 
 Centralising CORS into the filter chain fixes that gap and removes the duplication. The annotations are gone. To change the policy, edit `application.properties` (origins) or the `corsConfigurationSource()` bean (methods/headers/credentials).
 

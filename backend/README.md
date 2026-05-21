@@ -47,18 +47,18 @@ Each package has its own `README.md` documenting endpoints, models, and design c
 
 ### status at a glance
 
-| package | state | owner |
-|---|---|---|
-| `Database/`  | implemented | Katja |
-| `config/`    | implemented | — |
-| `auth/`      | implemented | Lika (initial register/login), ported to BCrypt + Spring OAuth2 |
-| `session/`   | implemented | — |
-| `job/`       | implemented | Katja (DB), Lika (post-job wiring) |
-| `user/`      | stubs       | Yarah |
-| `application/` | stubs     | — |
-| `chat/`      | stubs       | Bruno |
-| `contract/`  | stubs       | Bruno (Phase 2) |
-| `moderation/` | stubs      | Lika (Phase 2) |
+| package | state |
+|---|---|
+| `Database/`    | implemented |
+| `config/`      | implemented |
+| `auth/`        | implemented |
+| `session/`     | implemented |
+| `job/`         | implemented |
+| `user/`        | stubs |
+| `application/` | stubs |
+| `chat/`        | stubs |
+| `contract/`    | stubs (Phase 2) |
+| `moderation/`  | stubs (Phase 2) |
 
 ---
 

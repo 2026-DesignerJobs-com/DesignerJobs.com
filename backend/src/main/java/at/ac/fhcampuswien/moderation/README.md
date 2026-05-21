@@ -1,6 +1,6 @@
 # `moderation/` — reports & content moderation
 
-Lets users flag jobs, chat messages, and other users; gives admins a queue to triage. **Currently all endpoints are 501 stubs.** Owner: Lika (Phase 2).
+Lets users flag jobs, chat messages, and other users; gives admins a queue to triage. **Currently all endpoints are 501 stubs (Phase 2).**
 
 This README documents the contract the frontend will target and the hooks other packages (`chat/`, `job/`, `user/`) will need.
 

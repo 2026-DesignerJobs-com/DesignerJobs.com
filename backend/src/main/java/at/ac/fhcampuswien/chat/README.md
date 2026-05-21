@@ -1,6 +1,6 @@
 # `chat/` — in-platform messaging
 
-REST-based polling chat between a client and a designer, scoped to a job. **Currently all endpoints are 501 stubs.** Owner: Bruno.
+REST-based polling chat between a client and a designer, scoped to a job. **Currently all endpoints are 501 stubs.**
 
 This README is a starter — it documents the contract the frontend already targets and what implementing it will need. It will grow as the package fills in.
 

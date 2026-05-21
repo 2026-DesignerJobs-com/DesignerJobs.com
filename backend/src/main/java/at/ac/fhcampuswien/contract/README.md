@@ -1,6 +1,6 @@
 # `contract/` — auto-generated freelance contracts
 
-Triggered when a client hires a designer; produces a draft contract that both parties have to sign before it becomes active. **Currently all endpoints are 501 stubs.** Owner: Bruno (Phase 2).
+Triggered when a client hires a designer; produces a draft contract that both parties have to sign before it becomes active. **Currently all endpoints are 501 stubs (Phase 2).**
 
 This README documents the contract the frontend already targets and what implementing it will need.
 

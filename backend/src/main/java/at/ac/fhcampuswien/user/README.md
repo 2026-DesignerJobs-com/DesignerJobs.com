@@ -1,6 +1,6 @@
 # `user/` — designer profiles & portfolio
 
-REST surface for designer profiles and portfolio items. **Currently all endpoints are 501 stubs.** Owner: Yarah.
+REST surface for designer profiles and portfolio items. **Currently all endpoints are 501 stubs.**
 
 This README is a starter — it documents the contract the frontend already targets and what implementing it will need. It will grow as the package fills in.
 

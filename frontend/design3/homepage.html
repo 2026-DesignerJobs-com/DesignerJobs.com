@@ -21,10 +21,29 @@
     <section class="container-xxl my-4 px-3" aria-label="Search banner">
       <div class="hero-photo rounded-4 overflow-hidden position-relative">
 
-        <!-- decorative corner labels -->
-        <span class="position-absolute top-0 start-0 p-3 font-monospace text-white text-uppercase opacity-50" style="font-size:.72rem; letter-spacing:.3em">Design Platform</span>
-        <span class="position-absolute bottom-0 end-0 p-3 font-monospace text-white text-uppercase opacity-50" style="font-size:.72rem; letter-spacing:.3em">Since 2026</span>
+        <!-- decorative top world clock -->
+        <div class="position-absolute top-0 start-0 end-0 p-3 d-flex align-items-center gap-3 text-white"
+             style="z-index:2">
 
+  <span class="font-monospace text-uppercase opacity-50 flex-shrink-0"
+        style="font-size:.72rem; letter-spacing:.3em">
+    Design Platform
+  </span>
+
+          <div id="world-clock"
+               class="d-flex flex-grow-1 justify-content-evenly align-items-center gap-3 font-monospace text-uppercase opacity-75"
+               style="font-size:.68rem; letter-spacing:.18em">
+            <span>New York --:--</span>
+            <span>London --:--</span>
+            <span>Vienna --:--</span>
+            <span>Tokyo --:--</span>
+          </div>
+        </div>
+
+        <span class="position-absolute bottom-0 end-0 p-3 font-monospace text-white text-uppercase opacity-50"
+              style="font-size:.72rem; letter-spacing:.3em">
+  Since 2026
+</span>
         <!-- centred content -->
         <div class="d-flex flex-column align-items-center justify-content-center gap-4 text-center px-4 py-5" style="min-height:480px">
 
@@ -130,6 +149,42 @@
       heroLoginLink.classList.toggle("d-none", !!token);
       heroProfileLink.classList.toggle("d-none", !token);
     }
+
+    async function loadWorldClock() {
+      const worldClock = document.getElementById("world-clock");
+
+      if (!worldClock) {
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost:8080/world-clock");
+        const times = await response.json();
+
+        if (!response.ok) {
+          throw new Error("World clock could not be loaded.");
+        }
+
+        worldClock.innerHTML = times.map(entry => `
+        <span>
+          <span class="opacity-75">${entry.city}</span>
+          <strong class="ms-1">${entry.time}</strong>
+        </span>
+      `).join("");
+
+      } catch (error) {
+        console.error("World clock loading failed:", error);
+
+        worldClock.innerHTML = `
+        <span>New York --:--</span>
+        <span>London --:--</span>
+        <span>Vienna --:--</span>
+        <span>Tokyo --:--</span>
+      `;
+      }
+    }
+
+    loadWorldClock();
   </script>
 </body>
 </html>

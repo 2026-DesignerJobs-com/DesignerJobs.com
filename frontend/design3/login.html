@@ -184,6 +184,62 @@
         }
     });
 </script>
+<section class="container-xxl px-3 mt-4" aria-label="World clock">
+    <div class="border border-primary border-2 rounded-4 px-4 py-3">
+        <div class="d-flex flex-wrap align-items-center gap-3 font-monospace text-uppercase"
+             style="letter-spacing:.16em; font-size:.72rem">
 
+      <span class="text-primary fw-bold me-auto">
+        Global Design Time
+      </span>
+
+            <div id="world-clock"
+                 class="d-flex flex-wrap justify-content-end gap-4 text-secondary">
+                <span>New York --:--</span>
+                <span>London --:--</span>
+                <span>Vienna --:--</span>
+                <span>Tokyo --:--</span>
+            </div>
+
+        </div>
+    </div>
+</section>
+<script>
+    async function loadWorldClock() {
+        const worldClock = document.getElementById("world-clock");
+
+        if (!worldClock) {
+            return;
+        }
+
+        try {
+            const response = await fetch("http://localhost:8080/world-clock");
+            const times = await response.json();
+
+            if (!response.ok) {
+                throw new Error("World clock could not be loaded.");
+            }
+
+            worldClock.innerHTML = times.map(entry => `
+        <span>
+          <span class="text-secondary">${entry.city}</span>
+          <strong class="ms-1 text-primary">${entry.time}</strong>
+        </span>
+      `).join("");
+
+        } catch (error) {
+            console.error("World clock loading failed:", error);
+
+            worldClock.innerHTML = `
+        <span>New York --:--</span>
+        <span>London --:--</span>
+        <span>Vienna --:--</span>
+        <span>Tokyo --:--</span>
+      `;
+        }
+    }
+
+    loadWorldClock();
+</script>
 </body>
 </html>

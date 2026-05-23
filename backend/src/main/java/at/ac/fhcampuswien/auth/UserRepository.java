@@ -35,6 +35,13 @@ public class UserRepository {
 
             statement.executeUpdate(sql);
 
+            // Migration for older local H2 databases:
+            // If the users table already existed before profile fields were added,
+            // these columns are added safely without deleting existing users.
+            statement.executeUpdate("ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name VARCHAR(255)");
+            statement.executeUpdate("ALTER TABLE users ADD COLUMN IF NOT EXISTS design_type VARCHAR(255)");
+            statement.executeUpdate("ALTER TABLE users ADD COLUMN IF NOT EXISTS skills VARCHAR(1000)");
+
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create users table", e);
         }

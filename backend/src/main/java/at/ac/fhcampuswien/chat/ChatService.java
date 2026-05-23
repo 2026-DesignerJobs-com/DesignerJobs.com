@@ -1,5 +1,6 @@
 package at.ac.fhcampuswien.chat;
 
+import at.ac.fhcampuswien.external.ExternalChatApiClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -7,21 +8,34 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 // Service layer for in-platform messaging.
-// Currently uses local repositories.
-// Later this layer can delegate to ExternalChatApiClient for Supabase or another external chat API.
+// Current mode: local H2 repositories.
+// Future mode: external chat API via ExternalChatApiClient.
 @Service
 public class ChatService {
 
+    /*
+     * Set this to true later when the external chat API is fully connected.
+     * For now it must stay false, so the current working local chat flow does not break.
+     */
+    private static final boolean USE_EXTERNAL_CHAT_API = false;
+
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
+    private final ExternalChatApiClient externalChatApiClient;
 
     public ChatService(ConversationRepository conversationRepository,
-                       MessageRepository messageRepository) {
+                       MessageRepository messageRepository,
+                       ExternalChatApiClient externalChatApiClient) {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
+        this.externalChatApiClient = externalChatApiClient;
     }
 
     public List<Conversation> listConversations(String currentUserId) {
+        if (USE_EXTERNAL_CHAT_API) {
+            return externalChatApiClient.listConversations(currentUserId);
+        }
+
         return conversationRepository.findByUserId(currentUserId);
     }
 
@@ -39,24 +53,36 @@ public class ChatService {
             );
         }
 
+        if (USE_EXTERNAL_CHAT_API) {
+            return externalChatApiClient.createConversation(conversation, currentUserId);
+        }
+
         return conversationRepository.create(conversation);
     }
 
     public List<Message> getMessages(String conversationId, int page, String currentUserId) {
+        if (USE_EXTERNAL_CHAT_API) {
+            return externalChatApiClient.getMessages(conversationId, page, currentUserId);
+        }
+
         validateParticipant(conversationId, currentUserId);
 
         return messageRepository.findByConversationId(conversationId, page);
     }
 
     public Message sendMessage(String conversationId, Message message, String currentUserId) {
-        validateParticipant(conversationId, currentUserId);
-
         if (message.content == null || message.content.isBlank()) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "message content is required"
             );
         }
+
+        if (USE_EXTERNAL_CHAT_API) {
+            return externalChatApiClient.sendMessage(conversationId, message, currentUserId);
+        }
+
+        validateParticipant(conversationId, currentUserId);
 
         message.conversationId = conversationId;
         message.senderId = currentUserId;

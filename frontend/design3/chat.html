@@ -122,15 +122,31 @@
                 <div class="card border-primary border-2 rounded-4">
                     <div class="card-body p-4">
 
-                        <div class="d-flex align-items-baseline gap-3 border-bottom border-2 pb-3 mb-4">
-                            <h2 class="font-monospace text-uppercase fw-bold mb-0" style="font-size:1.1rem; letter-spacing:.06em">
+                        <div class="d-flex flex-wrap align-items-center gap-3 border-bottom border-2 pb-3 mb-4">
+                            <h2 class="font-monospace text-uppercase fw-bold mb-0 me-auto"
+                                style="font-size:1.1rem; letter-spacing:.06em">
                                 Chat
                             </h2>
-                            <span id="chat-status"
-                                  class="ms-auto text-success fw-bold font-monospace small"
-                                  style="letter-spacing:.2em">
-                ready
-              </span>
+
+                            <a href="homepage.html"
+                               class="btn btn-outline-primary rounded-pill fw-bold text-uppercase px-3 py-1"
+                               style="letter-spacing:.14em; font-size:.72rem">
+                                Home
+                            </a>
+
+                            <a href="profile.html"
+                               class="btn btn-outline-primary rounded-pill fw-bold text-uppercase px-3 py-1"
+                               style="letter-spacing:.14em; font-size:.72rem">
+                                Profile
+                            </a>
+
+                            <button id="refresh-chat-button"
+                                    type="button"
+                                    class="btn btn-primary rounded-pill fw-bold text-uppercase px-3 py-1"
+                                    style="letter-spacing:.14em; font-size:.72rem">
+                                Refresh
+                            </button>
+                        </div>
                         </div>
 
                         <div id="active-conversation-label"
@@ -298,7 +314,7 @@
 
             renderConversations(conversations);
 
-            setMessageInfo("Conversations endpoint works. Found: " + conversations.length + " conversation(s).", "success");
+            setMessageInfo("Messaging is ready.", "success");
 
             if (conversations.length > 0 && activeConversationId === null) {
                 activeConversationId = conversations[0].id;
@@ -456,6 +472,20 @@
     }
 
     initChatPage();
+
+    const refreshChatButton = document.getElementById("refresh-chat-button");
+
+    if (refreshChatButton) {
+        refreshChatButton.addEventListener("click", async () => {
+            await loadConversations();
+
+            if (activeConversationId) {
+                await loadMessages(activeConversationId);
+            }
+
+            setMessageInfo("Chat refreshed.", "success");
+        });
+    }
 </script>
 
 </body>

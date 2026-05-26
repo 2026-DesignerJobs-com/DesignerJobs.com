@@ -15,6 +15,35 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="theme.css">
 
+    <style>
+        .message-panel {
+            min-height: 460px;
+            background:
+                    linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.35));
+        }
+
+        .message-list {
+            min-height: 320px;
+            max-height: 520px;
+            overflow-y: auto;
+            padding-right: .35rem;
+        }
+
+        .message-bubble {
+            max-width: 76%;
+            word-break: break-word;
+        }
+
+        .conversation-button.active {
+            background: var(--bs-primary);
+            color: #fff;
+        }
+
+        .conversation-button.active .text-secondary {
+            color: rgba(255,255,255,.75) !important;
+        }
+    </style>
+
     <script src="auth.js"></script>
     <script>
         if (window.Auth && !Auth.requireAuth()) {
@@ -28,32 +57,74 @@
 <main class="py-5">
     <section class="container-xxl px-3">
 
+        <!-- Page header -->
         <div class="bg-primary rounded-4 text-white p-4 p-md-5 mb-4">
-            <p class="font-monospace text-uppercase mb-2 opacity-70" style="font-size:.78rem; letter-spacing:.2em">
-                In-platform messaging
-            </p>
-            <h1 class="font-monospace text-uppercase fw-bold text-white mb-0" style="letter-spacing:.06em">
-                Messages
-            </h1>
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                <div class="me-auto">
+                    <p class="font-monospace text-uppercase mb-2 opacity-70"
+                       style="font-size:.78rem; letter-spacing:.2em">
+                        In-platform messaging · external API prepared
+                    </p>
+
+                    <h1 class="font-monospace text-uppercase fw-bold text-white mb-0"
+                        style="letter-spacing:.06em">
+                        Messages
+                    </h1>
+                </div>
+
+                <a href="homepage.html"
+                   class="btn btn-outline-light rounded-pill fw-bold text-uppercase px-4"
+                   style="letter-spacing:.14em">
+                    Home
+                </a>
+
+                <a href="profile.html"
+                   class="btn btn-light rounded-pill fw-bold text-uppercase text-primary px-4"
+                   style="letter-spacing:.14em">
+                    Profile
+                </a>
+            </div>
         </div>
 
         <div class="row g-4">
 
-            <!-- Conversation list -->
+            <!-- Left side: conversations and open chat -->
             <div class="col-lg-4">
+
+                <!-- Current user and conversations -->
                 <div class="card border-primary border-2 rounded-4 mb-4">
                     <div class="card-body p-4">
-                        <h2 class="font-monospace text-uppercase fw-bold mb-3" style="font-size:1.1rem; letter-spacing:.06em">
-                            Conversations
-                        </h2>
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <h2 class="font-monospace text-uppercase fw-bold mb-0 me-auto"
+                                style="font-size:1.1rem; letter-spacing:.06em">
+                                Conversations
+                            </h2>
+
+                            <span id="conversation-count"
+                                  class="badge rounded-pill text-bg-light border border-primary text-primary">
+                0
+              </span>
+                        </div>
 
                         <div class="mb-3">
                             <div class="font-monospace text-uppercase text-secondary mb-1"
                                  style="font-size:.7rem; letter-spacing:.18em">
-                                Your user id
+                                Your user ID
                             </div>
-                            <div id="current-user-id" class="small text-primary" style="word-break:break-all">
-                                Loading...
+
+                            <div class="d-flex gap-2 align-items-start">
+                                <div id="current-user-id"
+                                     class="small text-primary flex-grow-1"
+                                     style="word-break:break-all">
+                                    Loading...
+                                </div>
+
+                                <button id="copy-user-id-button"
+                                        type="button"
+                                        class="btn btn-outline-primary btn-sm rounded-pill fw-bold text-uppercase"
+                                        style="font-size:.65rem; letter-spacing:.12em">
+                                    Copy
+                                </button>
                             </div>
                         </div>
 
@@ -68,12 +139,13 @@
                 <!-- Create conversation -->
                 <div class="card border-primary border-2 rounded-4">
                     <div class="card-body p-4">
-                        <h2 class="font-monospace text-uppercase fw-bold mb-3" style="font-size:1.1rem; letter-spacing:.06em">
+                        <h2 class="font-monospace text-uppercase fw-bold mb-3"
+                            style="font-size:1.1rem; letter-spacing:.06em">
                             Open Chat
                         </h2>
 
                         <p class="text-secondary small mb-3">
-                            Use the user ID of the other profile and a job ID to open a real conversation.
+                            Use the other profile user ID and a job ID to open a real conversation.
                         </p>
 
                         <form id="conversation-form">
@@ -83,6 +155,7 @@
                                        style="font-size:.72rem; letter-spacing:.22em">
                                     Other user ID
                                 </label>
+
                                 <input id="other-user-id"
                                        class="form-control border-primary border-2 rounded-3"
                                        type="text"
@@ -96,6 +169,7 @@
                                        style="font-size:.72rem; letter-spacing:.22em">
                                     Job ID
                                 </label>
+
                                 <input id="job-id"
                                        class="form-control border-primary border-2 rounded-3"
                                        type="text"
@@ -117,50 +191,48 @@
                 </div>
             </div>
 
-            <!-- Messages -->
+            <!-- Right side: messages -->
             <div class="col-lg-8">
-                <div class="card border-primary border-2 rounded-4">
+                <div class="card border-primary border-2 rounded-4 message-panel">
                     <div class="card-body p-4">
 
+                        <!-- Chat toolbar -->
                         <div class="d-flex flex-wrap align-items-center gap-3 border-bottom border-2 pb-3 mb-4">
-                            <h2 class="font-monospace text-uppercase fw-bold mb-0 me-auto"
-                                style="font-size:1.1rem; letter-spacing:.06em">
-                                Chat
-                            </h2>
+                            <div class="me-auto">
+                                <h2 class="font-monospace text-uppercase fw-bold mb-1"
+                                    style="font-size:1.1rem; letter-spacing:.06em">
+                                    Chat
+                                </h2>
 
-                            <a href="homepage.html"
-                               class="btn btn-outline-primary rounded-pill fw-bold text-uppercase px-3 py-1"
-                               style="letter-spacing:.14em; font-size:.72rem">
-                                Home
-                            </a>
-
-                            <a href="profile.html"
-                               class="btn btn-outline-primary rounded-pill fw-bold text-uppercase px-3 py-1"
-                               style="letter-spacing:.14em; font-size:.72rem">
-                                Profile
-                            </a>
+                                <div id="active-conversation-label"
+                                     class="font-monospace text-uppercase text-secondary"
+                                     style="font-size:.7rem; letter-spacing:.18em">
+                                    No active conversation selected.
+                                </div>
+                            </div>
 
                             <button id="refresh-chat-button"
                                     type="button"
-                                    class="btn btn-primary rounded-pill fw-bold text-uppercase px-3 py-1"
+                                    class="btn btn-outline-primary rounded-pill fw-bold text-uppercase px-3 py-1"
                                     style="letter-spacing:.14em; font-size:.72rem">
                                 Refresh
                             </button>
-                        </div>
+
+                            <span id="chat-status"
+                                  class="badge rounded-pill text-bg-success font-monospace text-uppercase"
+                                  style="letter-spacing:.12em">
+                Ready
+              </span>
                         </div>
 
-                        <div id="active-conversation-label"
-                             class="font-monospace text-uppercase text-secondary mb-3"
-                             style="font-size:.72rem; letter-spacing:.18em">
-                            No active conversation selected.
-                        </div>
-
-                        <div id="message-list" class="d-flex flex-column gap-3 mb-4" style="min-height:280px">
+                        <!-- Message list -->
+                        <div id="message-list" class="message-list d-flex flex-column gap-3 mb-4">
                             <div class="text-secondary">
                                 Select or create a conversation to start messaging.
                             </div>
                         </div>
 
+                        <!-- Message form -->
                         <form id="message-form" class="d-flex gap-2">
                             <input id="message-input"
                                    class="form-control border-primary border-2 rounded-pill"
@@ -182,15 +254,6 @@
                     </div>
                 </div>
             </div>
-
-        </div>
-
-        <div class="mt-4">
-            <a href="profile.html"
-               class="btn btn-outline-primary rounded-pill fw-bold text-uppercase px-4"
-               style="letter-spacing:.16em">
-                Back to Profile
-            </a>
         </div>
 
     </section>
@@ -202,6 +265,19 @@
 <script>
     let activeConversationId = null;
     let currentUser = null;
+
+    function escapeHtml(value) {
+        if (value === null || value === undefined) {
+            return "";
+        }
+
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
 
     function getCurrentUserId() {
         return Auth.getUserId();
@@ -223,9 +299,41 @@
         info.className = "font-monospace small mt-3 mb-0 text-" + type;
     }
 
+    function setChatStatus(text, type = "success") {
+        const status = document.getElementById("chat-status");
+        status.textContent = text;
+        status.className = "badge rounded-pill font-monospace text-uppercase text-bg-" + type;
+        status.style.letterSpacing = ".12em";
+    }
+
+    function prefillFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+
+        const jobIdFromUrl = params.get("jobId");
+        const otherUserFromUrl =
+            params.get("otherUserId") ||
+            params.get("clientId") ||
+            params.get("designerId");
+
+        const jobInput = document.getElementById("job-id");
+        const otherUserInput = document.getElementById("other-user-id");
+
+        if (jobIdFromUrl && jobInput) {
+            jobInput.value = jobIdFromUrl;
+            setConversationInfo("Job ID was filled from the selected job.", "success");
+        }
+
+        if (otherUserFromUrl && otherUserInput) {
+            otherUserInput.value = otherUserFromUrl;
+        }
+    }
+
     function renderConversations(conversations) {
         const conversationList = document.getElementById("conversation-list");
+        const conversationCount = document.getElementById("conversation-count");
+
         conversationList.innerHTML = "";
+        conversationCount.textContent = conversations.length;
 
         if (conversations.length === 0) {
             conversationList.innerHTML = '<div class="text-secondary">No conversations yet.</div>';
@@ -235,23 +343,33 @@
         conversations.forEach(conversation => {
             const item = document.createElement("button");
             item.type = "button";
-            item.className = "btn btn-outline-primary rounded-3 text-start";
+
+            const isActive = conversation.id === activeConversationId;
+
+            item.className = isActive
+                ? "btn rounded-3 text-start conversation-button active"
+                : "btn btn-outline-primary rounded-3 text-start conversation-button";
+
+            const jobId = escapeHtml(conversation.jobId || "Unknown job");
+            const conversationId = escapeHtml(conversation.id || "");
 
             item.innerHTML = `
-        <div class="fw-bold font-monospace text-uppercase" style="font-size:.85rem; letter-spacing:.08em">
-          Job: ${conversation.jobId}
+        <div class="fw-bold font-monospace text-uppercase"
+             style="font-size:.85rem; letter-spacing:.08em">
+          Job: ${jobId}
         </div>
         <div class="small text-secondary" style="word-break:break-all">
-          ${conversation.id}
+          ${conversationId}
         </div>
       `;
 
-            item.addEventListener("click", () => {
+            item.addEventListener("click", async () => {
                 activeConversationId = conversation.id;
                 document.getElementById("active-conversation-label").textContent =
                     "Active conversation: " + conversation.id;
 
-                loadMessages(conversation.id);
+                renderConversations(conversations);
+                await loadMessages(conversation.id);
             });
 
             conversationList.appendChild(item);
@@ -273,21 +391,21 @@
 
             const bubble = document.createElement("div");
             bubble.className = isOwnMessage
-                ? "border border-primary rounded-4 p-3 ms-auto bg-primary text-white"
-                : "border border-primary rounded-4 p-3 me-auto";
-
-            bubble.style.maxWidth = "75%";
+                ? "message-bubble border border-primary rounded-4 p-3 ms-auto bg-primary text-white"
+                : "message-bubble border border-primary rounded-4 p-3 me-auto bg-white";
 
             bubble.innerHTML = `
         <div class="font-monospace text-uppercase mb-1"
              style="font-size:.7rem; letter-spacing:.18em; opacity:.75">
           ${isOwnMessage ? "You" : "Other user"}
         </div>
-        <div>${message.content}</div>
+        <div>${escapeHtml(message.content || "")}</div>
       `;
 
             messageList.appendChild(bubble);
         });
+
+        messageList.scrollTop = messageList.scrollHeight;
     }
 
     async function loadCurrentUser() {
@@ -299,12 +417,13 @@
         }
 
         currentUser = data;
-
         document.getElementById("current-user-id").textContent = data.userId;
     }
 
     async function loadConversations() {
         try {
+            setChatStatus("Loading", "secondary");
+
             const response = await Auth.authFetch("http://localhost:8080/conversations");
             const conversations = await response.json();
 
@@ -313,19 +432,22 @@
             }
 
             renderConversations(conversations);
-
             setMessageInfo("Messaging is ready.", "success");
+            setChatStatus("Ready", "success");
 
             if (conversations.length > 0 && activeConversationId === null) {
                 activeConversationId = conversations[0].id;
+
                 document.getElementById("active-conversation-label").textContent =
                     "Active conversation: " + conversations[0].id;
 
+                renderConversations(conversations);
                 await loadMessages(activeConversationId);
             }
 
         } catch (error) {
             console.error("Conversation loading failed:", error);
+            setChatStatus("Error", "danger");
             setMessageInfo("Could not load conversations. Please check login and backend.", "danger");
         }
     }
@@ -461,31 +583,40 @@
         }
     });
 
+    document.getElementById("refresh-chat-button").addEventListener("click", async () => {
+        await loadConversations();
+
+        if (activeConversationId) {
+            await loadMessages(activeConversationId);
+        }
+
+        setMessageInfo("Chat refreshed.", "success");
+    });
+
+    document.getElementById("copy-user-id-button").addEventListener("click", async () => {
+        const userId = getCurrentUserId();
+
+        try {
+            await navigator.clipboard.writeText(userId);
+            setConversationInfo("Your user ID was copied.", "success");
+        } catch (error) {
+            setConversationInfo("Could not copy user ID.", "danger");
+        }
+    });
+
     async function initChatPage() {
         try {
+            prefillFromUrl();
             await loadCurrentUser();
             await loadConversations();
         } catch (error) {
             console.error("Chat page initialization failed:", error);
+            setChatStatus("Error", "danger");
             setMessageInfo("Chat page could not be initialized. Please check login and backend.", "danger");
         }
     }
 
     initChatPage();
-
-    const refreshChatButton = document.getElementById("refresh-chat-button");
-
-    if (refreshChatButton) {
-        refreshChatButton.addEventListener("click", async () => {
-            await loadConversations();
-
-            if (activeConversationId) {
-                await loadMessages(activeConversationId);
-            }
-
-            setMessageInfo("Chat refreshed.", "success");
-        });
-    }
 </script>
 
 </body>

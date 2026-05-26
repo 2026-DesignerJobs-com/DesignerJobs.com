@@ -184,21 +184,29 @@
             </div>
 
             <div class="d-flex gap-2 justify-content-end flex-wrap">
-              <a href="jobs.html"
-                 class="btn btn-outline-light rounded-pill fw-bold text-uppercase px-4"
-                 style="letter-spacing:.14em">
-                Back
-              </a>
+  <a href="jobs.html"
+     class="btn btn-outline-light rounded-pill fw-bold text-uppercase px-4"
+     style="letter-spacing:.14em">
+    Back
+  </a>
 
-              <button type="button"
-                      id="apply-button"
-                      class="btn btn-light rounded-pill fw-bold text-uppercase text-primary px-4"
-                      style="letter-spacing:.14em">
-                Apply
-              </button>
-            </div>
+  <a href="chat.html?jobId=${encodeURIComponent(currentJobId)}"
+     id="message-client-button"
+     class="btn btn-outline-light rounded-pill fw-bold text-uppercase px-4"
+     style="letter-spacing:.14em">
+    Message Client
+  </a>
 
-          </div>
+  <button type="button"
+          id="apply-button"
+          class="btn btn-light rounded-pill fw-bold text-uppercase text-primary px-4"
+          style="letter-spacing:.14em">
+    Apply
+  </button>
+</div>
+
+
+        </div>
         </article>
       `;
 

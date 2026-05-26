@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DESIGNJOBS.COM — Job Detail</title>
+
+    <script>
+        document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light');
+    </script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
+</head>
+
+<body>
+
+<main>
+    <section class="container-xxl px-3" style="margin-top:3rem" aria-labelledby="job-detail-h">
+
+        <div class="d-flex align-items-baseline gap-3 border-bottom border-2 pb-3 mb-4">
+            <h2 id="job-detail-h"
+                class="font-monospace text-uppercase fw-bold mb-0"
+                style="letter-spacing:.06em; font-size:2.2rem">
+                Job Detail
+            </h2>
+
+            <span id="job-status"
+                  class="ms-auto text-success fw-bold font-monospace small"
+                  style="letter-spacing:.2em">
+        Loading
+      </span>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap mb-4">
+            <a href="jobs.html"
+               class="btn btn-outline-primary rounded-pill fw-bold text-uppercase px-4"
+               style="letter-spacing:.16em">
+                All Jobs
+            </a>
+
+            <a href="homepage.html"
+               class="btn btn-outline-primary rounded-pill fw-bold text-uppercase px-4"
+               style="letter-spacing:.16em">
+                Home
+            </a>
+
+            <a href="profile.html"
+               class="btn btn-outline-primary rounded-pill fw-bold text-uppercase px-4"
+               style="letter-spacing:.16em">
+                Profile
+            </a>
+        </div>
+
+        <div id="job-detail-container">
+            <div class="alert alert-secondary">
+                Job is loading...
+            </div>
+        </div>
+
+    </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="app.js"></script>
+
+<script>
+    let currentJobId = null;
+
+    function escapeHtml(value) {
+        if (value === null || value === undefined) {
+            return "";
+        }
+
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function getJobIdFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("id");
+    }
+
+    async function loadJobDetail() {
+        const container = document.getElementById("job-detail-container");
+        const status = document.getElementById("job-status");
+
+        currentJobId = getJobIdFromUrl();
+
+        if (!currentJobId) {
+            status.textContent = "Missing ID";
+            container.innerHTML = `
+        <div class="alert alert-danger">
+          No job ID was provided.
+        </div>
+      `;
+            return;
+        }
+
+        try {
+            const response = await fetch("http://localhost:8080/jobs/" + encodeURIComponent(currentJobId));
+
+            if (!response.ok) {
+                throw new Error("Job could not be loaded.");
+            }
+
+            const job = await response.json();
+
+            const title = escapeHtml(job.title || "Untitled Job");
+            const description = escapeHtml(job.description || "No description available.");
+            const location = escapeHtml(job.location || "Remote");
+            const budget = escapeHtml(job.budget || "€€");
+            const category = escapeHtml(job.category || "Design");
+            const designType = escapeHtml(job.designType || job.design_type || "-");
+            const workMode = escapeHtml(job.workMode || job.work_mode || "-");
+            const deadline = escapeHtml(job.deadline || "-");
+
+            status.textContent = "Ready";
+
+            container.innerHTML = `
+        <article class="card bg-primary text-white border-0 rounded-4">
+          <div class="card-body p-4 p-lg-5">
+
+            <h3 class="font-monospace text-uppercase fw-bold text-white mb-4"
+                style="font-size:1.6rem; letter-spacing:.06em">
+              ${title}
+            </h3>
+
+            <p class="opacity-90 mb-4" style="font-size:1.05rem; line-height:1.7">
+              ${description}
+            </p>
+
+            <div class="row g-3 font-monospace text-uppercase opacity-75 mb-4"
+                 style="font-size:.78rem; letter-spacing:.16em">
+
+              <div class="col-md-6">
+                <div class="border border-light border-opacity-25 rounded-4 p-3 h-100">
+                  <div class="opacity-75 mb-1">Location</div>
+                  <strong>${location}</strong>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="border border-light border-opacity-25 rounded-4 p-3 h-100">
+                  <div class="opacity-75 mb-1">Budget</div>
+                  <strong>${budget}</strong>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="border border-light border-opacity-25 rounded-4 p-3 h-100">
+                  <div class="opacity-75 mb-1">Category</div>
+                  <strong>${category}</strong>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="border border-light border-opacity-25 rounded-4 p-3 h-100">
+                  <div class="opacity-75 mb-1">Design Type</div>
+                  <strong>${designType}</strong>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="border border-light border-opacity-25 rounded-4 p-3 h-100">
+                  <div class="opacity-75 mb-1">Work Mode</div>
+                  <strong>${workMode}</strong>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="border border-light border-opacity-25 rounded-4 p-3 h-100">
+                  <div class="opacity-75 mb-1">Deadline</div>
+                  <strong>${deadline}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2 justify-content-end flex-wrap">
+              <a href="jobs.html"
+                 class="btn btn-outline-light rounded-pill fw-bold text-uppercase px-4"
+                 style="letter-spacing:.14em">
+                Back
+              </a>
+
+              <button type="button"
+                      id="apply-button"
+                      class="btn btn-light rounded-pill fw-bold text-uppercase text-primary px-4"
+                      style="letter-spacing:.14em">
+                Apply
+              </button>
+            </div>
+
+          </div>
+        </article>
+      `;
+
+            document.getElementById("apply-button").addEventListener("click", () => {
+                applyToJob(currentJobId);
+            });
+
+        } catch (error) {
+            console.error("Error while loading job detail:", error);
+
+            status.textContent = "Error";
+
+            container.innerHTML = `
+        <div class="alert alert-danger">
+          Job detail could not be loaded. Please check if GET /jobs/{id} exists in the backend.
+        </div>
+      `;
+        }
+    }
+
+    async function applyToJob(jobId) {
+        const token = localStorage.getItem("designer_jobs_token");
+
+        if (!token) {
+            alert("Please log in before applying to a job.");
+            window.location.href = "login.html";
+            return;
+        }
+
+        try {
+            const response = await fetch("http://localhost:8080/jobs/" + encodeURIComponent(jobId) + "/apply", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify({
+                    coverLetter: "I would like to apply for this job."
+                })
+            });
+
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(result.error || "Application failed.");
+            }
+
+            alert("Application sent successfully.");
+
+        } catch (error) {
+            console.error("Error while applying:", error);
+            alert("Application could not be sent. Please check backend, login and application endpoint.");
+        }
+    }
+
+    loadJobDetail();
+</script>
+
+</body>
+</html>

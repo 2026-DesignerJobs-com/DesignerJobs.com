@@ -4,14 +4,73 @@ import at.ac.fhcampuswien.Database.Database;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-
 public class JobRepository {
 
+    public JobRepository() {
+        createTableIfNotExists();
+    }
+
+    private void createTableIfNotExists() {
+        String sql = """
+            CREATE TABLE IF NOT EXISTS jobs (
+                id VARCHAR(36) PRIMARY KEY,
+                client_id VARCHAR(255),
+                title VARCHAR(255) NOT NULL,
+                description TEXT,
+                category VARCHAR(255),
+                design_type VARCHAR(255),
+                location VARCHAR(255),
+                budget VARCHAR(255),
+                work_mode VARCHAR(255),
+                deadline VARCHAR(255),
+                tags VARCHAR(1000),
+                created_at VARCHAR(50) NOT NULL
+            )
+        """;
+
+        try (Connection connection = Database.getConnection();
+             Statement statement = connection.createStatement()) {
+
+            statement.executeUpdate(sql);
+
+            // Migration for older local H2 databases.
+            // If jobs table already existed before clientId was added,
+            // this safely adds the missing column without deleting jobs.
+            statement.executeUpdate("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS client_id VARCHAR(255)");
+            statement.executeUpdate("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS design_type VARCHAR(255)");
+            statement.executeUpdate("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS work_mode VARCHAR(255)");
+            statement.executeUpdate("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS deadline VARCHAR(255)");
+            statement.executeUpdate("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS tags VARCHAR(1000)");
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create or update jobs table", e);
+        }
+    }
+
+    public Job create(Job job) {
+        if (job.id == null || job.id.isBlank()) {
+            job.id = UUID.randomUUID().toString();
+        }
+
+        if (job.createdAt == null || job.createdAt.isBlank()) {
+            job.createdAt = Instant.now().toString();
+        }
+
+        return insert(job);
+    }
+
+    // Keeps compatibility with older controller code that may still call add(job).
     public Job add(Job job) {
+        return create(job);
+    }
+
+    private Job insert(Job job) {
         String sql = """
             INSERT INTO jobs (
                 id,
@@ -51,10 +110,8 @@ public class JobRepository {
             return job;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to create job", e);
         }
-
-        return null;
     }
 
     public List<Job> findAll() {
@@ -74,11 +131,11 @@ public class JobRepository {
                 jobs.add(mapResultSetToJob(resultSet));
             }
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+            return jobs;
 
-        return jobs;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to find all jobs", e);
+        }
     }
 
     public Job findById(String id) {
@@ -99,11 +156,11 @@ public class JobRepository {
                 }
             }
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+            return null;
 
-        return null;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to find job by id", e);
+        }
     }
 
     public Job getRandomJob() {
@@ -122,22 +179,20 @@ public class JobRepository {
                 return mapResultSetToJob(resultSet);
             }
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+            return null;
 
-        return null;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get random job", e);
+        }
     }
 
-    public List<Job> search(
-            String q,
-            String category,
-            String designType,
-            String location,
-            String budget,
-            String workMode,
-            String tags
-    ) {
+    public List<Job> search(String q,
+                            String category,
+                            String designType,
+                            String location,
+                            String budget,
+                            String workMode,
+                            String tags) {
         String sql = """
             SELECT *
             FROM jobs
@@ -188,11 +243,11 @@ public class JobRepository {
                 }
             }
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+            return jobs;
 
-        return jobs;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to search jobs", e);
+        }
     }
 
     public Job update(String id, Job updated) {
@@ -234,11 +289,11 @@ public class JobRepository {
                 return findById(id);
             }
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+            return null;
 
-        return null;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to update job", e);
+        }
     }
 
     public boolean deleteById(String id) {
@@ -257,10 +312,8 @@ public class JobRepository {
             return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to delete job", e);
         }
-
-        return false;
     }
 
     private Job mapResultSetToJob(ResultSet resultSet) throws SQLException {

@@ -112,6 +112,7 @@
             }
 
             const job = await response.json();
+            console.log("Loaded job detail:", job);
 
             const title = escapeHtml(job.title || "Untitled Job");
             const description = escapeHtml(job.description || "No description available.");
@@ -121,6 +122,7 @@
             const designType = escapeHtml(job.designType || job.design_type || "-");
             const workMode = escapeHtml(job.workMode || job.work_mode || "-");
             const deadline = escapeHtml(job.deadline || "-");
+            const clientId = job.clientId || job.client_id || job.ownerId || job.owner_id || "";
 
             status.textContent = "Ready";
 
@@ -190,12 +192,12 @@
     Back
   </a>
 
-  <a href="chat.html?jobId=${encodeURIComponent(currentJobId)}"
-     id="message-client-button"
-     class="btn btn-outline-light rounded-pill fw-bold text-uppercase px-4"
-     style="letter-spacing:.14em">
-    Message Client
-  </a>
+  <button type="button"
+        id="message-client-button"
+        class="btn btn-outline-light rounded-pill fw-bold text-uppercase px-4"
+        style="letter-spacing:.14em">
+  Message Client
+</button>
 
   <button type="button"
           id="apply-button"
@@ -212,6 +214,23 @@
 
             document.getElementById("apply-button").addEventListener("click", () => {
                 applyToJob(currentJobId);
+            });
+            document.getElementById("message-client-button").addEventListener("click", () => {
+                if (!currentJobId) {
+                    alert("Job ID is missing.");
+                    return;
+                }
+
+                if (!clientId) {
+                    alert("Client ID is missing in this job. Please check the job backend response.");
+                    return;
+                }
+
+                window.location.href =
+                    "chat.html?jobId=" +
+                    encodeURIComponent(currentJobId) +
+                    "&clientId=" +
+                    encodeURIComponent(clientId);
             });
 
         } catch (error) {

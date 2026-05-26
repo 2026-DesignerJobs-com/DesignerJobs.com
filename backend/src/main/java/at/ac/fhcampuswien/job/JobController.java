@@ -2,33 +2,65 @@ package at.ac.fhcampuswien.job;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
+/**
+ * REST controller for job listings.
+ *
+ * Responsibilities:
+ * - create a job as logged-in CLIENT
+ * - list/search all jobs
+ * - load one job by id for job-detail.html
+ *
+ * Important for messaging:
+ * The clientId is set from Authentication, not from the frontend.
+ * This allows job-detail.html to open chat with the correct client.
+ */
 @RestController
 @RequestMapping("/jobs")
 public class JobController {
 
-    private final JobRepository jobRepository; // Uses the database repository instead of the old JSON storage
+    private final JobRepository jobRepository;
 
     public JobController(JobRepository jobRepository) {
         this.jobRepository = jobRepository;
     }
 
-    // Stores a new job in the database
+    /**
+     * POST /jobs
+     * Creates a new job listing.
+     *
+     * The logged-in user is the client who owns the job.
+     */
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Job store(@RequestBody Job job) {
-        job.id = UUID.randomUUID().toString();      // Backend generates a unique ID
-        job.createdAt = Instant.now().toString();   // Backend generates the creation timestamp
+    public ResponseEntity<?> create(@RequestBody Job job, Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "error", "not authenticated"
+            ));
+        }
 
-        return jobRepository.add(job);              // Saves the job in the database
+        if (job.title == null || job.title.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "title is required"
+            ));
+        }
+
+        job.clientId = auth.getName();
+
+        Job savedJob = jobRepository.create(job);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedJob);
     }
 
-    // Searches or lists jobs from the database; all query parameters are optional
+    /**
+     * GET /jobs
+     * Lists or searches jobs.
+     */
     @GetMapping
     public List<Job> search(
             @RequestParam(required = false) String q,
@@ -42,48 +74,26 @@ public class JobController {
         return jobRepository.search(q, category, designType, location, budget, workMode, tags);
     }
 
-    // Returns one job by its ID
+    /**
+     * GET /jobs/{id}
+     * Loads one job for job-detail.html.
+     *
+     * This endpoint is important because job-detail.html needs:
+     * - job id
+     * - title
+     * - description
+     * - clientId for Message Client
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<Job> getById(@PathVariable String id) {
+    public ResponseEntity<?> getById(@PathVariable String id) {
         Job job = jobRepository.findById(id);
 
         if (job == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "error", "job not found"
+            ));
         }
 
         return ResponseEntity.ok(job);
-    }
-
-    // Updates an existing job in the database
-    @PutMapping("/{id}")
-    public ResponseEntity<Job> update(@PathVariable String id, @RequestBody Job updated) {
-        Job existingJob = jobRepository.findById(id);
-
-        if (existingJob == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        updated.id = id;
-        updated.createdAt = existingJob.createdAt;
-
-        Job savedJob = jobRepository.update(id, updated);
-
-        if (savedJob == null) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-
-        return ResponseEntity.ok(savedJob);
-    }
-
-    // Deletes an existing job from the database
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-        boolean deleted = jobRepository.deleteById(id);
-
-        if (!deleted) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.noContent().build();
     }
 }

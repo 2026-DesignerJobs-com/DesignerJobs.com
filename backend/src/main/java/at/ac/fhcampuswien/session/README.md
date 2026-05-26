@@ -1,6 +1,6 @@
-# `session/` — stateless JWT session management (Option A)
+# `session/` — stateless JWT session management
 
-This package issues JWT bearer tokens at login. Verification is delegated to **Spring Security's OAuth2 Resource Server** (`spring-boot-starter-oauth2-resource-server`) — the Spring-blessed path described in `organisation/.overview/auth-jwt.md` as **Option A**.
+This package issues JWT bearer tokens at login. Verification is delegated to **Spring Security's OAuth2 Resource Server** (`spring-boot-starter-oauth2-resource-server`).
 
 There is **no server-side session state**. Logout is a noop on the backend; the client drops the token. Session persistence across page reloads is the *client's* responsibility (see `frontend/design3/auth.js`).
 
@@ -97,7 +97,7 @@ When a request arrives:
 4. On success, `JwtAuthenticationConverter` runs: `principal claim "sub"` → `Authentication.getName()`; `role` claim → `ROLE_<role>` authority.
 5. On failure (bad signature, expired, malformed) the filter sets a 401 response — the request never reaches the controller.
 
-We don't write that filter; we don't write the decoder; we don't catch the exceptions. **Spring does it all.** Compared to Option B (custom `OncePerRequestFilter`), that's an entire class deleted.
+We don't write that filter; we don't write the decoder; we don't catch the exceptions. **Spring does it all.** Compared to a custom `OncePerRequestFilter`, that's an entire class deleted.
 
 ---
 
@@ -169,5 +169,3 @@ app.jwt.expiry-millis=7200000
 - `at.ac.fhcampuswien.auth.UserRepository` — the user store backing register/login.
 - `at.ac.fhcampuswien.config.SecurityConfig` — filter-chain wiring, decoder/encoder beans, converter, CORS.
 - `frontend/design3/auth.js` — client-side session persistence (US-04).
-- `organisation/.overview/auth-jwt.md` — the design doc that recommended Option A.
-- `organisation/.overview/changelog-JWT.md` — full history of how this implementation evolved.

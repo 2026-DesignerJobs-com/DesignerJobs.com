@@ -9,9 +9,9 @@ REST surface and persistence for accounts. Issues tokens via `session/JwtService
 | file | role |
 |---|---|
 | `AuthController.java` | REST endpoints under `/auth` |
-| `AuthRequest.java`    | request body for register/login (`email`, `password`, `role`) |
+| `AuthRequest.java`    | request body for register/login (`email`, `password`, `role`, `fullName`, `designType`, `skills`) |
 | `AuthResponse.java`   | response body — `token`, `userId`, `role` |
-| `UserModel.java`      | persisted user — flat public fields |
+| `UserModel.java`      | persisted user — flat public fields (`id`, `email`, `passwordHash`, `role`, `createdAt`, `fullName`, `designType`, `skills`) |
 | `UserRepository.java` | JDBC repository against H2 `users` table |
 
 ---
@@ -34,12 +34,21 @@ Base path: `/auth`
 POST /auth/register
 Content-Type: application/json
 
-{ "email": "ada@example.com", "password": "secret123", "role": "DESIGNER" }
+{
+  "fullName": "Ada Lovelace",
+  "email": "ada@example.com",
+  "password": "secret123",
+  "role": "DESIGNER",
+  "designType": "logo",
+  "skills": "illustration, branding"
+}
 ```
+
+`fullName`, `email`, `password`, `role` are required. `designType` and `skills` are stored only when `role` is `DESIGNER` — for `CLIENT` accounts they are persisted as empty strings regardless of what the client sends.
 
 Responses:
 - `201 Created` → `{ "token": "...", "userId": "...", "role": "DESIGNER" }`
-- `400 Bad Request` → `{ "error": "email, password and role are required" }`
+- `400 Bad Request` → `{ "error": "fullName, email, password and role are required" }` or `{ "error": "role must be CLIENT or DESIGNER" }`
 - `409 Conflict` → `{ "error": "email already exists" }`
 
 **Login**
@@ -62,8 +71,10 @@ Authorization: Bearer <token>
 ```
 
 Responses:
-- `200 OK` → `{ "userId": "...", "email": "...", "role": "...", "createdAt": "..." }`
+- `200 OK` → `{ "userId": "...", "email": "...", "role": "...", "createdAt": "...", "fullName": "...", "designType": "...", "skills": "..." }`
 - `401 Unauthorized` if missing/invalid token, or if the user has been deleted since the token was issued.
+
+`designType` and `skills` are returned as empty strings for `CLIENT` accounts.
 
 **Logout**
 ```http
@@ -76,10 +87,10 @@ Always `204 No Content`. The frontend deletes the token from `localStorage` itse
 
 ## persistence
 
-`UserRepository` is a hand-rolled JDBC repository following the same pattern as `JobRepository`:
+`UserRepository` is a hand-rolled JDBC repository following the same pattern as `JobRepository` and uses `Database.getConnection()` from the `Database/` package:
 
 - Table `users` is created on first instantiation (`CREATE TABLE IF NOT EXISTS`).
-- Schema: `id VARCHAR PK, email VARCHAR UNIQUE NOT NULL, password_hash VARCHAR NOT NULL, role VARCHAR NOT NULL, created_at VARCHAR NOT NULL`.
+- Schema: `id VARCHAR PK, full_name VARCHAR, email VARCHAR UNIQUE NOT NULL, password_hash VARCHAR NOT NULL, role VARCHAR NOT NULL, design_type VARCHAR, skills VARCHAR(1000), created_at VARCHAR NOT NULL`.
 - All methods use prepared statements + try-with-resources.
 
 Methods:
@@ -129,4 +140,3 @@ works out of the box once method-security is enabled. Method-security is **not**
 
 - `session/README.md` — JWT issuance/verification details.
 - `config/README.md` — filter chain, CORS, BCrypt bean wiring.
-- `organisation/.overview/audit-lika.md` — provenance: register/login originated on `lika-auth-jwt`, ported in this audit with BCrypt + jjwt.

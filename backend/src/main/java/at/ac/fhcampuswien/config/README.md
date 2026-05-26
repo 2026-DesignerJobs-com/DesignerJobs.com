@@ -44,7 +44,7 @@ Disabled. Stateless APIs that authenticate via `Authorization` headers (not cook
 
 ### frame options
 
-`X-Frame-Options: SAMEORIGIN`. Required by the iframe shell pattern used in the `design3` frontend. Added by Katja in commit `5b4f133`.
+`X-Frame-Options: SAMEORIGIN`. Required by the iframe shell pattern used in the `design3` frontend.
 
 ### CORS — central configuration
 

@@ -168,3 +168,13 @@ dist
 .DS_Store
 **/.DS_Store
 backend/data/projectdb.trace.db
+
+# Markdown — ignore all except README.md and docu.md/DOCU.md
+*.md
+!README.md
+!docu.md
+!DOCU.md
+# plus these specific tracked docs
+!organisation/planung/akzeptanzkriterien.md
+!organisation/planung/spec.md
+!organisation/planung/user-stories.md

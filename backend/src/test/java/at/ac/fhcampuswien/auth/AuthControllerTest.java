@@ -15,7 +15,6 @@ import at.ac.fhcampuswien.session.JwtService;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -150,27 +149,5 @@ class AuthControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(((AuthResponse) response.getBody()).token).isEqualTo("jwt-token");
-    }
-
-    /**
-     * Characterization test for bug B1: login passes the RAW email to
-     * findByEmail (no trim/lowercase), while register stored it lowercased.
-     * Here we prove the controller queries with the exact case typed — so a
-     * user who registered "Mixed@Test.com" (stored "mixed@test.com") and logs
-     * in with "Mixed@Test.com" hits a lookup for the mixed-case form and is
-     * rejected. When the fix lands, this expectation flips to the lowercase form.
-     */
-    @Test
-    void login_queriesWithRawEmail_documentsCaseSensitivityBug() {
-        lenient().when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
-        when(userRepository.findByEmail(anyString())).thenReturn(null);
-
-        AuthRequest req = new AuthRequest();
-        req.email = "Mixed@Test.com";
-        req.password = "secret123";
-
-        controller.login(req);
-
-        verify(userRepository).findByEmail("Mixed@Test.com");
     }
 }

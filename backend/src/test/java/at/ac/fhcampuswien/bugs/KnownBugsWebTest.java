@@ -24,7 +24,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class KnownBugsWebTest {
 
     static {
-        System.setProperty("db.url", "jdbc:h2:mem:knownbugs;DB_CLOSE_DELAY=-1");
+        // Must match the other @SpringBootTest classes — they share one cached
+        // Spring context (see SecurityIntegrationTest).
+        System.setProperty("db.url", "jdbc:h2:mem:springboottest;DB_CLOSE_DELAY=-1");
         System.setProperty("db.user", "sa");
         System.setProperty("db.password", "");
     }

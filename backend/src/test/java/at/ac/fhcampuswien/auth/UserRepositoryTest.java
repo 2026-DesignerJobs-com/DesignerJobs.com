@@ -60,19 +60,4 @@ class UserRepositoryTest extends H2TestSupport {
         assertThat(repository.existsByEmail("c@test.com")).isTrue();
         assertThat(repository.existsByEmail("other@test.com")).isFalse();
     }
-
-    /**
-     * Characterization test for bug B1/B5: lookups are exact-match and
-     * case-sensitive. The repository does NOT normalize case, so a stored
-     * lowercase email is not found when queried with different casing. When
-     * the email-normalization fix lands (in AuthController), this test should
-     * still hold for the repository layer — normalization belongs above it.
-     */
-    @Test
-    void findByEmail_isCaseSensitive_documentsCurrentBehavior() {
-        repository.save(sampleUser("mixed@test.com"));
-
-        assertThat(repository.findByEmail("mixed@test.com")).isNotNull();
-        assertThat(repository.findByEmail("Mixed@Test.com")).isNull();
-    }
 }

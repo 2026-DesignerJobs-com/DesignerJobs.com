@@ -25,7 +25,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SecurityIntegrationTest {
 
     static {
-        System.setProperty("db.url", "jdbc:h2:mem:sectest;DB_CLOSE_DELAY=-1");
+        // All @SpringBootTest classes share one cached Spring context, so they
+        // must agree on the same in-memory DB (tables are created once at
+        // context startup; requests later read db.url per call).
+        System.setProperty("db.url", "jdbc:h2:mem:springboottest;DB_CLOSE_DELAY=-1");
         System.setProperty("db.user", "sa");
         System.setProperty("db.password", "");
     }

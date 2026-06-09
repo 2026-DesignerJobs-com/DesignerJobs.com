@@ -58,17 +58,4 @@ class JobApplicationRepositoryTest extends H2TestSupport {
     void updateStatus_returnsNull_whenIdMissing() {
         assertThat(repository.updateStatus("missing", "ACCEPTED")).isNull();
     }
-
-    /**
-     * Characterization test for bug B7: there is no unique constraint on
-     * (job_id, designer_id), so the same designer can apply to the same job
-     * any number of times. This documents current (buggy) behavior.
-     */
-    @Test
-    void create_allowsDuplicateApplications_documentsMissingConstraint() {
-        repository.create("job-1", "designer-1", "first");
-        repository.create("job-1", "designer-1", "second");
-
-        assertThat(repository.findByJobId("job-1")).hasSize(2);
-    }
 }

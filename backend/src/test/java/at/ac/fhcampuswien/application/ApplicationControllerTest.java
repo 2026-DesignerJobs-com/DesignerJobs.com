@@ -156,22 +156,4 @@ class ApplicationControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         verify(repository).updateStatus("app-1", "HIRED");
     }
-
-    /**
-     * Characterization test for bug B2: listApplications performs only an
-     * authentication check, NOT a job-ownership check. Any authenticated user
-     * (even one who does not own the job) gets the full applicant list back.
-     * This documents the current security gap; when ownership checks are added
-     * this test must change to expect 403 for non-owners.
-     */
-    @Test
-    void listApplications_returnsData_forAnyAuthenticatedUser_documentsAuthzGap() {
-        when(auth.getName()).thenReturn("some-random-user");
-        when(repository.findByJobId("job-1")).thenReturn(List.of(new JobApplication()));
-
-        ResponseEntity<?> response = controller.listApplications("job-1", auth);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        verify(repository).findByJobId("job-1");
-    }
 }

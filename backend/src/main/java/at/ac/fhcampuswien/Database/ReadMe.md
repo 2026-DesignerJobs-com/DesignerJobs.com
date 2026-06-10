@@ -379,3 +379,5 @@ The H2 database stores all job posts locally.
 `JobController.java` exposes the database functionality through HTTP endpoints.
 
 This structure keeps the project organized by separating the database logic from the controller logic.
+
+x

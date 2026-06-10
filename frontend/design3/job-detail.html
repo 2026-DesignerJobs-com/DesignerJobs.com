@@ -66,7 +66,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="app.js"></script>
-
 <script>
     let currentJobId = null;
 
@@ -215,33 +214,33 @@
 </div>
 
 
-        </div>
+    </div>
         </article>
-      `;
+        `;
 
-            document.getElementById("apply-button").addEventListener("click", () => {
-                applyToJob(currentJobId);
-            });
-            document.getElementById("delete-job-button").addEventListener("click", () => {
-                deleteJob(currentJobId);
-            });
-            document.getElementById("message-client-button").addEventListener("click", () => {
-                if (!currentJobId) {
-                    alert("Job ID is missing.");
-                    return;
-                }
+        document.getElementById("apply-button").addEventListener("click", () => {
+            applyToJob(currentJobId);
+        });
+        document.getElementById("delete-job-button").addEventListener("click", () => {
+            deleteJob(currentJobId);
+        });
+        document.getElementById("message-client-button").addEventListener("click", () => {
+            if (!currentJobId) {
+                alert("Job ID is missing.");
+                return;
+            }
 
-                if (!clientId) {
-                    alert("Client ID is missing in this job. Please check the job backend response.");
-                    return;
-                }
+            if (!clientId) {
+                alert("Client ID is missing in this job. Please check the job backend response.");
+                return;
+            }
 
-                window.location.href =
-                    "chat.html?jobId=" +
-                    encodeURIComponent(currentJobId) +
-                    "&clientId=" +
-                    encodeURIComponent(clientId);
-            });
+            window.location.href =
+                "chat.html?jobId=" +
+                encodeURIComponent(currentJobId) +
+                "&clientId=" +
+                encodeURIComponent(clientId);
+        });
 
         } catch (error) {
             console.error("Error while loading job detail:", error);

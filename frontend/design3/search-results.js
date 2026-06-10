@@ -64,13 +64,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 function createJobCardHtml(job) {
+  const jobId = job.id;
+  const detailUrl = jobId
+    ? "job-detail.html?id=" + encodeURIComponent(jobId)
+    : "#";
+
   return `
     <article class="result-card p-4">
       <div class="d-flex flex-column flex-sm-row gap-3 align-items-sm-start">
         <div class="flex-grow-1">
           <div class="d-flex gap-2 flex-wrap mb-2">
             <span class="badge rounded-pill border border-primary text-primary fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">
-              ${escapeHtml(job.category || "Design")}
+              ${escapeHtml(job.category || job.designType || "Design")}
             </span>
             <span class="badge rounded-pill border border-success text-success fw-bold px-3 py-1 font-monospace text-uppercase" style="font-size:.65rem; letter-spacing:.12em">
               ${escapeHtml(job.workMode || "Remote")}
@@ -95,7 +100,9 @@ function createJobCardHtml(job) {
         </div>
 
         <div class="d-flex flex-row flex-sm-column gap-2 align-items-sm-end">
-          <a href="job-random.html" class="btn btn-outline-primary rounded-pill btn-sm fw-bold text-uppercase px-4 py-2" style="letter-spacing:.12em; white-space:nowrap">
+          <a href="${detailUrl}"
+             class="btn btn-outline-primary rounded-pill btn-sm fw-bold text-uppercase px-4 py-2"
+             style="letter-spacing:.12em; white-space:nowrap">
             View Job
           </a>
         </div>

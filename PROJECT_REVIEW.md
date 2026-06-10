@@ -1,4 +1,4 @@
-t# DesignerJobs.com — Project Review & Walkthrough
+# DesignerJobs.com — Project Review & Walkthrough
 
 > A shared reference for our 6-day final push. It explains the whole project to **any** audience — from someone who has never seen Spring Boot, to a senior dev joining the review — with deep dives on **Spring Boot usage** and **session/auth management**, plus an honest list of **bugs, gaps, and remaining work**.
 
@@ -12,7 +12,10 @@ Read the section that matches who you're talking to:
 |---|---|---|
 | **Total beginner** (non-coder, stakeholder) | §1 "What it is" + §2 "The 60-second tour" | the code deep-dives |
 | **Junior dev / student** | §1–§5 | nothing |
-| **Senior dev / reviewer** | §3 (architecture), §6 (Spring deep dive), §7 (session deep dive), §9 (bugs) | §2 |
+| **Senior dev / reviewer** | §3 (architecture), §6 (Spring deep dive), §7 (session deep dive), §9/§9b/§9c (bugs: backend, harness, frontend) | §2 |
+| **Grader / team lead** | the ⭐ Grading requirements section, then §9–§9c and §10 (plan) | the deep dives |
+
+**Companion docs:** `test.md` (the JUnit + Postman test suite, coverage, the TDD red board), `jgrasp-guide.md` (visualizing/tracing execution), `postman/` (black-box API tests).
 
 Three explanation levels are marked inline:
 - 🟢 **Beginner** — plain language, no jargon.
@@ -152,21 +155,24 @@ DesignerJobs.com/
 
 ---
 
-## 5. How to run & verify (there is no test suite)
+## 5. How to run, test & verify
 
 ```sh
 cd backend
 mvn spring-boot:run        # serves API + frontend on http://localhost:8080
 mvn package                # build the jar
+JAVA_HOME="$(/usr/libexec/java_home -v 17)" mvn test   # run the test suite (see test.md)
 ```
 
-Requires **JDK 17 + Maven**.
+Requires **JDK 17 + Maven**. (Run the tests on JDK 17 specifically — Mockito can't instrument the JDK 26 also installed here; see `test.md`.)
 
-> ⚠️ **There is no `src/test` and no test framework on the classpath.** Never claim "tests pass." Verify by **running the app** and exercising endpoints with curl/browser.
+> ✅ **There is now a JUnit test suite** under `backend/src/test` (JUnit 5 + Mockito + AssertJ, plus `@SpringBootTest`/MockMvc for security), and a Postman/Newman black-box suite in `postman/`. Full details, coverage numbers, and the TDD red board are in **`test.md`**.
+>
+> ⚠️ **`mvn test` is intentionally RED right now.** We work test-first: there is one failing test per open bug (the §5 board in `test.md`), so the build fails *on purpose* until the bugs are fixed. Don't "fix" it by deleting tests. Caveat: because the red tests fail the `test` phase, the JaCoCo report isn't generated on a plain `mvn test` — see harness finding **H1** in §9b.
 
-**Reset all state:** delete `backend/data/projectdb.mv.db` and restart.
+**Reset all state:** delete `backend/data/projectdb.mv.db` and restart. (Note: this file is currently tracked in git and churns — see **H3**.)
 
-**Smoke-test recipe (copy/paste during review):**
+**Smoke-test recipe (manual / black-box, copy/paste during review):**
 ```sh
 # 1. register a client
 curl -s -X POST localhost:8080/auth/register -H 'Content-Type: application/json' \
@@ -344,7 +350,7 @@ From `SecurityConfig.filterChain`, in order:
 
 ## 9. Bugs & correctness issues (review these first)
 
-Ordered by severity. Found by reading every backend source file (controllers, services, repositories) line-by-line and tracing call sites — the committed git diff is docs-only, so the review was run against the actual code. **These are the concrete things to fix in the 6 days.**
+Ordered by severity. Found by reading every backend source file (controllers, services, repositories) line-by-line and tracing call sites against the actual code (multiple `xhigh` review passes — backend, frontend, and test harness). **These are the concrete things to fix in the 6 days.** Numbering: **B1–B13** first pass, **B14–B21** the deep backend review (§9), harness **H1–H5** in §9b, frontend **F1–F6** in §9c.
 
 ### 🔴 B1 — Login is case-sensitive on email, but registration lower-cases it → users locked out
 `AuthController.register` stores `user.email = req.email.trim().toLowerCase()` (line 64), but `login` calls `userRepository.findByEmail(req.email)` (line 97) with the **raw** input — no trim, no lowercase. `UserRepository.findByEmail` does an exact SQL `WHERE email = ?`.
@@ -405,7 +411,7 @@ The live frontend is `design3/`. Minor, but confusing for newcomers. Trust `fron
 `created_at` is stored as `Instant.toString()` (variable-length fractional seconds) in a `VARCHAR` and ordered with `ORDER BY created_at`. `'2026-…T12:00:00Z'` sorts *after* `'2026-…T12:00:00.5Z'` lexicographically (`'.'`=46 < `'Z'`=90), which is the wrong chronological order. Affects jobs list/search, messages, conversations whenever a timestamp lands on a whole second. *Fix: store a fixed-width/UTC-millis timestamp or a sortable numeric column.*
 
 ### 🟠 B17 — Conflicting CORS configuration
-`config/WebConfig.addCorsMappings` registers a **second** CORS policy (hardcoded `localhost:63342` origins) competing with the single `SecurityConfig.corsConfigurationSource` the design mandates (CLAUDE.md: "CORS configured once"). Behavior diverges between security-filtered API paths and MVC/handler paths. *Fix: delete `WebConfig.addCorsMappings`; keep only the `SecurityConfig` source.*
+`config/WebConfig.addCorsMappings` registers a **second** CORS policy (hardcoded `localhost:63342` origins) competing with the single `SecurityConfig.corsConfigurationSource` the design intends (CORS should be configured once, centrally). Behavior diverges between security-filtered API paths and MVC/handler paths. *Fix: delete `WebConfig.addCorsMappings`; keep only the `SecurityConfig` source.*
 
 ### 🟡 B18 — `/world-clock` is all-or-nothing and sequential
 `WorldClockService` makes 4 blocking external calls in sequence and lets any single failure throw, so one slow/failing city fails the whole endpoint and latency is the sum of 4 round-trips. *Fix: fetch in parallel and degrade gracefully per city.*
@@ -551,7 +557,7 @@ Ordering is driven by **grading points first** (see the ⭐ requirements section
 | Secret override | env `APP_JWT_SECRET` (≥32 chars) |
 | Identity in a controller | `auth.getName()` = userId, `auth.getAuthorities()` = `ROLE_<role>` |
 | Add a public endpoint | add matcher to `SecurityConfig` **then** write controller |
-| Tests | none — verify by running the app |
+| Tests | `mvn test` (JDK 17) — JUnit suite + Postman/Newman in `postman/`; intentionally red (one fail per open bug). See `test.md` |
 
 ---
 

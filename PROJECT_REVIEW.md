@@ -59,7 +59,7 @@ This is the official rubric mapped against the **actual code today** (verified 2
 |---|---|---|---|
 | **S1** | Consume ≥2 external REST services | ❌ | only **one** today (`timeapi.io`). `ExternalChatApiClient` is a disabled placeholder. Add a second real API (e.g. a currency, geocoding, or holiday API). |
 | **S2** | A second FE component using ≥3 BE endpoints | ❌ | only one FE (`design3/`). Build a second small FE (e.g. an admin/moderation dashboard or a designer portfolio page) hitting ≥3 endpoints. |
-| **S3** | FE is W3C compliant | ❓ | not verified — run each page through `https://validator.w3.org/` and fix errors. |
+| **S3** | FE is W3C compliant | ❌ | **Verified 2026-06-10 via validator.w3.org/nu — 6 pages fail** (~17 errors). See §9c for the list. Clean: login, profile, chat, job-random, homepage/jobs/job-detail (warnings only). |
 | **S4** | FE responsive (mobile + desktop views) | ⚠️ | Bootstrap grid is responsive; confirm a **dedicated** mobile vs desktop view (breakpoints, nav collapse) and document it. |
 
 ### COULD — 5 points
@@ -393,6 +393,32 @@ Only `ChatController` has an `@ExceptionHandler`. Any repository `RuntimeExcepti
 ### ⚪ B13 — Top-level `README.md` references `design1/`/`design2/`
 The live frontend is `design3/`. Minor, but confusing for newcomers. Trust `frontend/design3/README.md`.
 
+### Additional backend findings (from the deep `xhigh` review, 2026-06-10)
+
+### 🔴 B14 — Conversation spoofing in `ChatService.createConversation`
+`createConversation` only checks `currentUserId.equals(clientId) || currentUserId.equals(designerId)` — i.e. the caller must be *one* of the two participants, but the **other** participant, the job ownership, and existence are never validated. A designer can post `{clientId: <any victim>, designerId: self, jobId: anything}` and force a conversation onto any user, then send them unsolicited messages. *Fix: verify the job exists, that `clientId` is the job's real owner, and that the counterparty actually relates to the job.*
+
+### 🔴 B15 — External time API has no HTTP timeout
+`ExternalTimeApiClient` builds `HttpClient.newHttpClient()` and an `HttpRequest` with **no connect or request timeout**. If `timeapi.io` hangs, `GET /world-clock` blocks a Tomcat worker indefinitely; repeated calls exhaust the pool. *Fix: set `.connectTimeout(...)` on the client and `.timeout(...)` on the request.*
+
+### 🟠 B16 — Lexicographic timestamp ordering is wrong on second boundaries
+`created_at` is stored as `Instant.toString()` (variable-length fractional seconds) in a `VARCHAR` and ordered with `ORDER BY created_at`. `'2026-…T12:00:00Z'` sorts *after* `'2026-…T12:00:00.5Z'` lexicographically (`'.'`=46 < `'Z'`=90), which is the wrong chronological order. Affects jobs list/search, messages, conversations whenever a timestamp lands on a whole second. *Fix: store a fixed-width/UTC-millis timestamp or a sortable numeric column.*
+
+### 🟠 B17 — Conflicting CORS configuration
+`config/WebConfig.addCorsMappings` registers a **second** CORS policy (hardcoded `localhost:63342` origins) competing with the single `SecurityConfig.corsConfigurationSource` the design mandates (CLAUDE.md: "CORS configured once"). Behavior diverges between security-filtered API paths and MVC/handler paths. *Fix: delete `WebConfig.addCorsMappings`; keep only the `SecurityConfig` source.*
+
+### 🟡 B18 — `/world-clock` is all-or-nothing and sequential
+`WorldClockService` makes 4 blocking external calls in sequence and lets any single failure throw, so one slow/failing city fails the whole endpoint and latency is the sum of 4 round-trips. *Fix: fetch in parallel and degrade gracefully per city.*
+
+### 🟡 B19 — Hire/status transition has a TOCTOU
+`ApplicationController.hire`/`updateStatus` check the current status in Java then `UPDATE` unconditionally. Concurrent requests can both pass the check and double-process — and once hire generates a contract (B6), produce two contracts. *Fix: conditional `UPDATE … WHERE id=? AND status=?` and check affected rows.*
+
+### 🟡 B20 — `app.frontend.path` default points at stale `design1/`
+`WebConfig`'s `@Value("${app.frontend.path:../frontend/design1/}")` defaults to a directory that doesn't exist (live FE is `design3/`). Only works because `application.properties` overrides it; any environment missing that property serves 404s. *Fix: make the default `../frontend/design3/`.*
+
+### ⚪ B21 — No connection pooling
+`Database.getConnection()` opens a fresh `DriverManager` connection per repository call (no pool). Functionally OK for embedded H2 but wasteful and unbounded under concurrency. *Fix: a pooled `DataSource` (HikariCP).* *(Efficiency/altitude, not a correctness bug.)*
+
 ---
 
 ## 9b. Test & build harness findings (from code review)
@@ -427,6 +453,48 @@ In `AuthControllerTest`, the "password is hashed, not raw" check is `assertThat(
 
 ---
 
+## 9c. Frontend findings (from code review, 2026-06-10)
+
+Reviewed `frontend/design3/`. Good news first: XSS is handled where it matters — `jobs.html`, `job-detail.html`, `chat.html` escape API/user data with `escapeHtml`; other pages use `textContent`/DOM building.
+
+### 🔴 F1 — Navbar shell uses the wrong `localStorage` keys
+`index.html` (the iframe shell that renders navbar + footer) reads `localStorage.getItem('token')` and on logout removes `'token'`/`'userId'`/`'role'` — but the whole app stores the session under `designer_jobs_token`/`_userId`/`_role` (via `auth.js`). The `auth-changed` `postMessage` wiring is correct (listener at `index.html:204`), but `updateAuthNavigation` always reads `null`, so:
+- after login the navbar keeps showing **Login/Register** and hides **Profile/Logout**;
+- the Logout button removes non-existent keys, leaving the real session intact (user *looks* logged out but isn't).
+*Fix: use the `designer_jobs_*` keys (or better, call `window.Auth`).*
+
+### 🟠 F2 — Open redirect / `javascript:` XSS via the login `next` param
+`login.html:179` does `window.location.href = next || "homepage.html"` with `next` taken unvalidated from the query string. `login.html?next=https://evil.com` redirects off-site after login; `login.html?next=javascript:…` executes script in the app origin (and can read the localStorage token). *Fix: accept only a relative path — reject values containing `:` or starting with `//`.*
+
+### 🟠 F3 — FE never issues PUT or DELETE (fails M7; CRUD half-built)
+Across all pages only `POST` + implicit `GET` are used (grep: 7 × `method:"POST"`). There is no UI to edit (PUT) or delete (DELETE) a job, nor to update a profile via PUT. This **fails required requirement M7** and is a real functional gap once the BE endpoints exist (B3). *Fix: add edit/delete actions wired to `PUT`/`DELETE /jobs/{id}` and `PUT /designers/{id}`.*
+
+### 🟡 F4 — World-clock renders external data unescaped
+`homepage.html:168` and `login.html:223` interpolate `entry.city`/`entry.time` straight into `innerHTML`. Low risk (server-fixed city, trusted upstream) but it's the lone network-fed `innerHTML` sink without escaping. *Fix: use `textContent`/`escapeHtml` for consistency.*
+
+### 🟡 F5 — Some pages bypass `Auth.authFetch`
+`jobs.html:224`, `job-detail.html:250` read the token manually and call raw `fetch`, so they miss the centralized 401/expiry → login redirect that `Auth.authFetch` provides. Inconsistent session handling + duplicated logic. *Fix: route protected calls through `Auth.authFetch`.*
+
+### ⚪ F6 — JWT stored in `localStorage` (XSS-exposed)
+Any script on the origin can read `designer_jobs_token`; combined with F2 it's directly exploitable. Acceptable for a student project but worth noting; httpOnly cookies would harden it. (Already flagged architecturally in §7.7.)
+
+### S3 — W3C validation results (validator.w3.org/nu, all 15 pages)
+
+**Not met — 6 pages have errors (~17 total).** Fixes are quick:
+
+| Page | Errors | Issue |
+|---|---|---|
+| `post-a-job.html` | 6 | `autocomplete` on inputs whose `type` doesn't allow it |
+| `profile-edit.html` | 6 | same `autocomplete` misuse |
+| `register.html` | 2 | same `autocomplete` misuse |
+| `index.html` | 1 | stray `</script>` end tag |
+| `search-results.html` | 1 | `aria-label` on a `div` with no `role` |
+| `advanced-search.html` | 1 | `label[for]` points at a hidden/missing control |
+
+Clean (0 errors): `login`, `profile`, `chat`, `job-random`, `homepage`, `jobs`, `job-detail` (last three have a minor warning). `about`/`impressum` warn only (Lorem-ipsum vs `lang="en"`). *Fix these 6 pages to claim S3's points.*
+
+---
+
 ## 10. Remaining work to "finish" (the 6-day plan)
 
 Ordering is driven by **grading points first** (see the ⭐ requirements section), then security/correctness, then polish. Items reference both bug IDs (§9) and requirement IDs (M/S/C).
@@ -456,8 +524,12 @@ Ordering is driven by **grading points first** (see the ⭐ requirements section
 14. **C3 — a `PATCH` endpoint** (partial job/profile update) consumed by the FE.
 15. **B6 — contract generation on hire**; **B11 — global `@ControllerAdvice`**; **B9 — newest-first message pagination**; **B8 — sync package READMEs**; minimal **moderation/**.
 
-### Verify as you go
-- `mvn test` (the §5 red board) + the Postman/Newman suite (`postman/`) are your regression nets — both should trend toward all-green as the bugs/stubs above are completed. The Postman folders 5–6 mirror exactly these gaps.
+### Newly surfaced by the deep reviews — slot into the tiers above
+- **Tier 0 (required points):** **F1** fix the `index.html` navbar localStorage keys (tiny, but the whole logged-in/logout UX is broken right now); **F3/M7** add the FE PUT/DELETE actions.
+- **Tier 1 (security):** **B14** conversation-spoofing check in `ChatService`; **F2** validate the login `next` param (open-redirect / `javascript:` XSS).
+- **Tier 1–2 (robustness/correctness):** **B15** add HTTP timeouts to `ExternalTimeApiClient`; **B16** fix lexicographic timestamp ordering; **B17** delete the duplicate CORS config in `WebConfig`; **B19** make the hire/status transition atomic; **B20** fix the `design1/` path default.
+- **Tier 2 (SHOULD points):** **S3** fix the 6 W3C-failing pages (mostly stray `</script>` + `autocomplete`/`aria`/`label` attributes — see §9c).
+- **Build hygiene:** **H1** add a coverage profile so `mvn test` still emits JaCoCo while the red board is red; **H3** `git rm --cached` the H2 DB file.
 
 ### Explicitly out of scope (say so to graders)
 - External chat server (`ExternalChatApiClient` stays a placeholder, `USE_EXTERNAL_CHAT_API=false`).

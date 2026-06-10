@@ -58,12 +58,17 @@
 
           <div class="row g-3 mb-3">
             <div class="col-md-6">
-              <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="city" style="font-size:.72rem; letter-spacing:.22em">City *</label>
-              <input class="form-control border-primary border-2 rounded-3" id="city" type="text" name="city" placeholder="Vienna" required>
-            </div>
-            <div class="col-md-6">
               <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="country" style="font-size:.72rem; letter-spacing:.22em">Country *</label>
-              <input class="form-control border-primary border-2 rounded-3" id="country" type="text" name="country" placeholder="Austria" required>
+              <select class="form-control border-primary border-2 rounded-3" id="country" name="country" required>
+                <option value="">Select country</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label font-monospace text-uppercase fw-bold text-secondary" for="city" style="font-size:.72rem; letter-spacing:.22em">City *</label>
+              <select class="form-control border-primary border-2 rounded-3" id="city" name="city" required disabled>
+                <option value="">Select city</option>
+              </select>
             </div>
           </div>
 
@@ -299,8 +304,83 @@
       element.addEventListener("input", updatePreview);
     }
   });
+  async function loadCountries() {
+    const countrySelect = document.getElementById("country");
+
+    try {
+      const response = await fetch("http://localhost:8080/locations/countries");
+
+      if (!response.ok) {
+        throw new Error("Countries could not be loaded.");
+      }
+
+      const countries = await response.json();
+
+      countrySelect.innerHTML = `<option value="">Select country</option>`;
+
+      countries.forEach(country => {
+        const option = document.createElement("option");
+        option.value = country;
+        option.textContent = country;
+        countrySelect.appendChild(option);
+      });
+
+    } catch (error) {
+      console.error("Error while loading countries:", error);
+    }
+  }
+
+  async function loadCities(country) {
+    const citySelect = document.getElementById("city");
+
+    citySelect.innerHTML = `<option value="">Loading cities...</option>`;
+    citySelect.disabled = true;
+
+    if (!country) {
+      citySelect.innerHTML = `<option value="">Select city</option>`;
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:8080/locations/cities?country=" + encodeURIComponent(country));
+
+      if (!response.ok) {
+        throw new Error("Cities could not be loaded.");
+      }
+
+      const cities = await response.json();
+
+      citySelect.innerHTML = `<option value="">Select city</option>`;
+
+      cities.forEach(city => {
+        const option = document.createElement("option");
+        option.value = city;
+        option.textContent = city;
+        citySelect.appendChild(option);
+      });
+
+      citySelect.disabled = false;
+
+    } catch (error) {
+      console.error("Error while loading cities:", error);
+      citySelect.innerHTML = `<option value="">Cities unavailable</option>`;
+    }
+  }
+
+  document.getElementById("country").addEventListener("change", async () => {
+    const selectedCountry = document.getElementById("country").value;
+    await loadCities(selectedCountry);
+    updatePreview();
+  });
+
+  document.getElementById("city").addEventListener("change", () => {
+    updatePreview();
+  });
+
+  loadCountries();
 
   loadEditProfile();
+
 </script>
 </body>
 </html>

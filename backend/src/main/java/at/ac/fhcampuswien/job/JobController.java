@@ -96,4 +96,53 @@ public class JobController {
 
         return ResponseEntity.ok(job);
     }
+    /**
+     * DELETE /jobs/{id}
+     * Deletes a job.
+     *
+     * The logged-in client who created the job may delete it.
+     * A logged-in designer may also delete it.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteJob(@PathVariable String id, Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "error", "not authenticated"
+            ));
+        }
+
+        Job existingJob = jobRepository.findById(id);
+
+        if (existingJob == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "error", "job not found"
+            ));
+        }
+
+        boolean isOwnerClient = existingJob.clientId != null && existingJob.clientId.equals(auth.getName());
+
+        boolean isDesigner = auth.getAuthorities().stream()
+                .anyMatch(authority ->
+                        authority.getAuthority().equals("DESIGNER")
+                                || authority.getAuthority().equals("ROLE_DESIGNER")
+                );
+
+        if (!isOwnerClient && !isDesigner) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "error", "only the client who created this job or a designer can delete it"
+            ));
+        }
+
+        boolean deleted = jobRepository.deleteById(id);
+
+        if (!deleted) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "error", "job could not be deleted"
+            ));
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "message", "job deleted successfully"
+        ));
+    }
 }

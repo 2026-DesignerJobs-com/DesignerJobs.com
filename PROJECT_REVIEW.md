@@ -1,0 +1,486 @@
+t# DesignerJobs.com — Project Review & Walkthrough
+
+> A shared reference for our 6-day final push. It explains the whole project to **any** audience — from someone who has never seen Spring Boot, to a senior dev joining the review — with deep dives on **Spring Boot usage** and **session/auth management**, plus an honest list of **bugs, gaps, and remaining work**.
+
+---
+
+## 0. How to use this document
+
+Read the section that matches who you're talking to:
+
+| Audience | Start at | Skip |
+|---|---|---|
+| **Total beginner** (non-coder, stakeholder) | §1 "What it is" + §2 "The 60-second tour" | the code deep-dives |
+| **Junior dev / student** | §1–§5 | nothing |
+| **Senior dev / reviewer** | §3 (architecture), §6 (Spring deep dive), §7 (session deep dive), §9 (bugs) | §2 |
+
+Three explanation levels are marked inline:
+- 🟢 **Beginner** — plain language, no jargon.
+- 🟡 **Intermediate** — assumes basic web/programming knowledge.
+- 🔴 **Pro** — implementation detail and trade-offs.
+
+---
+
+## 1. What this project is
+
+**DesignerJobs.com** is a student web project (FH Campus Wien) — a small job marketplace connecting **clients** (who post design jobs) with **designers** (who apply and get hired).
+
+🟢 **Beginner version:** Think of it like a tiny "Upwork for designers." Companies post jobs; designers browse them, apply, chat with the company, and get hired. There's a website (the part you see) and a server (the part that stores everything and enforces the rules).
+
+🟡 **What's built:** a REST API in **Java + Spring Boot** (the `backend/`) and a **vanilla-JavaScript + Bootstrap** website (`frontend/design3/`). One single Java program runs both — it answers data requests *and* serves the web pages. Everything lives at `http://localhost:8080` while developing.
+
+🔴 **Stack:** Spring Boot 3.2, Java 17, embedded H2 file database, **raw JDBC** (no JPA/Hibernate), stateless **JWT** auth via Spring's OAuth2 Resource Server, BCrypt password hashing. No build of the frontend — plain `.html`/`.js` files served as static resources.
+
+---
+
+## ⭐ Grading requirements status (MUST / SHOULD / COULD)
+
+This is the official rubric mapped against the **actual code today** (verified 2026-06-10). Legend: ✅ met · ⚠️ partial/at-risk · ❌ not met · ❓ needs verification.
+
+### MUST — 21 points (all required; two are currently at risk)
+
+| # | Requirement | Status | Evidence / what's missing |
+|---|---|---|---|
+| **M1** | BE is an individual component | ✅ | `backend/` Spring Boot app, separate from FE |
+| **M2** | FE in HTML5 + CSS + JS | ✅ | `frontend/design3/` vanilla JS + Bootstrap |
+| **M3** | FE↔BE over HTTP(S) | ✅ | all calls to `http://localhost:8080` |
+| **M4** | Asynchronous transfer (AJAX) | ✅ | FE uses `fetch()` / `Auth.authFetch()` (21 calls) |
+| **M5** | BE returns JSON or XML | ✅ | JSON via `@RestController` |
+| **M6** | BE uses GET, POST, PUT **and DELETE**, each on ≥1 endpoint | ⚠️ | GET/POST/PUT are functional; **DELETE exists only as 501 stubs** (`/users/{id}`, portfolio). **Implement one real DELETE** — fixing **B3** (`DELETE /jobs/{id}`) does it. |
+| **M7** | FE consumes GET, POST, PUT **and DELETE** from ≥1 endpoint | ⚠️ | **FE only uses GET + POST today** (grep: 7 `POST`, rest GET; **0 PUT, 0 DELETE**). **Add FE calls that issue PUT and DELETE** (e.g. edit job → PUT, delete job → DELETE, or accept application → PUT `/applications/{id}/status`). |
+| **M8** | Consume ≥1 external REST service | ✅ | `ExternalTimeApiClient` → `timeapi.io` (`GET /world-clock`) |
+| **M9** | Session management (Login/JWT) | ✅ | stateless JWT — see §7 |
+
+> **Action for full 21 points:** close **M6** and **M7**. Both are satisfied by implementing `PUT`/`DELETE /jobs/{id}` in the backend (**B3**) *and* wiring the frontend to call them. This is the single highest-priority work item — it's worth required points, not optional ones.
+
+### SHOULD — 8 points
+
+| # | Requirement | Status | Evidence / what's missing |
+|---|---|---|---|
+| **S1** | Consume ≥2 external REST services | ❌ | only **one** today (`timeapi.io`). `ExternalChatApiClient` is a disabled placeholder. Add a second real API (e.g. a currency, geocoding, or holiday API). |
+| **S2** | A second FE component using ≥3 BE endpoints | ❌ | only one FE (`design3/`). Build a second small FE (e.g. an admin/moderation dashboard or a designer portfolio page) hitting ≥3 endpoints. |
+| **S3** | FE is W3C compliant | ❓ | not verified — run each page through `https://validator.w3.org/` and fix errors. |
+| **S4** | FE responsive (mobile + desktop views) | ⚠️ | Bootstrap grid is responsive; confirm a **dedicated** mobile vs desktop view (breakpoints, nav collapse) and document it. |
+
+### COULD — 5 points
+
+| # | Requirement | Status | Evidence / what's missing |
+|---|---|---|---|
+| **C1** | Consume ≥3 external REST services | ❌ | needs three (have one). Depends on S1 first. |
+| **C2** | BE returns JSON **and** XML | ❌ | JSON only. Add XML via `jackson-dataformat-xml` + content negotiation (`produces = {JSON, XML}`). |
+| **C3** | BE PATCH endpoint consumed by FE | ❌ | no `@PatchMapping` exists (the only "PATCH" in code is a CORS *allowed-method* entry in `SecurityConfig`, not an endpoint). Add a PATCH endpoint (e.g. partial job/profile update) and call it from the FE. |
+
+### Points summary (honest self-assessment)
+
+- **MUST (21):** 7 of 9 fully met; **M6 + M7 at risk** → not yet a safe 21 until one functional `DELETE` exists in BE *and* the FE issues `PUT` + `DELETE`.
+- **SHOULD (8):** none safely met yet (S4 likely, S3 unverified, S1/S2 need work).
+- **COULD (5):** none met yet.
+
+These map directly onto the 6-day plan in §10 — the requirement gaps are folded in there with priority.
+
+---
+
+## 2. The 60-second tour (for anyone)
+
+1. **A client registers** → enters name, email, password, picks role "CLIENT". The server stores the account (password is scrambled, never saved in plain text) and hands back a **token** (a digital wristband proving who you are).
+2. **The client posts a job** → "Need a logo, €500." The server records it and stamps it with the client's ID.
+3. **A designer registers** as "DESIGNER", browses jobs (no login needed just to *look*), and **applies** to one.
+4. **They chat** in-platform about the job.
+5. **The client accepts/hires** the designer. (Hiring is *meant* to generate a contract — that part isn't finished yet.)
+
+The pieces that fully work today: **accounts/login, posting & browsing jobs, applying/hiring flow, and chat.** The pieces still stubbed: **designer profiles & portfolios, contracts, and moderation.** (See §8 for the exact status table.)
+
+---
+
+## 3. Architecture at a glance
+
+```
+                       http://localhost:8080
+                                │
+        ┌───────────────────────┴────────────────────────┐
+        │              ONE Spring Boot process            │
+        │                                                 │
+   ┌────▼─────┐   matches a @RestController?               │
+   │ Request  │──── yes ──►  Controller ► Service ► Repository ► H2 file DB
+   └────┬─────┘                                            │
+        │ no  (any unmatched URL)                          │
+        └────────────►  WebConfig serves a static file     │
+                        from frontend/design3/             │
+        └─────────────────────────────────────────────────┘
+```
+
+🟡 **Two roles, one program.** `Main.java` first calls `DatabaseInitializer.init()` (creates the H2 tables) *then* `SpringApplication.run()`. After that, every HTTP request either:
+- hits a **REST controller** (e.g. `/jobs`, `/auth/login`), or
+- falls through to **`config/WebConfig`**, which serves a file from `frontend/design3/` (so `/jobs.html` returns the page, `/jobs` returns JSON).
+
+🔴 **Key design decisions and where they live:**
+- **Persistence = raw JDBC.** No Spring Data, no `JdbcTemplate`. Each repository opens a `Connection` via `Database.getConnection()` and writes `PreparedStatement` SQL by hand. Canonical example: `job/JobRepository.java`.
+- **DB = embedded H2, file mode** at `data/projectdb.mv.db` (`jdbc:h2:file:./data/projectdb`, user `sa`, no password — dev only). **No migrations framework** — schema changes mean editing a `CREATE TABLE` and deleting the DB file (or hand-writing `ALTER TABLE`).
+- **Security centralized** in `config/SecurityConfig` — one filter chain, one `PasswordEncoder` bean, one CORS config. Don't scatter `@CrossOrigin` or `new BCryptPasswordEncoder()` elsewhere.
+- **Per-package READMEs are authoritative** — each package under `at.ac.fhcampuswien/` documents its own endpoints. Read them before editing, but **verify against the code** (some are stale — see §9).
+
+---
+
+## 4. Repository layout
+
+```
+DesignerJobs.com/
+├── backend/
+│   ├── pom.xml
+│   ├── data/projectdb.mv.db          ← the H2 database file (delete to reset state)
+│   └── src/main/
+│       ├── java/at/ac/fhcampuswien/
+│       │   ├── Main.java             ← entry point
+│       │   ├── Database/             ← H2 connection + table bootstrap
+│       │   ├── config/               ← SecurityConfig, WebConfig
+│       │   ├── auth/                 ← register / login / me   (DONE)
+│       │   ├── session/              ← JwtService (token issuing) (DONE)
+│       │   ├── job/                  ← job listings + search   (mostly DONE)
+│       │   ├── application/          ← apply / hire flow        (DONE, needs review)
+│       │   ├── chat/                 ← in-platform messaging    (DONE)
+│       │   ├── user/                 ← designer profiles        (STUB — 501s)
+│       │   ├── contract/             ← freelance contracts      (STUB)
+│       │   ├── moderation/           ← reports/moderation       (STUB)
+│       │   ├── worldclock/           ← demo: proxies timeapi.io
+│       │   └── external/             ← HTTP clients (time real, chat placeholder)
+│       └── resources/application.properties
+└── frontend/design3/                 ← the live frontend (NOT design1/design2)
+    ├── index.html  (iframe shell)
+    ├── auth.js     (Auth.authFetch + localStorage token store)
+    └── *.html      (one file per page)
+```
+
+---
+
+## 5. How to run & verify (there is no test suite)
+
+```sh
+cd backend
+mvn spring-boot:run        # serves API + frontend on http://localhost:8080
+mvn package                # build the jar
+```
+
+Requires **JDK 17 + Maven**.
+
+> ⚠️ **There is no `src/test` and no test framework on the classpath.** Never claim "tests pass." Verify by **running the app** and exercising endpoints with curl/browser.
+
+**Reset all state:** delete `backend/data/projectdb.mv.db` and restart.
+
+**Smoke-test recipe (copy/paste during review):**
+```sh
+# 1. register a client
+curl -s -X POST localhost:8080/auth/register -H 'Content-Type: application/json' \
+  -d '{"fullName":"Acme","email":"acme@test.com","password":"secret123","role":"CLIENT"}'
+# → returns { token, userId, role }   (HTTP 201)
+
+# 2. use the token to post a job
+TOKEN=...paste...
+curl -s -X POST localhost:8080/jobs -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"title":"Logo design","budget":"500"}'
+
+# 3. browse jobs (no token needed)
+curl -s localhost:8080/jobs
+```
+
+---
+
+## 6. Spring Boot — the deep dive
+
+This is the part most worth understanding well, because the whole backend is "just Spring."
+
+### 6.1 🟢 What Spring Boot even is
+
+Spring Boot is a framework that removes boilerplate from building a Java web server. Instead of manually wiring up an HTTP server, parsing requests, routing URLs, and converting JSON, you **annotate** plain Java classes and Spring does the plumbing.
+
+A helpful mental model: you write the *"what"* (here's a method that handles `POST /jobs`), and Spring handles the *"how"* (listen on a port, accept the TCP connection, parse the HTTP, find your method, give it the parsed data, turn your return value back into JSON).
+
+### 6.2 🟡 The annotations we actually use
+
+| Annotation | Where | What it does |
+|---|---|---|
+| `@SpringBootApplication` | `Main.java` | Marks the entry class; turns on auto-configuration + component scanning of the whole `at.ac.fhcampuswien` package tree. |
+| `@RestController` | every controller | "This class handles HTTP and returns JSON." Combines `@Controller` + `@ResponseBody`. |
+| `@RequestMapping("/jobs")` | class level | Common URL prefix for the controller. |
+| `@GetMapping` / `@PostMapping` / `@PutMapping` / `@DeleteMapping` | methods | Map an HTTP method + path to a Java method. |
+| `@PathVariable` | params | Pulls `{id}` out of the URL. |
+| `@RequestParam` | params | Pulls `?q=logo` query parameters. |
+| `@RequestBody` | params | Deserializes the JSON request body into a Java object (via Jackson). |
+| `@Service` | `JwtService`, `ChatService` | Marks a business-logic bean Spring should create and inject. |
+| `@Configuration` / `@Bean` | `SecurityConfig`, `WebConfig` | Java-based config; `@Bean` methods produce singletons Spring manages. |
+| `@Value("${app.jwt.secret}")` | config | Injects a value from `application.properties`. |
+
+### 6.3 🟡 Dependency Injection (DI) — the core idea
+
+Notice that no controller ever does `new JobRepository()`. Instead:
+
+```java
+public JobController(JobRepository jobRepository) {   // constructor injection
+    this.jobRepository = jobRepository;
+}
+```
+
+🟢 **Plain version:** You don't build your own tools; you ask for them in the constructor and Spring hands you ready-made, shared instances. This keeps pieces loosely coupled and swappable.
+
+🔴 Spring builds a dependency graph at startup: it sees `JobController` needs a `JobRepository`, creates one (a singleton bean), and passes it in. The same `ChatService` constructor receives `ConversationRepository`, `MessageRepository`, and `ExternalChatApiClient` — all auto-wired. There are **no `@Autowired` field annotations**; we use **constructor injection** everywhere, which is the recommended style (immutable, testable, fails fast if a dependency is missing).
+
+### 6.4 🔴 The request lifecycle (what happens on every call)
+
+```
+TCP → Embedded Tomcat → Spring Security filter chain → DispatcherServlet
+    → HandlerMapping picks the @…Mapping method
+    → argument resolvers fill @PathVariable / @RequestParam / @RequestBody / Authentication
+    → your controller method runs (calls Service → Repository → JDBC → H2)
+    → return value (object or ResponseEntity) → Jackson → JSON → HTTP response
+```
+
+Two things worth calling out for reviewers:
+- **`Authentication` as a method parameter** is injected by Spring Security from the `SecurityContext` (set by the JWT filter). That's how controllers get the caller's identity *without trusting the request body*.
+- **`ResponseEntity<?>`** lets a method choose its own status code (`201 Created`, `403 Forbidden`, etc.). Methods that just return a `List<Job>` (like `JobController.search`) implicitly return `200 OK`.
+
+### 6.5 🔴 Auto-configuration choices we made
+
+- `@SpringBootApplication(exclude = { UserDetailsServiceAutoConfiguration.class })` in `Main.java` — we **disable** Spring Security's default in-memory user/password generator, because we authenticate via JWT, not username/password form login.
+- `DatabaseInitializer.init()` runs **before** `SpringApplication.run()` — tables must exist before any repository touches them. This is deliberate ordering, not an accident.
+- **Static file serving** is handled by `config/WebConfig` (a `WebMvcConfigurer`) mapping unmatched URLs to `frontend/design3/`. That's why adding a controller path that collides with a page name matters.
+
+### 6.6 🔴 Why raw JDBC instead of JPA?
+
+It's a **teaching choice** — the project came off a hand-rolled `HttpServer` (prog2), so staying close to SQL keeps the data layer transparent. Trade-off: more boilerplate, manual `PreparedStatement` mapping, no automatic schema management. Every repository follows the `job/JobRepository.java` pattern; copy it when implementing a new one.
+
+---
+
+## 7. Session & authentication — the deep dive
+
+> **This is the second area to understand thoroughly.** The headline: **there is no server-side session.** No `HttpSession`, no `JSESSIONID`, nothing stored about "who is logged in" on the server.
+
+### 7.1 🟢 The wristband analogy
+
+When you log in, the server gives you a **signed wristband** (a JWT). Every time you ask the server to do something, you show the wristband. The server checks the signature is genuine, reads your name and role off it, and acts — *without* looking anything up or remembering you between requests. When you "log out," you just throw the wristband away; the server doesn't track it.
+
+### 7.2 🟡 What a JWT is
+
+A JWT (JSON Web Token) is a string in three parts: `header.payload.signature`.
+- **payload** carries claims — here: `sub` (the user id), `role`, `iat` (issued-at), `exp` (expiry).
+- **signature** is an HMAC-SHA256 hash of header+payload using a **secret key only the server knows**. If anyone tampers with the payload, the signature no longer matches and the token is rejected.
+
+So the token is *readable by anyone* (don't put secrets in it) but *unforgeable without the key*.
+
+### 7.3 🟡 The end-to-end flow
+
+```
+REGISTER / LOGIN  (public)
+  client → POST /auth/login {email, password}
+  server → verify BCrypt hash → JwtService.issue(userId, role)
+         → returns { token, userId, role }
+  frontend (auth.js) → stores token in localStorage
+                       (keys: designer_jobs_token / _userId / _role)
+
+EVERY LATER REQUEST  (authenticated)
+  frontend → Auth.authFetch() attaches header:  Authorization: Bearer <token>
+  server → BearerTokenAuthenticationFilter reads it
+         → JwtDecoder verifies HS256 signature + expiry
+         → JwtAuthenticationConverter builds an Authentication
+            (name = "sub" claim = userId, authority = "ROLE_" + role)
+         → controller reads auth.getName() / auth.getAuthorities()
+
+LOGOUT
+  POST /auth/logout → 204, does NOTHING server-side (client discards token)
+```
+
+### 7.4 🔴 Where each piece lives in code
+
+- **Issuing** — `session/JwtService.issue()`. Builds claims (`subject = userId`, `claim("role", role)`, `issuedAt`, `expiresAt = now + app.jwt.expiry-millis`), signs HS256 via `JwtEncoder`.
+- **Signing keys** — `config/SecurityConfig`: `hmacSecretKey()` turns `app.jwt.secret` into a `SecretKeySpec`; `jwtEncoder()` (Nimbus) signs; `jwtDecoder()` verifies. Same secret both directions (symmetric HS256).
+- **Verifying** — we **don't** write verification code. `oauth2ResourceServer().jwt(...)` wires in Spring's `BearerTokenAuthenticationFilter`, which uses our `JwtDecoder`. Invalid/expired/missing token → 401 before the controller runs.
+- **Mapping claims → identity** — `jwtAuthenticationConverter()`:
+  - `setPrincipalClaimName("sub")` so `auth.getName()` returns the **userId**.
+  - role claim is a single string, wrapped into `ROLE_<role>` as a `GrantedAuthority`.
+- **Stateless policy** — `sessionManagement(SessionCreationPolicy.STATELESS)`: Spring never creates an `HttpSession`.
+- **Password security** — one `BCryptPasswordEncoder` bean; `AuthController.register` calls `encode()`, `login` calls `matches()`. Plain passwords are never stored.
+
+### 7.5 🔴 The golden rule: never trust identity from the body
+
+Controllers set ownership from the token, not the payload:
+- `JobController.create`: `job.clientId = auth.getName();` — the body's `clientId` is ignored.
+- `ChatService.sendMessage`: `message.senderId = currentUserId;` — server-set.
+- `ApplicationController.apply`: `designerId = auth.getName();`.
+
+This is the single most important security invariant in the codebase. Any new endpoint must follow it.
+
+### 7.6 🔴 Authorization rules (who can hit what)
+
+From `SecurityConfig.filterChain`, in order:
+- `permitAll`: `/auth/**`, `/world-clock`, **GET** `/jobs/**`, **GET** `/designers/**`, and static assets (`/*.html`, `/*.css`, `/*.js`, `/images/**`, …).
+- everything else → `authenticated()`.
+
+🔴 **To add a public endpoint you must add its matcher here first**, otherwise it 401s before reaching your controller. Role-level checks (e.g. "only designers can apply") are currently done **inside controllers** (`ApplicationController.isDesigner`), not via `hasRole(...)` in the filter chain — worth noting for reviewers, it's a slight inconsistency.
+
+### 7.7 🔴 Known limitations of this auth model
+
+- **No token revocation / logout is a noop.** A stolen or leaked token is valid until `exp` (2h default). Acceptable for a student project; would need a blacklist or short-lived + refresh tokens in production.
+- **Symmetric secret** — anyone with `app.jwt.secret` can mint tokens. The default dev secret **must** be overridden via `APP_JWT_SECRET` (≥32 chars) in any non-dev environment.
+- **Tokens in `localStorage`** (frontend) are readable by any JS on the page → XSS-exposed. Fine for the assignment; httpOnly cookies would be the hardened alternative.
+
+---
+
+## 8. Feature & endpoint status (verified against code, June 2026)
+
+> ⚠️ The `backend/README.md` "status at a glance" table is **out of date** — it lists `application/`, `chat/` as stubs, but they are implemented. Trust this table (built by reading the controllers).
+
+| Package | Real state | Endpoints | Notes |
+|---|---|---|---|
+| `auth/` | ✅ Done | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout` (noop), `GET /auth/me` | Solid. |
+| `session/` | ✅ Done | — | `JwtService` only. |
+| `config/` | ✅ Done | — | Security + static serving. |
+| `job/` | 🟠 Mostly | `POST /jobs`, `GET /jobs`, `GET /jobs/{id}` | **`PUT`/`DELETE /jobs/{id}` are documented but NOT implemented** (see §9). |
+| `application/` | ✅ Done (review) | `POST /jobs/{jobId}/apply`, `GET /jobs/{jobId}/applications`, `GET /applications/{id}`, `PUT /applications/{id}/status`, `POST /applications/{id}/hire` | Hire is a stub-trigger (no contract yet). Authorization gaps — §9. |
+| `chat/` | ✅ Done | `GET/POST /conversations`, `GET/POST /conversations/{id}/messages` | Local H2 mode; external API path behind `USE_EXTERNAL_CHAT_API=false`. |
+| `worldclock/` | ✅ Done | `GET /world-clock` | Demo proxy to timeapi.io. |
+| `user/` | ❌ Stub | `/designers`, `/designers/{id}`, `/designers/{id}/portfolio…`, `/users/{id}` | **All return `501 not_implemented`.** Profiles + portfolio. |
+| `contract/` | ❌ Stub | `/contracts…` | Phase 2. Hire flow has a `TODO` to call it. |
+| `moderation/` | ❌ Stub | `/moderation…`, reports | Phase 2. |
+
+---
+
+## 9. Bugs & correctness issues (review these first)
+
+Ordered by severity. Found by reading every backend source file (controllers, services, repositories) line-by-line and tracing call sites — the committed git diff is docs-only, so the review was run against the actual code. **These are the concrete things to fix in the 6 days.**
+
+### 🔴 B1 — Login is case-sensitive on email, but registration lower-cases it → users locked out
+`AuthController.register` stores `user.email = req.email.trim().toLowerCase()` (line 64), but `login` calls `userRepository.findByEmail(req.email)` (line 97) with the **raw** input — no trim, no lowercase. `UserRepository.findByEmail` does an exact SQL `WHERE email = ?`.
+**Failure:** someone registers as `John@Example.com` (stored as `john@example.com`). They later log in typing `John@Example.com` → `findByEmail` finds nothing → `401 invalid email or password`. **They can never log in unless they type the all-lowercase form.** Same root cause makes the duplicate-email guard leaky (next item). *Fix: normalize email (`trim().toLowerCase()`) in one place used by both register and login.*
+
+### 🔴 B2 — Authorization gaps in the application/hire flow
+In `ApplicationController`:
+- `GET /jobs/{jobId}/applications` — checks only that the caller is *authenticated*, **not** that they own the job. **Any logged-in user can read another client's applicant list** (cover letters, designer ids).
+- `GET /applications/{id}` — same: no ownership check.
+- `PUT /applications/{id}/status` and `POST /applications/{id}/hire` — **any** authenticated user can accept/reject/hire on **any** application; ownership of the underlying job is never verified.
+
+Fix: load the job, compare `job.clientId` against `auth.getName()`, return 403 otherwise. *(The most serious access-control issue in the codebase.)*
+
+### 🔴 B3 — `PUT`/`DELETE /jobs/{id}` advertised but unreachable; repo logic is dead code
+`backend/README.md` lists both endpoints as implemented and `JobRepository` even has working `update()` and `deleteById()` methods — but **`JobController` has no `@PutMapping`/`@DeleteMapping`**, so the routes don't exist and those repo methods are never called. A client **cannot edit or delete a posted job.** Note also: `JobRepository.update()` overwrites `client_id` and `created_at` from the request body, so if it's ever wired up naively it will let a caller reassign job ownership / forge timestamps. *Fix: add the controller methods with an `auth.getName() == job.clientId` ownership check; don't let the body set `clientId`/`createdAt`.*
+
+### 🟠 B4 — Random-job page is broken: `/jobs/random` collides with `/jobs/{id}`
+`JobRepository.getRandomJob()` exists and `frontend/design3/job-random.html` expects a random job, but there is **no controller route** for it. A request to `/jobs/random` is matched by `@GetMapping("/{id}")` with `id="random"` → `findById("random")` → `404 job not found`. The repo method is dead code and the page can't work. *Fix: add `GET /jobs/random` **above** the `/{id}` mapping (ordering matters), wired to `getRandomJob()`.*
+
+### 🟠 B5 — Duplicate-email registration returns 500 instead of 409 (casing)
+`register` calls `existsByEmail(req.email)` with the **raw** (possibly mixed-case) email, but the column always stores lowercase. So registering `Foo@x.com` when `foo@x.com` already exists passes the guard, then hits the `UNIQUE` constraint on `email` → `SQLException` → wrapped `RuntimeException` → **HTTP 500** instead of the intended `409 email already exists`. Same fix as B1 (normalize before the check).
+
+### 🟠 B6 — Hire flow doesn't create a contract
+`ApplicationController.hire` sets status to `HIRED` and leaves `// TODO: trigger contract creation`. The core "happy path" promised in the UI (hire → contract) is incomplete because `contract/` is a stub.
+
+### 🟠 B7 — No validation/uniqueness on applications & conversations
+- `ApplicationController.apply` and `ChatService.createConversation` accept `jobId`/`designerId`/`clientId` from the path/body without checking the referenced rows exist (no FK constraints in the H2 schema either) → orphan applications/conversations pointing at non-existent jobs.
+- The `applications` table has **no unique constraint on `(job_id, designer_id)`**, so a designer can submit the **same application many times**.
+- `ConversationRepository.create` does check-then-insert against a `UNIQUE (client_id, designer_id, job_id)` constraint — a **TOCTOU race**: two simultaneous "open chat" clicks both see no existing row, both insert, the second throws → **500** instead of returning the existing conversation.
+
+### 🟠 B8 — Stale package/READMEs vs. code
+`chat/README.md` and the backend README "status at a glance" still call `chat/` and `application/` "501 stubs," but they're implemented. Misleading docs cause people to re-implement or distrust working code. Update them (and trust §8 of this doc).
+
+### 🟡 B9 — Message pagination returns oldest messages first
+`MessageRepository.findByConversationId` orders `created_at ASC` with `LIMIT 50 OFFSET page*50`, so page 0 is the **oldest** 50 messages and new messages land on ever-higher page numbers. For a chat UI you almost always want the most recent page first. *Minor, but it makes the chat feel broken as history grows.*
+
+### 🟡 B10 — Designer profile data is split & unreachable
+Registration stores `designType`/`skills` on the user (`auth`), but the **`/designers` endpoints that would surface them are all 501** (`user/` package). So designer-facing pages can't actually show profiles yet.
+
+### 🟡 B11 — No global exception handling outside chat
+Only `ChatController` has an `@ExceptionHandler`. Any repository `RuntimeException` (every repo wraps `SQLException` in one) in another controller surfaces as a default Spring 500 with a stack trace. Add a `@ControllerAdvice`.
+
+### 🟡 B12 — Dev secret & DB credentials are committed defaults
+`app.jwt.secret` default and H2 `sa`/no-password are dev-only but easy to ship by accident. The symmetric secret means anyone who has it can mint valid tokens. Make sure any deploy/grader overrides `APP_JWT_SECRET` (≥32 chars).
+
+### ⚪ B13 — Top-level `README.md` references `design1/`/`design2/`
+The live frontend is `design3/`. Minor, but confusing for newcomers. Trust `frontend/design3/README.md`.
+
+---
+
+## 9b. Test & build harness findings (from code review)
+
+These are **not** application bugs — they're issues in the test suite, build config, and repo hygiene introduced/uncovered while adding the test harness. Listed because they undermine the safety net itself. (Verified 2026-06-10.)
+
+### 🔴 H1 — `mvn test` no longer produces a JaCoCo coverage report
+The JaCoCo `report` goal is bound to the `test` phase, but the intentional red TDD tests (the §5 bug board in `test.md`) make Surefire fail and **abort the phase before `jacoco:report` runs**. Verified: `mvn test` exits `1`, and `target/site/jacoco/jacoco.csv` is never regenerated.
+**Impact:** the coverage workflow documented in `test.md` ("open `target/site/jacoco/index.html`") silently produces nothing for as long as the board is red — i.e. always, until the bugs are fixed.
+**Fix:** generate coverage with `mvn test -Dmaven.test.failure.ignore=true`, or bind `jacoco:report` to the `verify` phase, or add a dedicated coverage profile. Document the chosen command in `test.md`.
+
+### 🟠 H2 — Vacuous password-encoding assertion (false confidence)
+In `AuthControllerTest`, the "password is hashed, not raw" check is `assertThat(saved.passwordHash).isNotEqualTo("secret123")`. But `passwordEncoder` is a Mockito mock whose unstubbed `encode()` returns `null`, so the assertion is `null != "secret123"` → trivially true. **It would still pass even if `register()` stored the raw password.**
+**Fix:** assert the call instead — `verify(passwordEncoder).encode("secret123")` — so a regression that drops encoding actually fails the test.
+
+### 🟠 H3 — The H2 database file is committed and churns on every run
+`backend/data/projectdb.mv.db` is tracked in git and is rewritten by every `mvn spring-boot:run`, file-DB test, and Newman run (currently dirty: `36KB → 61KB`). The `.gitignore` entry doesn't help because the file is already tracked.
+**Impact:** noisy binary diffs and accidental commits of user/job/test data.
+**Fix:** `git rm --cached backend/data/projectdb.mv.db` (keep it gitignored).
+
+### 🟡 H4 — Fragile in-memory DB selection across `@SpringBootTest` classes
+`SecurityIntegrationTest` and `KnownBugsWebTest` pick the in-memory DB by setting the `db.url` system property in a `static` block. Spring caches **one** context across both, while the repositories read `db.url` **per call**. They only work because both static blocks set the *same* URL (`jdbc:h2:mem:springboottest`).
+**Trap:** add a third `@SpringBootTest` with a different `db.url` and it silently breaks — the cached context's tables live in the first DB while requests hit the second → `RuntimeException: Failed to create job` (the exact error hit while building this suite).
+**Fix:** centralize the test DB URL in one shared base class/constant and document the invariant.
+
+### 🟡 H5 — `H2TestSupport` leaks the `db.url` system property (no teardown)
+`H2TestSupport` sets the global `db.url` in `@BeforeEach` but never restores it, and each test uses a fresh `mem:…;DB_CLOSE_DELAY=-1` database that is retained for the JVM's lifetime.
+**Impact:** after repository tests run, `db.url` stays pointed at a random throwaway DB; any later same-JVM code expecting the default *file* DB would silently read an empty stale in-memory DB. Harmless today (nothing depends on the file DB in tests), but a latent cross-test-pollution trap; also accumulates ~25+ in-memory DBs per run.
+**Fix:** clear/restore the property in `@AfterEach`.
+
+> Note: the one **production** change made for testability — `Database.getConnection()` reading `db.url`/`db.user`/`db.password` system properties — is correct and preserves the original file-DB defaults exactly. No app-behavior regression.
+
+---
+
+## 10. Remaining work to "finish" (the 6-day plan)
+
+Ordering is driven by **grading points first** (see the ⭐ requirements section), then security/correctness, then polish. Items reference both bug IDs (§9) and requirement IDs (M/S/C).
+
+### Tier 0 — secure the required 21 points (MUST gaps — do these first)
+1. **B3 + M6 + M7 — `PUT` and `DELETE /jobs/{id}`, end to end.** Wire the existing `JobRepository.update()`/`deleteById()` through `JobController` with an ownership check (don't let the body set `clientId`/`createdAt`), **and add frontend calls that issue `PUT` and `DELETE`** (e.g. edit-job and delete-job buttons). This single thread closes **M6** (BE needs a functional DELETE) *and* **M7** (FE must consume PUT + DELETE) — both are *required* points currently at risk.
+2. **Verify M4/M5/M9 stay intact** while editing (AJAX, JSON, JWT) — they're met today; don't regress them.
+
+### Tier 1 — security & cheap-but-broken correctness
+3. **B1 / B5 — normalize email** (`trim().toLowerCase()`) in one place shared by register + login. Fixes the "can't log in" bug *and* the 500-on-duplicate. *Tiny effort, high impact.* (Turns `KnownBugsTest.b1/b5` green.)
+4. **B2 — fix authorization** in `ApplicationController` (ownership checks on list/get/status/hire). *Top security priority.* (Turns `b2` green.)
+5. **B4 — add `GET /jobs/random`** above the `/{id}` route so `job-random.html` works. *~5 lines.* (Turns `b4` green.)
+6. **B7 — referential validation + uniqueness** (unique `(job_id, designer_id)`; check job/user exists; idempotent `createConversation`). (Turns `b7` green.)
+
+> Tracking: every fix above flips one red test on the §5 board of `test.md` to green. Project is "done" (correctness-wise) when that board is all green.
+
+### Tier 2 — chase the SHOULD points (8)
+7. **S1 — add a second external REST service.** A second real API consumed by the BE (currency, holidays, geocoding…). Pairs toward **C1** later.
+8. **S2 — a second FE component** hitting ≥3 BE endpoints (e.g. a moderation dashboard or a public designer-portfolio page).
+9. **S3 — run every FE page through `validator.w3.org`** and fix HTML errors.
+10. **S4 — confirm/finish responsive** mobile + desktop views; document the breakpoints.
+11. **`user/` package — designer profiles & portfolio** (`GET /designers`, `GET /designers/{id}`, then `PUT` + portfolio CRUD). Feeds S2 and turns the §6 stub tests green.
+
+### Tier 3 — reach for the COULD points (5) + remaining polish
+12. **C1 — third external REST service** (after S1).
+13. **C2 — XML output** alongside JSON (`jackson-dataformat-xml` + `produces`).
+14. **C3 — a `PATCH` endpoint** (partial job/profile update) consumed by the FE.
+15. **B6 — contract generation on hire**; **B11 — global `@ControllerAdvice`**; **B9 — newest-first message pagination**; **B8 — sync package READMEs**; minimal **moderation/**.
+
+### Verify as you go
+- `mvn test` (the §5 red board) + the Postman/Newman suite (`postman/`) are your regression nets — both should trend toward all-green as the bugs/stubs above are completed. The Postman folders 5–6 mirror exactly these gaps.
+
+### Explicitly out of scope (say so to graders)
+- External chat server (`ExternalChatApiClient` stays a placeholder, `USE_EXTERNAL_CHAT_API=false`).
+- Token revocation / refresh tokens.
+- Real database (staying on embedded H2).
+
+---
+
+## 11. Quick reference card
+
+| Thing | Value |
+|---|---|
+| Run | `cd backend && mvn spring-boot:run` → `localhost:8080` |
+| Build | `mvn package` |
+| Reset DB | delete `backend/data/projectdb.mv.db`, restart |
+| DB | H2 file, `jdbc:h2:file:./data/projectdb`, user `sa`, no pw |
+| Auth | JWT HS256, header `Authorization: Bearer <token>`, 2h expiry |
+| Token store (frontend) | `localStorage`: `designer_jobs_token` / `_userId` / `_role` |
+| Secret override | env `APP_JWT_SECRET` (≥32 chars) |
+| Identity in a controller | `auth.getName()` = userId, `auth.getAuthorities()` = `ROLE_<role>` |
+| Add a public endpoint | add matcher to `SecurityConfig` **then** write controller |
+| Tests | none — verify by running the app |
+
+---
+
+*Built by reading the actual source on 2026-06-10. Where this document and a package README disagree, the code wins — re-verify before relying on either.*

@@ -193,6 +193,14 @@ public class JobRepository {
                             String budget,
                             String workMode,
                             String tags) {
+        q = blankToNull(q);
+        category = blankToNull(category);
+        designType = blankToNull(designType);
+        location = blankToNull(location);
+        budget = blankToNull(budget);
+        workMode = blankToNull(workMode);
+        tags = blankToNull(tags);
+
         String sql = """
             SELECT *
             FROM jobs
@@ -211,6 +219,8 @@ public class JobRepository {
         String qValue = q == null ? null : "%" + q + "%";
         String locationValue = location == null ? null : "%" + location + "%";
         String tagsValue = tags == null ? null : "%" + tags + "%";
+
+
 
         try (Connection connection = Database.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -333,5 +343,12 @@ public class JobRepository {
         job.createdAt = resultSet.getString("created_at");
 
         return job;
+    }
+    private String blankToNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return value.trim();
     }
 }

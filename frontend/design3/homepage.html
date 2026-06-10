@@ -48,16 +48,21 @@
         <div class="d-flex flex-column align-items-center justify-content-center gap-4 text-center px-4 py-5" style="min-height:480px">
 
           <!-- search bar -->
-          <form id="search-form" role="search" class="d-flex align-items-center rounded-pill gap-3 px-4 py-2 w-100" style="background:rgba(0,0,0,.22); max-width:620px">
+          <form id="search-form" action="search-results.html" method="get" role="search" class="d-flex align-items-center rounded-pill gap-3 px-4 py-2 w-100" style="background:rgba(0,0,0,.22); max-width:620px">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
               <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
             </svg>
-            <input type="search" class="search-input form-control bg-transparent border-0 text-white fw-bold font-monospace text-uppercase p-0 shadow-none" placeholder="Find your next client" aria-label="Search jobs" style="letter-spacing:.12em; font-size:1.1rem">
+            <input type="search"
+                   name="q"
+                   class="search-input form-control bg-transparent border-0 text-white fw-bold font-monospace text-uppercase p-0 shadow-none"
+                   placeholder="Find your next client"
+                   aria-label="Search jobs"
+                   style="letter-spacing:.12em; font-size:1.1rem">
           </form>
 
           <!-- action buttons -->
           <div class="d-flex gap-3 flex-wrap justify-content-center">
-            <a href="advanced-search.html" class="btn btn-outline-light rounded-pill fw-bold text-uppercase px-4 py-2" style="letter-spacing:.16em">Refined Search</a>
+            <a href="advanced-search.html" id="refined-search-link" class="btn btn-outline-light rounded-pill fw-bold text-uppercase px-4 py-2" style="letter-spacing:.16em">Refined Search</a>
             <a href="jobs.html" class="btn btn-outline-light rounded-pill fw-bold text-uppercase px-4 py-2" style="letter-spacing:.16em">All Jobs</a>
             <a href="login.html"
                id="hero-login-link"
@@ -150,6 +155,21 @@
       heroProfileLink.classList.toggle("d-none", !token);
     }
 
+    const searchInput = document.querySelector('#search-form input[name="q"]');
+    const refinedSearchLink = document.getElementById("refined-search-link");
+
+    if (searchInput && refinedSearchLink) {
+      refinedSearchLink.addEventListener("click", (event) => {
+        event.preventDefault();
+
+        const keyword = searchInput.value.trim();
+        const targetUrl = keyword
+          ? "advanced-search.html?q=" + encodeURIComponent(keyword)
+          : "advanced-search.html";
+
+        window.location.href = targetUrl;
+      });
+    }
     async function loadWorldClock() {
       const worldClock = document.getElementById("world-clock");
 

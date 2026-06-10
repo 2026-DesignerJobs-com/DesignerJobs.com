@@ -205,6 +205,13 @@
           style="letter-spacing:.14em">
     Apply
   </button>
+  <button type="button"
+        id="delete-job-button"
+        class="btn btn-outline-light rounded-pill fw-bold text-uppercase px-4"
+        style="letter-spacing:.14em">
+  Delete Job
+</button>
+
 </div>
 
 
@@ -214,6 +221,9 @@
 
             document.getElementById("apply-button").addEventListener("click", () => {
                 applyToJob(currentJobId);
+            });
+            document.getElementById("delete-job-button").addEventListener("click", () => {
+                deleteJob(currentJobId);
             });
             document.getElementById("message-client-button").addEventListener("click", () => {
                 if (!currentJobId) {
@@ -280,7 +290,43 @@
             alert("Application could not be sent. Please check backend, login and application endpoint.");
         }
     }
+    async function deleteJob(jobId) {
+        const token = localStorage.getItem("designer_jobs_token");
 
+        if (!token) {
+            alert("Please log in before deleting a job.");
+            window.location.href = "login.html";
+            return;
+        }
+
+        const confirmed = confirm("Do you really want to delete this job?");
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            const response = await fetch("http://localhost:8080/jobs/" + encodeURIComponent(jobId), {
+                method: "DELETE",
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            });
+
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(result.error || "Delete failed.");
+            }
+
+            alert("Job deleted successfully.");
+            window.location.href = "jobs.html";
+
+        } catch (error) {
+            console.error("Error while deleting job:", error);
+            alert("Job could not be deleted. Please check backend, login and ownership.");
+        }
+    }
     loadJobDetail();
 </script>
 

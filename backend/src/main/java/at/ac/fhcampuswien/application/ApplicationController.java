@@ -1,5 +1,7 @@
 package at.ac.fhcampuswien.application;
 
+import at.ac.fhcampuswien.job.Job;
+import at.ac.fhcampuswien.job.JobRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -12,9 +14,12 @@ import java.util.Map;
 public class ApplicationController {
 
     private final JobApplicationRepository jobApplicationRepository;
+    private final JobRepository jobRepository;
 
-    public ApplicationController(JobApplicationRepository jobApplicationRepository) {
+    public ApplicationController(JobApplicationRepository jobApplicationRepository,
+                                 JobRepository jobRepository) {
         this.jobApplicationRepository = jobApplicationRepository;
+        this.jobRepository = jobRepository;
     }
 
     // POST /jobs/{jobId}/apply              → designer submits application
@@ -54,6 +59,21 @@ public class ApplicationController {
         if (auth == null || auth.getName() == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
                     "error", "not authenticated"
+            ));
+        }
+
+        Job job = jobRepository.findById(jobId);
+
+        if (job == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "error", "job not found"
+            ));
+        }
+
+        // Applicant lists are private to the client who posted the job.
+        if (job.clientId == null || !job.clientId.equals(auth.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "error", "only the job owner can view its applications"
             ));
         }
 

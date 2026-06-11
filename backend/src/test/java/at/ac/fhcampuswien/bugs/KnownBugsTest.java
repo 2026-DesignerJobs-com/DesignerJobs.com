@@ -1,11 +1,12 @@
 package at.ac.fhcampuswien.bugs;
 
 import at.ac.fhcampuswien.application.ApplicationController;
-import at.ac.fhcampuswien.application.JobApplication;
 import at.ac.fhcampuswien.application.JobApplicationRepository;
 import at.ac.fhcampuswien.auth.AuthController;
 import at.ac.fhcampuswien.auth.AuthRequest;
 import at.ac.fhcampuswien.auth.UserRepository;
+import at.ac.fhcampuswien.job.Job;
+import at.ac.fhcampuswien.job.JobRepository;
 import at.ac.fhcampuswien.session.JwtService;
 import at.ac.fhcampuswien.testsupport.H2TestSupport;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -14,7 +15,7 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
@@ -25,8 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * TDD regression tests for the known bugs in PROJECT_REVIEW.md §9.
@@ -97,20 +96,30 @@ class KnownBugsTest extends H2TestSupport {
 
     @Test
     void b2_listApplicationsByNonOwnerShouldBeForbidden() {
-        JobApplicationRepository repository = mock(JobApplicationRepository.class);
-        when(repository.findByJobId("job-1")).thenReturn(List.of(new JobApplication()));
+        JobRepository jobRepository = new JobRepository();
+        Job job = new Job();
+        job.clientId = "the-owner";
+        job.title = "Logo Design";
+        Job savedJob = jobRepository.create(job);
 
-        Authentication auth = mock(Authentication.class);
-        when(auth.getName()).thenReturn("not-the-owner");
+        JobApplicationRepository applicationRepository = new JobApplicationRepository();
+        applicationRepository.create(savedJob.id, "designer-1", "hello");
 
-        ApplicationController controller = new ApplicationController(repository);
+        ApplicationController controller =
+                new ApplicationController(applicationRepository, jobRepository);
 
-        ResponseEntity<?> response = controller.listApplications("job-1", auth);
+        ResponseEntity<?> nonOwnerResponse = controller.listApplications(
+                savedJob.id,
+                new UsernamePasswordAuthenticationToken("not-the-owner", null, List.of()));
 
-        // Today: 200 — the controller never checks job ownership, so any
-        // authenticated user can read another client's applicant list.
-        // (The fix will need a JobRepository to look up job.clientId.)
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(nonOwnerResponse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+
+        // The legitimate owner must still see the applicant list.
+        ResponseEntity<?> ownerResponse = controller.listApplications(
+                savedJob.id,
+                new UsernamePasswordAuthenticationToken("the-owner", null, List.of()));
+
+        assertThat(ownerResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     // ---- B7: a designer must not apply to the same job twice ----

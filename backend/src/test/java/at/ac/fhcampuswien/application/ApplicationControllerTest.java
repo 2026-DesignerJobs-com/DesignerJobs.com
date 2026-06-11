@@ -1,5 +1,7 @@
 package at.ac.fhcampuswien.application;
 
+import at.ac.fhcampuswien.job.Job;
+import at.ac.fhcampuswien.job.JobRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,6 +28,7 @@ import static org.mockito.Mockito.when;
 class ApplicationControllerTest {
 
     @Mock JobApplicationRepository repository;
+    @Mock JobRepository jobRepository;
     @Mock Authentication auth;
 
     @InjectMocks ApplicationController controller;
@@ -67,6 +70,46 @@ class ApplicationControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         verify(repository).create("job-1", "designer-1", "hire me");
+    }
+
+    // ---- listApplications ----
+
+    @Test
+    void listApplications_returns404_whenJobMissing() {
+        when(auth.getName()).thenReturn("client-1");
+        when(jobRepository.findById("missing")).thenReturn(null);
+
+        ResponseEntity<?> response = controller.listApplications("missing", auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void listApplications_rejectsNonOwner_with403() {
+        when(auth.getName()).thenReturn("not-the-owner");
+        Job job = new Job();
+        job.id = "job-1";
+        job.clientId = "the-owner";
+        when(jobRepository.findById("job-1")).thenReturn(job);
+
+        ResponseEntity<?> response = controller.listApplications("job-1", auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        verify(repository, never()).findByJobId(anyString());
+    }
+
+    @Test
+    void listApplications_allowsJobOwner() {
+        when(auth.getName()).thenReturn("the-owner");
+        Job job = new Job();
+        job.id = "job-1";
+        job.clientId = "the-owner";
+        when(jobRepository.findById("job-1")).thenReturn(job);
+        when(repository.findByJobId("job-1")).thenReturn(List.of(new JobApplication()));
+
+        ResponseEntity<?> response = controller.listApplications("job-1", auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     // ---- updateStatus ----

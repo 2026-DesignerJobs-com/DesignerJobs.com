@@ -140,6 +140,54 @@ class ApplicationControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
+    // ---- getApplication ----
+
+    @Test
+    void getApplication_returns404_whenMissing() {
+        when(auth.getName()).thenReturn("client-1");
+        when(repository.findById("missing")).thenReturn(null);
+
+        ResponseEntity<?> response = controller.getApplication("missing", auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void getApplication_allowsApplicant() {
+        when(auth.getName()).thenReturn("designer-1");
+        JobApplication app = new JobApplication();
+        app.id = "app-1";
+        app.jobId = "job-1";
+        app.designerId = "designer-1";
+        when(repository.findById("app-1")).thenReturn(app);
+
+        ResponseEntity<?> response = controller.getApplication("app-1", auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void getApplication_allowsJobOwner() {
+        when(auth.getName()).thenReturn("the-owner");
+        JobApplication app = applicationForJobOwnedBy("the-owner");
+        app.designerId = "designer-1";
+
+        ResponseEntity<?> response = controller.getApplication("app-1", auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void getApplication_rejectsUnrelatedUser_with403() {
+        when(auth.getName()).thenReturn("stranger");
+        JobApplication app = applicationForJobOwnedBy("the-owner");
+        app.designerId = "designer-1";
+
+        ResponseEntity<?> response = controller.getApplication("app-1", auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
     // ---- updateStatus ----
 
     private JobApplication applicationForJobOwnedBy(String clientId) {

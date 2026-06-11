@@ -115,6 +115,15 @@ public class ApplicationController {
             ));
         }
 
+        boolean isApplicant = application.designerId != null
+                && application.designerId.equals(auth.getName());
+
+        if (!isApplicant && !isJobOwner(application, auth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "error", "only the job owner or the applicant can view this application"
+            ));
+        }
+
         return ResponseEntity.ok(application);
     }
 

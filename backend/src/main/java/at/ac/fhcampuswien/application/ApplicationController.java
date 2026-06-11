@@ -185,6 +185,12 @@ public class ApplicationController {
             ));
         }
 
+        if (!isJobOwner(application, auth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "error", "only the job owner can hire for this job"
+            ));
+        }
+
         if (!"ACCEPTED".equals(application.status)) {
             return ResponseEntity.badRequest().body(Map.of(
                     "error", "only ACCEPTED applications can be hired"

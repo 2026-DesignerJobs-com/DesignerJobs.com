@@ -221,11 +221,22 @@ class ApplicationControllerTest {
     // ---- hire ----
 
     @Test
+    void hire_rejectsNonOwner_with403() {
+        when(auth.getName()).thenReturn("not-the-owner");
+        JobApplication app = applicationForJobOwnedBy("the-owner");
+        app.status = "ACCEPTED";
+
+        ResponseEntity<?> response = controller.hire("app-1", auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        verify(repository, never()).updateStatus(anyString(), anyString());
+    }
+
+    @Test
     void hire_rejectsNonAcceptedApplication_with400() {
         when(auth.getName()).thenReturn("client-1");
-        JobApplication app = new JobApplication();
+        JobApplication app = applicationForJobOwnedBy("client-1");
         app.status = "PENDING";
-        when(repository.findById("app-1")).thenReturn(app);
 
         ResponseEntity<?> response = controller.hire("app-1", auth);
 
@@ -236,10 +247,8 @@ class ApplicationControllerTest {
     @Test
     void hire_promotesAcceptedApplicationToHired() {
         when(auth.getName()).thenReturn("client-1");
-        JobApplication app = new JobApplication();
-        app.id = "app-1";
+        JobApplication app = applicationForJobOwnedBy("client-1");
         app.status = "ACCEPTED";
-        when(repository.findById("app-1")).thenReturn(app);
         JobApplication hired = new JobApplication();
         hired.status = "HIRED";
         when(repository.updateStatus("app-1", "HIRED")).thenReturn(hired);

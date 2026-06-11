@@ -33,6 +33,11 @@
             <artifactId>h2</artifactId>
             <version>2.3.232</version>
         </dependency>
+        <!-- C2: XML responses via content negotiation (Accept: application/xml) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

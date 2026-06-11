@@ -74,7 +74,7 @@ This is the official rubric mapped against the **actual code today** (verified 2
 | # | Requirement | Status | Evidence / what's missing |
 |---|---|---|---|
 | **C1** | Consume ≥3 external REST services | ❌ | needs three — **have two now** (`timeapi.io`, `countriesnow.space`). One more real API closes it. |
-| **C2** | BE returns JSON **and** XML | ❌ | JSON only. Add XML via `jackson-dataformat-xml` + content negotiation (`produces = {JSON, XML}`). |
+| **C2** | BE returns JSON **and** XML | ✅ *(2026-06-11)* | `jackson-dataformat-xml` + content negotiation: JSON is the default, `Accept: application/xml` returns XML (explicit `produces` on `GET /jobs` + `GET /jobs/{id}`, works app-wide via the registered converter). Covered by `ContentNegotiationTest`. |
 | **C3** | BE PATCH endpoint consumed by FE | ❌ | no `@PatchMapping` exists (the only "PATCH" in code is a CORS *allowed-method* entry in `SecurityConfig`, not an endpoint). Add a PATCH endpoint (e.g. partial job/profile update) and call it from the FE. |
 
 ### Points summary (honest self-assessment)
@@ -537,7 +537,7 @@ Ordering is driven by **grading points first** (see the ⭐ requirements section
 
 ### Tier 3 — reach for the COULD points (5) + remaining polish
 12. **C1 — third external REST service** (after S1).
-13. **C2 — XML output** alongside JSON (`jackson-dataformat-xml` + `produces`).
+13. ✅ ~~**C2 — XML output** alongside JSON~~ — **DONE 2026-06-11** (`jackson-dataformat-xml` + `produces` on the job reads; `ContentNegotiationTest`).
 14. **C3 — a `PATCH` endpoint** (partial job/profile update) consumed by the FE.
 15. **B6 — contract generation on hire**; **B11 — global `@ControllerAdvice`**; **B9 — newest-first message pagination**; **B8 — sync package READMEs**; minimal **moderation/**.
 

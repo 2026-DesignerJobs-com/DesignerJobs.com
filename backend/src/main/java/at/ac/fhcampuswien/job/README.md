@@ -23,10 +23,14 @@ Base path: `/jobs`. `GET /jobs` and `GET /jobs/{id}` are public — deliberately
 | method | path | auth | what it does |
 |---|---|---|---|
 | `POST`   | `/jobs`           | authenticated | store a new job — server assigns `id` (UUID) and `createdAt` (ISO-8601), client sends the rest |
-| `GET`    | `/jobs`           | public        | list/search — all query params optional; see filter table below |
-| `GET`    | `/jobs/{id}`      | public        | fetch one; `404` if missing |
+| `GET`    | `/jobs`           | public        | list/search — all query params optional; see filter table below. JSON by default, XML with `Accept: application/xml` (C2) |
+| `GET`    | `/jobs/{id}`      | public        | fetch one; `404` if missing. JSON/XML negotiated like `GET /jobs` |
 | `PUT`    | `/jobs/{id}`      | owner only    | update; `404` if missing, `403` for non-owners; `id`, `clientId` and `createdAt` are preserved server-side regardless of body |
 | `DELETE` | `/jobs/{id}`      | owner only    | delete; `404` if missing, `403` for non-owners, otherwise `200` + confirmation JSON |
+
+### content negotiation (C2)
+
+Both public reads serve JSON by default and XML when the request carries `Accept: application/xml` (via `jackson-dataformat-xml`, see the backend README). The representation only affects serialization — search filters, auth rules, and status codes behave identically for JSON and XML.
 
 ### search filters
 

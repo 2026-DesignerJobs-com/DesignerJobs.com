@@ -140,6 +140,8 @@ Implemented:
 
 Everything else returns `501 Not Implemented` for now — see each package's README for the contract.
 
+**Response formats (C2, since 2026-06-11):** the API answers in JSON by default and in XML when the client sends `Accept: application/xml` — enabled by `jackson-dataformat-xml` in `pom.xml`, which registers an app-wide XML message converter. `GET /jobs` and `GET /jobs/{id}` declare it explicitly via `produces`; covered by `config/ContentNegotiationTest`. Note: browsers rank `application/xml` above `*/*` in their Accept header, so opening an API URL in a browser tab shows XML, while `fetch()` calls (Accept `*/*`) keep getting JSON.
+
 ---
 
 ## see also

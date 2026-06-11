@@ -1,6 +1,7 @@
 package at.ac.fhcampuswien.job;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -60,8 +61,10 @@ public class JobController {
     /**
      * GET /jobs
      * Lists or searches jobs.
+     *
+     * Returns JSON by default, XML when the client sends Accept: application/xml.
      */
-    @GetMapping
+    @GetMapping(produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
     public List<Job> search(
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String category,
@@ -78,13 +81,15 @@ public class JobController {
      * GET /jobs/{id}
      * Loads one job for job-detail.html.
      *
+     * Returns JSON by default, XML when the client sends Accept: application/xml.
+     *
      * This endpoint is important because job-detail.html needs:
      * - job id
      * - title
      * - description
      * - clientId for Message Client
      */
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
     public ResponseEntity<?> getById(@PathVariable String id) {
         Job job = jobRepository.findById(id);
 

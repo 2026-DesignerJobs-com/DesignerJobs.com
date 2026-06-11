@@ -141,18 +141,6 @@ If no job with the given id exists, it returns `null`.
 
 ---
 
-### getRandomJob()
-
-```java
-getRandomJob()
-```
-
-Returns one random job from the database.
-
-This can be used for features like showing a random job recommendation.
-
----
-
 ### search(...)
 
 ```java
@@ -263,16 +251,6 @@ GET /jobs?q=logo
 GET /jobs?category=graphic design
 GET /jobs?category=graphic design&budget=small&workMode=remote
 ```
-
----
-
-### Load a random job
-
-```http
-GET /jobs/random
-```
-
-Loads one random job from the database.
 
 ---
 

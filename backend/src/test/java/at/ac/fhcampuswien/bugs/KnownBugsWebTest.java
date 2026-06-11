@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,18 +44,9 @@ class KnownBugsWebTest {
         return new ObjectMapper().readTree(body).get("id").asText();
     }
 
-    // ---- B4: GET /jobs/random should return a random job ----
-
-    @Test
-    void b4_getRandomJobShouldBeReachable() throws Exception {
-        createJobAndReturnId();
-
-        // Today: 404 — "/jobs/random" is captured by @GetMapping("/{id}") with
-        // id="random" → findById("random") → not found. Needs a dedicated route
-        // declared ABOVE the /{id} mapping.
-        mockMvc.perform(get("/jobs/random"))
-                .andExpect(status().isOk());
-    }
+    // B4 (GET /jobs/random) was retired 2026-06-11: the team accepted the
+    // client-side approach in job-random.html (picks from GET /jobs), so
+    // there is deliberately no backend route. See PROJECT_REVIEW.md §B4.
 
     // ---- B3: PUT /jobs/{id} should update an owned job ----
 

@@ -163,29 +163,6 @@ public class JobRepository {
         }
     }
 
-    public Job getRandomJob() {
-        String sql = """
-            SELECT *
-            FROM jobs
-            ORDER BY RAND()
-            LIMIT 1
-        """;
-
-        try (Connection connection = Database.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
-
-            if (resultSet.next()) {
-                return mapResultSetToJob(resultSet);
-            }
-
-            return null;
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to get random job", e);
-        }
-    }
-
     public List<Job> search(String q,
                             String category,
                             String designType,

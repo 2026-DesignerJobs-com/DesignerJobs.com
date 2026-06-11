@@ -86,21 +86,6 @@ class JobRepositoryTest extends H2TestSupport {
     }
 
     @Test
-    void getRandomJob_returnsARow_whenJobsExist() {
-        repository.create(sampleJob("Only Job"));
-
-        Job random = repository.getRandomJob();
-
-        assertThat(random).isNotNull();
-        assertThat(random.title).isEqualTo("Only Job");
-    }
-
-    @Test
-    void getRandomJob_returnsNull_whenEmpty() {
-        assertThat(repository.getRandomJob()).isNull();
-    }
-
-    @Test
     void update_changesFields_andReturnsUpdatedRow() {
         Job saved = repository.create(sampleJob("Old Title"));
 

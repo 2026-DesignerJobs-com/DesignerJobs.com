@@ -44,7 +44,7 @@ All filters are optional. `q` is a substring match against `title` and `descript
 
 Results are ordered by `created_at DESC` (newest first).
 
-> **Note:** `JobRepository#getRandomJob()` exists in code (uses `ORDER BY RAND() LIMIT 1`) but is **not** currently wired to a controller endpoint. The frontend's `job-random.html` falls back to picking a random entry from `GET /jobs` client-side.
+> **Note:** the random-job feature is client-side by design (team decision 2026-06-11): `job-random.html` picks a random entry from `GET /jobs`. There is deliberately no `GET /jobs/random` endpoint; the unused `JobRepository#getRandomJob()` was removed.
 
 ---
 
@@ -98,8 +98,7 @@ CREATE TABLE IF NOT EXISTS jobs (
 
 1. **Ownership enforcement** — `PUT /jobs/{id}` and `DELETE /jobs/{id}` do not check that the caller is the `clientId` who posted the job. Anyone authenticated can edit anyone's post.
 2. **Validation** — empty `title` is accepted; `category` / `budget` / `workMode` accept any string.
-3. **`GET /jobs/random` endpoint** — the repository method exists but is not exposed; wire it up if `job-random.html` should hit a real endpoint.
-4. **Pagination** — `GET /jobs` returns everything. Fine at demo scale; add `?page=&size=` when it grows.
+3. **Pagination** — `GET /jobs` returns everything. Fine at demo scale; add `?page=&size=` when it grows.
 
 ---
 

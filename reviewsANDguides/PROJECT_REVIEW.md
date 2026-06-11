@@ -373,9 +373,9 @@ Remaining fix: same pattern (load application → load its job → compare `job.
 - ✅ **`DELETE /jobs/{id}` now exists** (auth + 404 + authz check) and the FE calls it (delete button in `job-detail.html`, `f3d26e9`). Closes **M6**. *But see **B22** — the delete authz rule is too loose.*
 - ❌ **`PUT /jobs/{id}` still missing** — `JobController` has no `@PutMapping`; `JobRepository.update()` remains dead code; a client cannot edit a posted job. Test `b3` is red. Caution for whoever wires it up: `JobRepository.update()` overwrites `client_id` and `created_at` from the request body — add an `auth.getName() == job.clientId` ownership check and don't let the body set `clientId`/`createdAt`.
 
-### 🟡 B4 — Random-job page broken — SYMPTOM FIXED 2026-06-10 (`7ddc891`), backend route still missing
-The user-facing bug is gone: `job-random.html` was rewritten from a hardcoded fake job to fetching `GET /jobs` and picking a random one **client-side**. The same commit pointed the search-result "View Job" buttons at the real `job-detail.html?id=…` page.
-**Still open (and why test `b4` is red):** there is **no `GET /jobs/random` backend route** — a request to `/jobs/random` is still swallowed by `@GetMapping("/{id}")` with `id="random"` → 404, and `JobRepository.getRandomJob()` remains dead code. Team decision needed: either add the route **above** the `/{id}` mapping (ordering matters) and have the page use it, or accept the client-side approach and retire `getRandomJob()` + re-scope the `b4` test.
+### ✅ B4 — ~~Random-job page broken~~ — RESOLVED 2026-06-11 (client-side by design)
+The user-facing bug was fixed 2026-06-10 (`7ddc891`): `job-random.html` was rewritten from a hardcoded fake job to fetching `GET /jobs` and picking a random one **client-side**. The same commit pointed the search-result "View Job" buttons at the real `job-detail.html?id=…` page.
+**Team decision 2026-06-11:** the client-side approach is accepted as final — random-job is a frontend feature, there is deliberately no `GET /jobs/random` route. The dead `JobRepository.getRandomJob()` and its repository tests were removed, and the `b4` test retired (decision noted in `KnownBugsWebTest`). *Caveat for later: if `GET /jobs` ever gets pagination, the client-side pick only samples the first page — revisit then.*
 
 ### ✅ B5 — ~~Duplicate-email registration returns 500 instead of 409~~ — FIXED 2026-06-11 (`219e278`)
 `register` now normalizes the email once and uses the normalized value for both the `existsByEmail` guard and storage, so `Foo@x.com` vs existing `foo@x.com` is caught up-front as a clean **409**. Test `b5` green. (Same root cause as B1.)
@@ -523,7 +523,7 @@ Ordering is driven by **grading points first** (see the ⭐ requirements section
 ### Tier 1 — security & cheap-but-broken correctness
 3. ✅ ~~**B1 / B5 — normalize email**~~ — **DONE 2026-06-11** (`219e278`). `b1`/`b5` green.
 4. 🟠 **B2 — fix authorization** in `ApplicationController`. **Partially done 2026-06-11** (`22c5c9b`): `listApplications` is owner-only, `b2` green. **Remaining: get/status/hire** still lack ownership checks — same pattern, the `JobRepository` is already injected.
-5. 🟡 **B4 — `GET /jobs/random`.** Page works since 2026-06-10 (client-side random, `7ddc891`); the backend route is still missing and `b4` is red. Decide: add the route (~5 lines, above `/{id}`) or re-scope the test.
+5. ✅ ~~**B4 — `GET /jobs/random`**~~ — **RESOLVED 2026-06-11**: client-side approach accepted as final; `getRandomJob()` removed, `b4` test retired.
 6. ✅ ~~**B7 — referential validation + uniqueness**~~ — **MOSTLY DONE 2026-06-11** (`a72592d`): unique `(job_id, designer_id)` + clean 404/409 in apply + idempotent conversation create. `b7` green. Remaining: job/user existence checks in `createConversation` (fold into **B14**).
 
 > Tracking: every fix above flips one red test on the §5 board of `test.md` to green. **Status 2026-06-11: 2 red left (`b3`, `b4`).** Project is "done" (correctness-wise) when that board is all green.

@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -80,6 +81,70 @@ class JobControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(((Job) response.getBody()).id).isEqualTo("job-1");
+    }
+
+    @Test
+    void updateJob_rejectsMissingTitle_with400() {
+        when(auth.getName()).thenReturn("client-1");
+
+        ResponseEntity<?> response = controller.updateJob("job-1", new Job(), auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        verify(jobRepository, never()).update(any(), any());
+    }
+
+    @Test
+    void updateJob_returns404_whenMissing() {
+        when(auth.getName()).thenReturn("client-1");
+        when(jobRepository.findById("missing")).thenReturn(null);
+        Job body = new Job();
+        body.title = "Updated";
+
+        ResponseEntity<?> response = controller.updateJob("missing", body, auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        verify(jobRepository, never()).update(any(), any());
+    }
+
+    @Test
+    void updateJob_rejectsNonOwner_with403() {
+        when(auth.getName()).thenReturn("stranger");
+        Job existing = new Job();
+        existing.id = "job-1";
+        existing.clientId = "the-owner";
+        when(jobRepository.findById("job-1")).thenReturn(existing);
+        Job body = new Job();
+        body.title = "Updated";
+
+        ResponseEntity<?> response = controller.updateJob("job-1", body, auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        verify(jobRepository, never()).update(any(), any());
+    }
+
+    @Test
+    void updateJob_preservesServerFields_forOwner() {
+        when(auth.getName()).thenReturn("the-owner");
+        Job existing = new Job();
+        existing.id = "job-1";
+        existing.clientId = "the-owner";
+        existing.createdAt = "2026-01-01T00:00:00Z";
+        when(jobRepository.findById("job-1")).thenReturn(existing);
+        when(jobRepository.update(eq("job-1"), any())).thenAnswer(inv -> inv.getArgument(1));
+
+        Job body = new Job();
+        body.title = "Updated";
+        body.clientId = "SPOOFED";              // must be overwritten
+        body.createdAt = "2099-01-01T00:00:00Z"; // must be overwritten
+
+        ResponseEntity<?> response = controller.updateJob("job-1", body, auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        Job saved = (Job) response.getBody();
+        assertThat(saved).isNotNull();
+        assertThat(saved.title).isEqualTo("Updated");
+        assertThat(saved.clientId).isEqualTo("the-owner");
+        assertThat(saved.createdAt).isEqualTo("2026-01-01T00:00:00Z");
     }
 
     @Test

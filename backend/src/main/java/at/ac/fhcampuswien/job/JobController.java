@@ -97,6 +97,53 @@ public class JobController {
         return ResponseEntity.ok(job);
     }
     /**
+     * PUT /jobs/{id}
+     * Updates a job.
+     *
+     * Only the logged-in client who created the job may update it;
+     * id, clientId and createdAt are preserved server-side.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateJob(@PathVariable String id,
+                                       @RequestBody Job job,
+                                       Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "error", "not authenticated"
+            ));
+        }
+
+        if (job.title == null || job.title.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "title is required"
+            ));
+        }
+
+        Job existingJob = jobRepository.findById(id);
+
+        if (existingJob == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "error", "job not found"
+            ));
+        }
+
+        boolean isOwnerClient = existingJob.clientId != null && existingJob.clientId.equals(auth.getName());
+
+        if (!isOwnerClient) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "error", "only the client who created this job can update it"
+            ));
+        }
+
+        job.clientId = existingJob.clientId;
+        job.createdAt = existingJob.createdAt;
+
+        Job updatedJob = jobRepository.update(id, job);
+
+        return ResponseEntity.ok(updatedJob);
+    }
+
+    /**
      * DELETE /jobs/{id}
      * Deletes a job.
      *

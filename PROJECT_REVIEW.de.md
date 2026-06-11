@@ -2,6 +2,8 @@
 
 > Eine gemeinsame Referenz für unseren 6-Tage-Endspurt. Sie erklärt das gesamte Projekt für **jedes** Publikum — von jemandem, der noch nie Spring Boot gesehen hat, bis zur Senior-Entwicklerin, die zum Review dazustößt — mit Tiefenkapiteln zu **Spring-Boot-Nutzung** und **Session-/Auth-Verwaltung**, plus einer ehrlichen Liste von **Bugs, Lücken und Restarbeit**.
 
+> **Update 2026-06-11:** Großer Tag. Behoben: **B1, B5** (E-Mail-Groß-/Kleinschreibung), **B2** (teilweise — `listApplications`-Eigentümer-Prüfung), **B7** (größtenteils — eindeutige Bewerbungen, sauberes 409, Conversation-Race). Neu seit gestern: **`DELETE /jobs/{id}`** + FE-Löschen-Button (schließt **M6**, halbes M7), **Suche** durchgängig verdrahtet, **job-random/job-detail-Seiten gefixt** (B4-Symptom weg) und eine **zweite externe REST-API** (countriesnow.space → schließt **S1**) mit Standort-Autofill im Profil-Editor. `mvn test` wählt jetzt automatisch JDK 17 via Maven Toolchains. Das rote TDD-Board ist auf **2 Tests runter: b3 (PUT /jobs) und b4 (GET /jobs/random)**. Details inline unten — jeder betroffene Punkt ist markiert.
+
 ---
 
 ## 0. Wie man dieses Dokument nutzt
@@ -49,18 +51,18 @@ Das ist das offizielle Bewertungsraster, abgeglichen mit dem **tatsächlichen Co
 | **M3** | FE↔BE über HTTP(S) | ✅ | alle Aufrufe an `http://localhost:8080` |
 | **M4** | Asynchrone Übertragung (AJAX) | ✅ | FE nutzt `fetch()` / `Auth.authFetch()` (21 Aufrufe) |
 | **M5** | BE liefert JSON oder XML | ✅ | JSON via `@RestController` |
-| **M6** | BE nutzt GET, POST, PUT **und DELETE**, jeweils auf ≥1 Endpunkt | ⚠️ | GET/POST/PUT funktionieren; **DELETE existiert nur als 501-Stubs** (`/users/{id}`, Portfolio). **Ein echtes DELETE umsetzen** — die Behebung von **B3** (`DELETE /jobs/{id}`) erledigt das. |
-| **M7** | FE konsumiert GET, POST, PUT **und DELETE** von ≥1 Endpunkt | ⚠️ | **FE nutzt heute nur GET + POST** (grep: 7 × `POST`, Rest GET; **0 PUT, 0 DELETE**). **FE-Aufrufe ergänzen, die PUT und DELETE absetzen** (z. B. Job bearbeiten → PUT, Job löschen → DELETE, oder Bewerbung annehmen → PUT `/applications/{id}/status`). |
+| **M6** | BE nutzt GET, POST, PUT **und DELETE**, jeweils auf ≥1 Endpunkt | ✅ | ~~DELETE nur 501-Stubs~~ **Behoben 2026-06-10:** funktionierendes `DELETE /jobs/{id}` mit Auth + Autorisierungs-Prüfung (Commit `42fb250`). PUT war bereits funktional (`PUT /applications/{id}/status`). |
+| **M7** | FE konsumiert GET, POST, PUT **und DELETE** von ≥1 Endpunkt | ⚠️ | **Halb geschlossen 2026-06-10:** FE setzt jetzt **DELETE** ab (Job-löschen-Button in `job-detail.html`, Commit `f3d26e9`). **Weiterhin 0 PUT-Aufrufe aus dem FE** — z. B. Job bearbeiten → `PUT /jobs/{id}` (braucht B3) oder Bewerbung annehmen → `PUT /applications/{id}/status` ergänzen. |
 | **M8** | ≥1 externen REST-Service konsumieren | ✅ | `ExternalTimeApiClient` → `timeapi.io` (`GET /world-clock`) |
 | **M9** | Session-Verwaltung (Login/JWT) | ✅ | zustandsloses JWT — siehe §7 |
 
-> **Aktion für volle 21 Punkte:** **M6** und **M7** schließen. Beide sind erfüllt, indem man `PUT`/`DELETE /jobs/{id}` im Backend umsetzt (**B3**) *und* das Frontend verdrahtet, um sie aufzurufen. Das ist das Arbeitselement mit höchster Priorität — es geht um Pflichtpunkte, nicht um optionale.
+> **Aktion für volle 21 Punkte:** nur noch **M7** offen — das FE muss ein **PUT** absetzen. Billigster Weg: ein Annehmen-/Ablehnen-Button auf der Bewerberliste, der das existierende `PUT /applications/{id}/status` aufruft. Der schönere Weg: `PUT /jobs/{id}` umsetzen (**B3**, der letzte rote Backend-Test) plus ein Job-bearbeiten-Formular.
 
 ### SHOULD — 8 Punkte
 
 | # | Anforderung | Status | Beleg / was fehlt |
 |---|---|---|---|
-| **S1** | ≥2 externe REST-Services konsumieren | ❌ | heute nur **einer** (`timeapi.io`). `ExternalChatApiClient` ist ein deaktivierter Platzhalter. Eine zweite echte API ergänzen (z. B. Währungs-, Geocoding- oder Feiertags-API). |
+| **S1** | ≥2 externe REST-Services konsumieren | ✅ | **Geschlossen 2026-06-10:** `ExternalLocationApiClient` → `countriesnow.space` (`GET /locations/cities?country=…`, Commit `371b55f`), konsumiert vom Standort-Autofill im Profil-Editor. Plus `timeapi.io`. (`ExternalChatApiClient` bleibt ein deaktivierter Platzhalter.) |
 | **S2** | Eine zweite FE-Komponente, die ≥3 BE-Endpunkte nutzt | ❌ | nur ein FE (`design3/`). Ein zweites kleines FE bauen (z. B. ein Admin-/Moderations-Dashboard oder eine Designer-Portfolio-Seite), das ≥3 Endpunkte anspricht. |
 | **S3** | FE ist W3C-konform | ❌ | **Verifiziert am 2026-06-10 via validator.w3.org/nu — 6 Seiten scheitern** (~17 Fehler). Siehe §9c für die Liste. Sauber: login, profile, chat, job-random, homepage/jobs/job-detail (nur Warnungen). |
 | **S4** | FE responsiv (Mobil- + Desktop-Ansicht) | ⚠️ | Bootstrap-Grid ist responsiv; eine **dedizierte** Mobil- vs. Desktop-Ansicht bestätigen (Breakpoints, Nav-Collapse) und dokumentieren. |
@@ -69,15 +71,15 @@ Das ist das offizielle Bewertungsraster, abgeglichen mit dem **tatsächlichen Co
 
 | # | Anforderung | Status | Beleg / was fehlt |
 |---|---|---|---|
-| **C1** | ≥3 externe REST-Services konsumieren | ❌ | braucht drei (einer vorhanden). Hängt zuerst von S1 ab. |
+| **C1** | ≥3 externe REST-Services konsumieren | ❌ | braucht drei — **zwei jetzt vorhanden** (`timeapi.io`, `countriesnow.space`). Eine weitere echte API schließt es. |
 | **C2** | BE liefert JSON **und** XML | ❌ | nur JSON. XML via `jackson-dataformat-xml` + Content Negotiation ergänzen (`produces = {JSON, XML}`). |
 | **C3** | BE-PATCH-Endpunkt, vom FE konsumiert | ❌ | kein `@PatchMapping` vorhanden (das einzige „PATCH" im Code ist ein CORS-*Allowed-Method*-Eintrag in `SecurityConfig`, kein Endpunkt). Einen PATCH-Endpunkt ergänzen (z. B. partielles Job-/Profil-Update) und vom FE aufrufen. |
 
 ### Punkte-Zusammenfassung (ehrliche Selbsteinschätzung)
 
-- **MUST (21):** 7 von 9 voll erfüllt; **M6 + M7 gefährdet** → noch keine sicheren 21, solange nicht ein funktionierendes `DELETE` im BE existiert *und* das FE `PUT` + `DELETE` absetzt.
-- **SHOULD (8):** noch keiner sicher erfüllt (S4 wahrscheinlich, S3 unverifiziert, S1/S2 brauchen Arbeit).
-- **COULD (5):** noch keiner erfüllt.
+- **MUST (21):** 8 von 9 voll erfüllt *(M6 am 2026-06-10 geschlossen)*; nur noch **M7 gefährdet** → sichere 21, sobald das FE ein `PUT` absetzt.
+- **SHOULD (8):** **S1 erfüllt** (2 externe APIs); S4 wahrscheinlich; S3 scheitert weiterhin (6 Seiten); S2 braucht Arbeit.
+- **COULD (5):** noch keiner erfüllt (C1 ist eine API entfernt).
 
 Diese ordnen sich direkt in den 6-Tage-Plan in §10 ein — die Anforderungslücken sind dort priorisiert eingearbeitet.
 
@@ -161,14 +163,14 @@ DesignerJobs.com/
 cd backend
 mvn spring-boot:run        # serves API + frontend on http://localhost:8080
 mvn package                # build the jar
-JAVA_HOME="$(/usr/libexec/java_home -v 17)" mvn test   # run the test suite (see test.md)
+mvn test                   # run the test suite (see test.md)
 ```
 
-Erfordert **JDK 17 + Maven**. (Die Tests speziell auf JDK 17 ausführen — Mockito kann das hier ebenfalls installierte JDK 26 nicht instrumentieren; siehe `test.md`.)
+Erfordert **JDK 17 + Maven**. *(Aktualisiert 2026-06-11:)* Der Build nutzt jetzt **Maven Toolchains**, um mit JDK 17 zu kompilieren und zu testen, selbst wenn Maven selbst auf einem neueren JDK läuft (das Mockito/JaCoCo kaputt macht). Einmalige Einrichtung pro Maschine: eine `~/.m2/toolchains.xml`, die auf ein lokales JDK 17 zeigt — siehe `backend/README.md`. Ohne sie schlägt der Build sofort mit einer klaren Meldung fehl.
 
 > ✅ **Es gibt jetzt eine JUnit-Test-Suite** unter `backend/src/test` (JUnit 5 + Mockito + AssertJ, plus `@SpringBootTest`/MockMvc für Security) und eine Postman/Newman-Black-Box-Suite in `postman/`. Alle Details, Coverage-Zahlen und das TDD-Rot-Board stehen in **`test.md`**.
 >
-> ⚠️ **`mvn test` ist gerade absichtlich ROT.** Wir arbeiten test-first: Es gibt einen fehlschlagenden Test pro offenem Bug (das Board in §5 von `test.md`), sodass der Build *absichtlich* fehlschlägt, bis die Bugs behoben sind. Nicht „reparieren", indem man Tests löscht. Hinweis: Weil die roten Tests die `test`-Phase scheitern lassen, wird der JaCoCo-Report bei einem schlichten `mvn test` nicht erzeugt — siehe Harness-Befund **H1** in §9b.
+> ⚠️ **`mvn test` ist gerade absichtlich ROT.** Wir arbeiten test-first: Es gibt einen fehlschlagenden Test pro offenem Bug (das Board in §5 von `test.md`), sodass der Build *absichtlich* fehlschlägt, bis die Bugs behoben sind. Nicht „reparieren", indem man Tests löscht. *(Stand 2026-06-11: nur noch **2 rot** — `b3` PUT /jobs, `b4` GET /jobs/random. `b1`, `b2`, `b5`, `b7` sind grün.)* Hinweis: Weil die roten Tests die `test`-Phase scheitern lassen, wird der JaCoCo-Report bei einem schlichten `mvn test` nicht erzeugt — siehe Harness-Befund **H1** in §9b.
 
 **Gesamten Zustand zurücksetzen:** `backend/data/projectdb.mv.db` löschen und neu starten. (Hinweis: Diese Datei ist derzeit in git getrackt und ändert sich ständig — siehe **H3**.)
 
@@ -338,8 +340,9 @@ Aus `SecurityConfig.filterChain`, der Reihe nach:
 | `auth/` | ✅ Fertig | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout` (No-op), `GET /auth/me` | Solide. |
 | `session/` | ✅ Fertig | — | Nur `JwtService`. |
 | `config/` | ✅ Fertig | — | Security + statisches Serving. |
-| `job/` | 🟠 Größtenteils | `POST /jobs`, `GET /jobs`, `GET /jobs/{id}` | **`PUT`/`DELETE /jobs/{id}` sind dokumentiert, aber NICHT implementiert** (siehe §9). |
-| `application/` | ✅ Fertig (Review) | `POST /jobs/{jobId}/apply`, `GET /jobs/{jobId}/applications`, `GET /applications/{id}`, `PUT /applications/{id}/status`, `POST /applications/{id}/hire` | Hire ist ein Stub-Trigger (noch kein Vertrag). Autorisierungslücken — §9. |
+| `job/` | 🟠 Größtenteils | `POST /jobs`, `GET /jobs` (+ Such-Parameter), `GET /jobs/{id}`, `DELETE /jobs/{id}` *(neu 2026-06-10)* | Suche durchgängig verdrahtet (`23d4dda`). **`PUT /jobs/{id}` weiterhin NICHT implementiert** (B3, letzte Backend-Lücke). Delete-Autorisierung zu lasch — siehe **B22**. |
+| `application/` | ✅ Fertig (Review) | `POST /jobs/{jobId}/apply`, `GET /jobs/{jobId}/applications`, `GET /applications/{id}`, `PUT /applications/{id}/status`, `POST /applications/{id}/hire` | Hire ist ein Stub-Trigger (noch kein Vertrag). Apply validiert jetzt Job-Existenz + lehnt Duplikate ab (B7 ✅); Liste ist Owner-only (B2 teilweise) — get/status/hire weiterhin ungeprüft, siehe §9. |
+| `location/` | ✅ Fertig *(neu 2026-06-10)* | `GET /locations/countries`, `GET /locations/cities?country=…` | Länder als hartkodierte Liste; Städte via `countriesnow.space` proxied (2. externe API → S1). Öffentlich via `SecurityConfig`. |
 | `chat/` | ✅ Fertig | `GET/POST /conversations`, `GET/POST /conversations/{id}/messages` | Lokaler H2-Modus; externer API-Pfad hinter `USE_EXTERNAL_CHAT_API=false`. |
 | `worldclock/` | ✅ Fertig | `GET /world-clock` | Demo-Proxy zu timeapi.io. |
 | `user/` | ❌ Stub | `/designers`, `/designers/{id}`, `/designers/{id}/portfolio…`, `/users/{id}` | **Alle liefern `501 not_implemented`.** Profile + Portfolio. |
@@ -350,36 +353,41 @@ Aus `SecurityConfig.filterChain`, der Reihe nach:
 
 ## 9. Bugs & Korrektheitsprobleme (diese zuerst reviewen)
 
-Nach Schweregrad geordnet. Gefunden durch zeilenweises Lesen jeder Backend-Quelldatei (Controller, Services, Repositories) und Verfolgen der Aufrufstellen gegen den tatsächlichen Code (mehrere `xhigh`-Review-Durchgänge — Backend, Frontend und Test-Harness). **Das sind die konkreten Dinge, die in den 6 Tagen zu beheben sind.** Nummerierung: **B1–B13** erster Durchgang, **B14–B21** der tiefe Backend-Review (§9), Harness **H1–H5** in §9b, Frontend **F1–F6** in §9c.
+Nach Schweregrad geordnet. Gefunden durch zeilenweises Lesen jeder Backend-Quelldatei (Controller, Services, Repositories) und Verfolgen der Aufrufstellen gegen den tatsächlichen Code (mehrere `xhigh`-Review-Durchgänge — Backend, Frontend und Test-Harness). **Das sind die konkreten Dinge, die in den 6 Tagen zu beheben sind.** Nummerierung: **B1–B13** erster Durchgang, **B14–B21** der tiefe Backend-Review (§9), **B22** neu 2026-06-11, Harness **H1–H5** in §9b, Frontend **F1–F6** in §9c. Status-Markierungen: ✅ behoben · 🟠/🟡 teilweise behoben oder herabgestuft · unmarkiert = weiterhin offen.
 
-### 🔴 B1 — Login ist case-sensitiv bei der E-Mail, aber Registrierung schreibt sie klein → Nutzer ausgesperrt
-`AuthController.register` speichert `user.email = req.email.trim().toLowerCase()` (Zeile 64), aber `login` ruft `userRepository.findByEmail(req.email)` (Zeile 97) mit der **rohen** Eingabe auf — kein trim, kein lowercase. `UserRepository.findByEmail` macht ein exaktes SQL `WHERE email = ?`.
-**Fehler:** Jemand registriert sich als `John@Example.com` (gespeichert als `john@example.com`). Später loggt er sich mit `John@Example.com` ein → `findByEmail` findet nichts → `401 invalid email or password`. **Er kann sich nie einloggen, außer er tippt die komplett kleingeschriebene Form.** Dieselbe Ursache macht den Duplikat-E-Mail-Guard löchrig (nächster Punkt). *Fix: E-Mail an einer Stelle normalisieren (`trim().toLowerCase()`), die sowohl register als auch login nutzen.*
+### ✅ B1 — ~~Login ist case-sensitiv bei der E-Mail~~ — BEHOBEN 2026-06-11 (`219e278`)
+`login` normalisiert die E-Mail jetzt genau wie die Registrierung (`trim().toLowerCase()`) vor `findByEmail`. Regression-Test `KnownBugsTest.b1` ist grün.
+<details><summary>Ursprünglicher Befund</summary>
+`AuthController.register` speicherte `user.email = req.email.trim().toLowerCase()`, aber `login` fragte `findByEmail(req.email)` mit der **rohen** Eingabe ab. Wer sich als `John@Example.com` registrierte (kleingeschrieben gespeichert), konnte sich mit derselben Schreibweise nie einloggen → `401 invalid email or password`.
+</details>
 
-### 🔴 B2 — Autorisierungslücken im Bewerbungs-/Engagement-Flow
+### 🟠 B2 — Autorisierungslücken im Bewerbungs-/Engagement-Flow — TEILWEISE BEHOBEN 2026-06-11 (`22c5c9b`)
 In `ApplicationController`:
-- `GET /jobs/{jobId}/applications` — prüft nur, dass der Aufrufer *authentifiziert* ist, **nicht**, dass ihm der Job gehört. **Jeder eingeloggte Nutzer kann die Bewerberliste eines anderen Clients lesen** (Anschreiben, Designer-IDs).
-- `GET /applications/{id}` — dasselbe: keine Eigentümer-Prüfung.
-- `PUT /applications/{id}/status` und `POST /applications/{id}/hire` — **jeder** authentifizierte Nutzer kann **jede** Bewerbung annehmen/ablehnen/engagieren; die Eigentümerschaft am zugrunde liegenden Job wird nie verifiziert.
+- ✅ `GET /jobs/{jobId}/applications` — **behoben:** lädt den Job, liefert 404 wenn er fehlt, 403 außer `job.clientId == auth.getName()`. Test `b2` grün + Unit-Tests in `ApplicationControllerTest`.
+- ❌ `GET /applications/{id}` — **weiterhin offen:** keine Eigentümer-Prüfung.
+- ❌ `PUT /applications/{id}/status` und `POST /applications/{id}/hire` — **weiterhin offen:** jeder authentifizierte Nutzer kann jede Bewerbung annehmen/ablehnen/engagieren.
 
-Fix: den Job laden, `job.clientId` gegen `auth.getName()` vergleichen, sonst 403 zurückgeben. *(Das schwerwiegendste Zugriffskontrollproblem in der Codebasis.)*
+Verbleibender Fix: dasselbe Muster (Bewerbung laden → ihren Job laden → `job.clientId` gegen `auth.getName()` vergleichen → 403). Das `JobRepository` ist inzwischen bereits in den Controller injiziert, also eine kleine Änderung.
 
-### 🔴 B3 — `PUT`/`DELETE /jobs/{id}` beworben, aber unerreichbar; Repo-Logik ist toter Code
-`backend/README.md` listet beide Endpunkte als implementiert, und `JobRepository` hat sogar funktionierende `update()`- und `deleteById()`-Methoden — aber **`JobController` hat kein `@PutMapping`/`@DeleteMapping`**, sodass die Routen nicht existieren und diese Repo-Methoden nie aufgerufen werden. Ein Client **kann einen geposteten Job weder bearbeiten noch löschen.** Außerdem: `JobRepository.update()` überschreibt `client_id` und `created_at` aus dem Request-Body, sodass es bei naiver Verdrahtung einem Aufrufer erlauben würde, die Job-Eigentümerschaft neu zuzuweisen / Zeitstempel zu fälschen. *Fix: die Controller-Methoden mit einer `auth.getName() == job.clientId`-Eigentümer-Prüfung ergänzen; den Body nicht `clientId`/`createdAt` setzen lassen.*
+### 🟠 B3 — `PUT`/`DELETE /jobs/{id}` beworben, aber unerreichbar — HALB BEHOBEN 2026-06-10 (`42fb250`)
+- ✅ **`DELETE /jobs/{id}` existiert jetzt** (Auth + 404 + Autorisierungs-Prüfung) und das FE ruft es auf (Löschen-Button in `job-detail.html`, `f3d26e9`). Schließt **M6**. *Aber siehe **B22** — die Delete-Autorisierungsregel ist zu lasch.*
+- ❌ **`PUT /jobs/{id}` fehlt weiterhin** — `JobController` hat kein `@PutMapping`; `JobRepository.update()` bleibt toter Code; ein Client kann einen geposteten Job nicht bearbeiten. Test `b3` ist rot. Vorsicht für die Person, die es verdrahtet: `JobRepository.update()` überschreibt `client_id` und `created_at` aus dem Request-Body — eine `auth.getName() == job.clientId`-Eigentümer-Prüfung ergänzen und den Body nicht `clientId`/`createdAt` setzen lassen.
 
-### 🟠 B4 — Random-Job-Seite ist kaputt: `/jobs/random` kollidiert mit `/jobs/{id}`
-`JobRepository.getRandomJob()` existiert und `frontend/design3/job-random.html` erwartet einen Zufalls-Job, aber es gibt **keine Controller-Route** dafür. Ein Request auf `/jobs/random` wird von `@GetMapping("/{id}")` mit `id="random"` gematcht → `findById("random")` → `404 job not found`. Die Repo-Methode ist toter Code und die Seite kann nicht funktionieren. *Fix: `GET /jobs/random` **oberhalb** des `/{id}`-Mappings ergänzen (Reihenfolge zählt), verdrahtet mit `getRandomJob()`.*
+### 🟡 B4 — Random-Job-Seite kaputt — SYMPTOM BEHOBEN 2026-06-10 (`7ddc891`), Backend-Route fehlt weiterhin
+Der nutzersichtbare Bug ist weg: `job-random.html` wurde von einem hartkodierten Fake-Job umgebaut auf `GET /jobs` mit **clientseitiger** Zufallsauswahl. Derselbe Commit hat die „View Job"-Buttons der Suchergebnisse auf die echte `job-detail.html?id=…`-Seite umgebogen.
+**Weiterhin offen (und der Grund, warum Test `b4` rot ist):** Es gibt **keine `GET /jobs/random`-Backend-Route** — ein Request auf `/jobs/random` wird weiterhin von `@GetMapping("/{id}")` mit `id="random"` geschluckt → 404, und `JobRepository.getRandomJob()` bleibt toter Code. Team-Entscheidung nötig: entweder die Route **oberhalb** des `/{id}`-Mappings ergänzen (Reihenfolge zählt) und die Seite sie nutzen lassen, oder den clientseitigen Ansatz akzeptieren und `getRandomJob()` entfernen + den `b4`-Test umwidmen.
 
-### 🟠 B5 — Registrierung mit Duplikat-E-Mail liefert 500 statt 409 (Groß-/Kleinschreibung)
-`register` ruft `existsByEmail(req.email)` mit der **rohen** (evtl. gemischt geschriebenen) E-Mail auf, aber die Spalte speichert immer kleingeschrieben. Registriert man `Foo@x.com`, während `foo@x.com` bereits existiert, passiert es den Guard, trifft dann den `UNIQUE`-Constraint auf `email` → `SQLException` → verpackt als `RuntimeException` → **HTTP 500** statt des beabsichtigten `409 email already exists`. Gleicher Fix wie B1 (vor der Prüfung normalisieren).
+### ✅ B5 — ~~Registrierung mit Duplikat-E-Mail liefert 500 statt 409~~ — BEHOBEN 2026-06-11 (`219e278`)
+`register` normalisiert die E-Mail jetzt einmal und nutzt den normalisierten Wert sowohl für den `existsByEmail`-Guard als auch fürs Speichern. Dadurch wird `Foo@x.com` gegen ein bestehendes `foo@x.com` sauber im Voraus als **409** abgefangen. Test `b5` ist grün. (Gleiche Ursache wie B1.)
 
 ### 🟠 B6 — Hire-Flow erzeugt keinen Vertrag
 `ApplicationController.hire` setzt den Status auf `HIRED` und lässt `// TODO: trigger contract creation` stehen. Der in der UI versprochene Kern-„Happy Path" (hire → Vertrag) ist unvollständig, weil `contract/` ein Stub ist.
 
-### 🟠 B7 — Keine Validierung/Eindeutigkeit bei Bewerbungen & Conversations
-- `ApplicationController.apply` und `ChatService.createConversation` akzeptieren `jobId`/`designerId`/`clientId` aus Pfad/Body, ohne zu prüfen, ob die referenzierten Zeilen existieren (auch keine FK-Constraints im H2-Schema) → verwaiste Bewerbungen/Conversations, die auf nicht existierende Jobs zeigen.
-- Die `applications`-Tabelle hat **keinen Unique-Constraint auf `(job_id, designer_id)`**, sodass ein Designer **dieselbe Bewerbung mehrfach** abschicken kann.
-- `ConversationRepository.create` macht check-then-insert gegen einen `UNIQUE (client_id, designer_id, job_id)`-Constraint — ein **TOCTOU-Race**: zwei gleichzeitige „Chat öffnen"-Klicks sehen beide keine vorhandene Zeile, fügen beide ein, der zweite wirft → **500** statt die vorhandene Conversation zurückzugeben.
+### 🟡 B7 — Keine Validierung/Eindeutigkeit bei Bewerbungen & Conversations — GRÖSSTENTEILS BEHOBEN 2026-06-11 (`a72592d`)
+- ✅ `applications` hat jetzt **`UNIQUE (job_id, designer_id)`** (inkl. `ALTER TABLE … IF NOT EXISTS`-Migration für bestehende DB-Dateien — falls eine alte Datei bereits Duplikate enthält, schlägt der Start fehl: DB zurücksetzen).
+- ✅ `apply` validiert, dass der Job existiert (**404**) und lehnt Duplikate im Voraus ab (**409** „you have already applied"), mit dem Constraint als Backstop. Test `b7` ist grün.
+- ✅ Das **TOCTOU-Race** in `ConversationRepository.create` ist behoben: Der Insert-Verlierer fängt die Unique-Verletzung ab und gibt die bestehende Conversation zurück, statt 500 zu werfen.
+- ❌ **Weiterhin offen:** `ChatService.createConversation` prüft nicht, ob die referenzierten `jobId`/Gegenparteien existieren (auch keine FK-Constraints) → verwaiste Conversations bleiben möglich. Überschneidet sich mit **B14** (Conversation-Spoofing) — beides gemeinsam beheben.
 
 ### 🟠 B8 — Veraltete Paket-READMEs vs. Code
 `chat/README.md` und die backend-README-„status at a glance" nennen `chat/` und `application/` weiterhin „501 stubs", obwohl sie implementiert sind. Irreführende Doku führt dazu, dass Leute funktionierenden Code neu implementieren oder ihm misstrauen. Aktualisieren (und §8 dieses Dokuments vertrauen).
@@ -424,6 +432,9 @@ Das aktive Frontend ist `design3/`. Klein, aber für Neulinge verwirrend. `front
 
 ### ⚪ B21 — Kein Connection-Pooling
 `Database.getConnection()` öffnet pro Repository-Aufruf eine frische `DriverManager`-Verbindung (kein Pool). Funktional ok für eingebettetes H2, aber verschwenderisch und unter Last unbegrenzt. *Fix: ein gepooltes `DataSource` (HikariCP).* *(Effizienz/Altitude, kein Korrektheits-Bug.)*
+
+### 🟠 B22 — *(neu 2026-06-11)* `DELETE /jobs/{id}` lässt **jeden Designer** **jeden Job** löschen
+Der neue Delete-Endpunkt (`42fb250`) autorisiert `isOwnerClient **|| isDesigner**` — d. h. neben dem besitzenden Client darf *jeder* eingeloggte Designer *jeden* Job löschen, auch Jobs, zu denen er keinerlei Beziehung hat. Das Javadoc nennt das absichtlich („A logged-in designer may also delete it"), aber es widerspricht der Eigentümer-Invariante aus §7.5 und gibt einer ganzen Rolle faktisch ein destruktives Recht. *Fix: den `isDesigner`-Zweig entfernen — nur `job.clientId == auth.getName()` (und ggf. eine künftige Admin-Rolle) sollte löschen dürfen.*
 
 ---
 
@@ -472,8 +483,8 @@ In `AuthControllerTest` ist die Prüfung „Passwort gehasht, nicht roh" `assert
 ### 🟠 F2 — Open Redirect / `javascript:`-XSS über den Login-`next`-Parameter
 `login.html:179` macht `window.location.href = next || "homepage.html"` mit `next` unvalidiert aus dem Query-String. `login.html?next=https://evil.com` leitet nach dem Login auf eine fremde Seite um; `login.html?next=javascript:…` führt Skript im App-Origin aus (und kann das localStorage-Token lesen). *Fix: nur einen relativen Pfad akzeptieren — Werte ablehnen, die `:` enthalten oder mit `//` beginnen.*
 
-### 🟠 F3 — FE setzt nie PUT oder DELETE ab (scheitert an M7; CRUD halb gebaut)
-Über alle Seiten hinweg werden nur `POST` + implizites `GET` genutzt (grep: 7 × `method:"POST"`). Es gibt keine UI, um einen Job zu bearbeiten (PUT) oder zu löschen (DELETE), noch um ein Profil via PUT zu aktualisieren. Das **scheitert an der Pflichtanforderung M7** und ist eine echte funktionale Lücke, sobald die BE-Endpunkte existieren (B3). *Fix: Bearbeiten-/Löschen-Aktionen ergänzen, verdrahtet mit `PUT`/`DELETE /jobs/{id}` und `PUT /designers/{id}`.*
+### 🟠 F3 — FE setzt noch kein PUT ab (M7 halb erfüllt; CRUD halb gebaut)
+Das FE setzt inzwischen **DELETE** ab (Job-löschen-Button in `job-detail.html`, Commit `f3d26e9`), aber weiterhin **kein PUT**. Damit ist **M7** nur halb geschlossen: GET/POST/DELETE werden konsumiert, aber der Pflichtpunkt verlangt auch einen FE-Aufruf mit PUT. *Fix: einen Annehmen-/Ablehnen-Button ergänzen, der `PUT /applications/{id}/status` nutzt, oder nach B3 ein Job-bearbeiten-Formular mit `PUT /jobs/{id}` bauen.*
 
 ### 🟡 F4 — World-Clock rendert externe Daten ungeescapet
 `homepage.html:168` und `login.html:223` interpolieren `entry.city`/`entry.time` direkt in `innerHTML`. Geringes Risiko (serverseitig fixe Stadt, vertrauenswürdige Quelle), aber es ist die einzige netzwerkgespeiste `innerHTML`-Senke ohne Escaping. *Fix: zur Konsistenz `textContent`/`escapeHtml` nutzen.*
@@ -506,19 +517,19 @@ Sauber (0 Fehler): `login`, `profile`, `chat`, `job-random`, `homepage`, `jobs`,
 Die Reihenfolge wird **zuerst von Bewertungspunkten** getrieben (siehe ⭐-Anforderungs-Abschnitt), dann Sicherheit/Korrektheit, dann Politur. Punkte referenzieren sowohl Bug-IDs (§9) als auch Anforderungs-IDs (M/S/C).
 
 ### Stufe 0 — die geforderten 21 Punkte absichern (MUST-Lücken — zuerst erledigen)
-1. **B3 + M6 + M7 — `PUT` und `DELETE /jobs/{id}`, durchgängig.** Die vorhandenen `JobRepository.update()`/`deleteById()` durch `JobController` mit einer Eigentümer-Prüfung verdrahten (den Body nicht `clientId`/`createdAt` setzen lassen) **und Frontend-Aufrufe ergänzen, die `PUT` und `DELETE` absetzen** (z. B. Job-bearbeiten- und Job-löschen-Buttons). Dieser eine Strang schließt **M6** (BE braucht ein funktionierendes DELETE) *und* **M7** (FE muss PUT + DELETE konsumieren) — beides *Pflicht*-Punkte, die aktuell gefährdet sind.
+1. ~~**B3 + M6 + M7**~~ → **HALB ERLEDIGT 2026-06-10:** `DELETE /jobs/{id}` + FE-Löschen-Button sind da (M6 ✅, DELETE-Hälfte von M7 ✅). **Übrig: `PUT /jobs/{id}`** über `JobController` mit Eigentümer-Prüfung (den Body nicht `clientId`/`createdAt` setzen lassen) **plus ein FE-PUT-Aufruf** (Job-bearbeiten-Formular, oder billiger: Annehmen-/Ablehnen-Button → `PUT /applications/{id}/status`). Außerdem die Delete-Autorisierung verschärfen (**B22**).
 2. **Verifizieren, dass M4/M5/M9 intakt bleiben** beim Editieren (AJAX, JSON, JWT) — sie sind heute erfüllt; nicht regredieren.
 
 ### Stufe 1 — Sicherheit & billig-aber-kaputte Korrektheit
-3. **B1 / B5 — E-Mail normalisieren** (`trim().toLowerCase()`) an einer Stelle, die register + login teilen. Behebt den „kann-mich-nicht-einloggen"-Bug *und* die 500-bei-Duplikat. *Winziger Aufwand, große Wirkung.* (Macht `KnownBugsTest.b1/b5` grün.)
-4. **B2 — Autorisierung fixen** in `ApplicationController` (Eigentümer-Prüfungen bei list/get/status/hire). *Top-Sicherheitspriorität.* (Macht `b2` grün.)
-5. **B4 — `GET /jobs/random` ergänzen** oberhalb der `/{id}`-Route, damit `job-random.html` funktioniert. *~5 Zeilen.* (Macht `b4` grün.)
-6. **B7 — referentielle Validierung + Eindeutigkeit** (unique `(job_id, designer_id)`; Job/User-Existenz prüfen; idempotentes `createConversation`). (Macht `b7` grün.)
+3. ✅ ~~**B1 / B5 — E-Mail normalisieren**~~ — **ERLEDIGT 2026-06-11** (`219e278`). `b1`/`b5` grün.
+4. 🟠 **B2 — Autorisierung fixen** in `ApplicationController`. **Teilweise erledigt 2026-06-11** (`22c5c9b`): `listApplications` ist Owner-only, `b2` grün. **Übrig: get/status/hire** haben weiterhin keine Eigentümer-Prüfung — gleiches Muster, das `JobRepository` ist bereits injiziert.
+5. 🟡 **B4 — `GET /jobs/random`.** Die Seite funktioniert seit 2026-06-10 (clientseitiger Zufall, `7ddc891`); die Backend-Route fehlt weiterhin und `b4` ist rot. Entscheidung: Route ergänzen (~5 Zeilen, oberhalb von `/{id}`) oder Test umwidmen.
+6. ✅ ~~**B7 — referentielle Validierung + Eindeutigkeit**~~ — **GRÖSSTENTEILS ERLEDIGT 2026-06-11** (`a72592d`): unique `(job_id, designer_id)` + saubere 404/409 in `apply` + idempotentes Conversation-Create. `b7` grün. Übrig: Job-/User-Existenzprüfungen in `createConversation` (in **B14** einarbeiten).
 
-> Tracking: Jeder Fix oben dreht einen roten Test auf dem §5-Board von `test.md` auf grün. Das Projekt ist (korrektheitsseitig) „fertig", wenn dieses Board komplett grün ist.
+> Tracking: Jeder Fix oben dreht einen roten Test auf dem §5-Board von `test.md` auf grün. **Stand 2026-06-11: 2 rote Tests übrig (`b3`, `b4`).** Das Projekt ist (korrektheitsseitig) „fertig", wenn dieses Board komplett grün ist.
 
 ### Stufe 2 — die SHOULD-Punkte holen (8)
-7. **S1 — einen zweiten externen REST-Service ergänzen.** Eine zweite echte API, die das BE konsumiert (Währung, Feiertage, Geocoding…). Bahnt später **C1** an.
+7. ✅ ~~**S1 — einen zweiten externen REST-Service ergänzen.**~~ — **ERLEDIGT 2026-06-10** (`371b55f`): `countriesnow.space` via `location/` + Standort-Autofill im Profil-Editor. Zählt Richtung **C1** (eine weitere API nötig).
 8. **S2 — eine zweite FE-Komponente**, die ≥3 BE-Endpunkte anspricht (z. B. ein Moderations-Dashboard oder eine öffentliche Designer-Portfolio-Seite).
 9. **S3 — jede FE-Seite durch `validator.w3.org` schicken** und HTML-Fehler beheben.
 10. **S4 — responsive Mobil- + Desktop-Ansichten bestätigen/fertigstellen**; die Breakpoints dokumentieren.
@@ -531,8 +542,8 @@ Die Reihenfolge wird **zuerst von Bewertungspunkten** getrieben (siehe ⭐-Anfor
 15. **B6 — Vertragserzeugung beim Engagieren**; **B11 — globaler `@ControllerAdvice`**; **B9 — Nachrichten-Pagination neueste zuerst**; **B8 — Paket-READMEs synchronisieren**; minimale **moderation/**.
 
 ### Neu durch die tiefen Reviews aufgetaucht — in die obigen Stufen einordnen
-- **Stufe 0 (Pflichtpunkte):** **F1** die `index.html`-Navbar-localStorage-Schlüssel fixen (winzig, aber die gesamte Eingeloggt-/Logout-UX ist gerade kaputt); **F3/M7** die FE-PUT/DELETE-Aktionen ergänzen.
-- **Stufe 1 (Sicherheit):** **B14** Conversation-Spoofing-Prüfung in `ChatService`; **F2** den Login-`next`-Parameter validieren (Open Redirect / `javascript:`-XSS).
+- **Stufe 0 (Pflichtpunkte):** **F1** die `index.html`-Navbar-localStorage-Schlüssel fixen (winzig, aber die gesamte Eingeloggt-/Logout-UX ist gerade kaputt); **F3/M7** die FE-PUT-Aktion ergänzen *(DELETE erledigt 2026-06-10)*.
+- **Stufe 1 (Sicherheit):** **B14** Conversation-Spoofing-Prüfung in `ChatService` *(schließt auch den B7-Rest)*; **B22** `DELETE /jobs/{id}`-Autorisierung verschärfen *(neu)*; **F2** den Login-`next`-Parameter validieren (Open Redirect / `javascript:`-XSS).
 - **Stufe 1–2 (Robustheit/Korrektheit):** **B15** HTTP-Timeouts zu `ExternalTimeApiClient` ergänzen; **B16** lexikografische Zeitstempel-Sortierung fixen; **B17** die doppelte CORS-Konfig in `WebConfig` löschen; **B19** den Hire-/Status-Übergang atomar machen; **B20** den `design1/`-Pfad-Default fixen.
 - **Stufe 2 (SHOULD-Punkte):** **S3** die 6 W3C-scheiternden Seiten fixen (meist verirrtes `</script>` + `autocomplete`/`aria`/`label`-Attribute — siehe §9c).
 - **Build-Hygiene:** **H1** ein Coverage-Profil ergänzen, damit `mvn test` weiterhin JaCoCo ausgibt, während das Rot-Board rot ist; **H3** die H2-DB-Datei per `git rm --cached` entfernen.
@@ -557,8 +568,8 @@ Die Reihenfolge wird **zuerst von Bewertungspunkten** getrieben (siehe ⭐-Anfor
 | Secret überschreiben | env `APP_JWT_SECRET` (≥32 Zeichen) |
 | Identität in einem Controller | `auth.getName()` = userId, `auth.getAuthorities()` = `ROLE_<role>` |
 | Öffentlichen Endpunkt hinzufügen | Matcher zu `SecurityConfig` **dann** Controller schreiben |
-| Tests | `mvn test` (JDK 17) — JUnit-Suite + Postman/Newman in `postman/`; absichtlich rot (ein Fehlschlag pro offenem Bug). Siehe `test.md` |
+| Tests | `mvn test` (Toolchains wählt JDK 17 — braucht `~/.m2/toolchains.xml`, siehe Backend-README) — JUnit-Suite + Postman/Newman in `postman/`; absichtlich rot: **2 übrig (`b3`, `b4`)**. Siehe `test.md` |
 
 ---
 
-*Erstellt durch Lesen des tatsächlichen Quellcodes am 2026-06-10. Wo dieses Dokument und eine Paket-README sich widersprechen, gewinnt der Code — vor dem Verlassen auf eines von beiden erneut verifizieren.*
+*Erstellt durch Lesen des tatsächlichen Quellcodes am 2026-06-10; aktualisiert am 2026-06-11 nach den B1/B2/B5/B7-Fixes und den Arbeiten an Delete-Endpunkt / Suche / Random-Job / Locations. Wo dieses Dokument und eine Paket-README sich widersprechen, gewinnt der Code — vor dem Verlassen auf eines von beiden erneut verifizieren.*

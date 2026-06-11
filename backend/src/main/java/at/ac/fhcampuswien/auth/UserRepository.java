@@ -202,6 +202,19 @@ public class UserRepository {
         update(updatedData);
         return findById(id);
     }
+    public void deleteById(String id) {
+        String sql = "DELETE FROM users WHERE id = ?";
+
+        try (Connection connection = Database.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, id);
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to delete user by id", e);
+        }
+    }
 
     // 3. Das Mapping erweitern, damit Java die Werte beim Laden aus der DB liest
     private UserModel mapResultSetToUser(ResultSet resultSet) throws SQLException {

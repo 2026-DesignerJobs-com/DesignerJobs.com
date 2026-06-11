@@ -13,6 +13,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE}) // <-- DAS HIER ERWEITERN/HINZUFÜGEN
 public class AuthController {
 
     private final UserRepository userRepository;
@@ -225,5 +226,25 @@ public class AuthController {
         responseData.put("instagram", user.instagram == null ? "" : user.instagram);
 
         return ResponseEntity.ok(responseData);
+    }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<?> deleteProfile(Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "not authenticated"));
+        }
+
+        String userId = auth.getName();
+        UserModel user = userRepository.findById(userId);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "user not found"));
+        }
+
+        // User aus der Datenbank löschen
+        userRepository.deleteById(userId);
+
+        // Erfolgsmeldung zurückgeben
+        return ResponseEntity.ok(Map.of("message", "Profile deleted successfully"));
     }
 }

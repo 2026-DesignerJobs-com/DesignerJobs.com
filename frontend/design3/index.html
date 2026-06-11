@@ -119,7 +119,7 @@
     const logoutButton = document.getElementById('logout-button');
 
     const updateAuthNavigation = () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('designer_jobs_token');
 
       registerLink.classList.toggle('d-none', !!token);
       loginLink.classList.toggle('d-none', !!token);
@@ -144,10 +144,9 @@
       applyTheme(next);
     });
     logoutButton.addEventListener('click', () => {
-
-      localStorage.removeItem('token');
-      localStorage.removeItem('userId');
-      localStorage.removeItem('role');
+      localStorage.removeItem('designer_jobs_token');
+      localStorage.removeItem('designer_jobs_userId');
+      localStorage.removeItem('designer_jobs_role');
 
       updateAuthNavigation();
 
@@ -204,6 +203,10 @@
     window.addEventListener("message", event => {
       if (event.data && event.data.type === "auth-changed") {
         updateAuthNavigation();
+
+        if (event.data.page) {
+          navigate(event.data.page);
+        }
       }
     });
 

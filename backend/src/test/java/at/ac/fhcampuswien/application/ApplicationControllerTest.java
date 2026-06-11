@@ -62,6 +62,9 @@ class ApplicationControllerTest {
         authAs("designer-1", "ROLE_DESIGNER");
         JobApplication application = new JobApplication();
         application.coverLetter = "hire me";
+        Job job = new Job();
+        job.id = "job-1";
+        when(jobRepository.findById("job-1")).thenReturn(job);
         JobApplication created = new JobApplication();
         created.id = "app-1";
         when(repository.create("job-1", "designer-1", "hire me")).thenReturn(created);
@@ -70,6 +73,31 @@ class ApplicationControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         verify(repository).create("job-1", "designer-1", "hire me");
+    }
+
+    @Test
+    void apply_returns404_whenJobMissing() {
+        authAs("designer-1", "ROLE_DESIGNER");
+        when(jobRepository.findById("missing")).thenReturn(null);
+
+        ResponseEntity<?> response = controller.apply("missing", new JobApplication(), auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        verify(repository, never()).create(anyString(), anyString(), any());
+    }
+
+    @Test
+    void apply_rejectsDuplicateApplication_with409() {
+        authAs("designer-1", "ROLE_DESIGNER");
+        Job job = new Job();
+        job.id = "job-1";
+        when(jobRepository.findById("job-1")).thenReturn(job);
+        when(repository.existsByJobIdAndDesignerId("job-1", "designer-1")).thenReturn(true);
+
+        ResponseEntity<?> response = controller.apply("job-1", new JobApplication(), auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        verify(repository, never()).create(anyString(), anyString(), any());
     }
 
     // ---- listApplications ----

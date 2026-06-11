@@ -24,7 +24,8 @@ public class JobApplicationRepository {
                 designer_id VARCHAR(36) NOT NULL,
                 cover_letter TEXT,
                 status VARCHAR(20) NOT NULL,
-                applied_at VARCHAR(50) NOT NULL
+                applied_at VARCHAR(50) NOT NULL,
+                CONSTRAINT uq_applications_job_designer UNIQUE (job_id, designer_id)
             )
         """;
 
@@ -33,8 +34,39 @@ public class JobApplicationRepository {
 
             statement.executeUpdate(sql);
 
+            // Migration for older local H2 databases that predate the constraint.
+            // Fails at startup if the existing file already contains duplicates —
+            // in that case reset the DB (delete data/projectdb.mv.db).
+            statement.executeUpdate("""
+                ALTER TABLE applications
+                ADD CONSTRAINT IF NOT EXISTS uq_applications_job_designer UNIQUE (job_id, designer_id)
+            """);
+
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create applications table", e);
+        }
+    }
+
+    public boolean existsByJobIdAndDesignerId(String jobId, String designerId) {
+        String sql = """
+            SELECT 1
+            FROM applications
+            WHERE job_id = ?
+              AND designer_id = ?
+        """;
+
+        try (Connection connection = Database.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, jobId);
+            statement.setString(2, designerId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next();
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to check for existing application", e);
         }
     }
 

@@ -58,4 +58,12 @@ class JobApplicationRepositoryTest extends H2TestSupport {
     void updateStatus_returnsNull_whenIdMissing() {
         assertThat(repository.updateStatus("missing", "ACCEPTED")).isNull();
     }
+
+    @Test
+    void existsByJobIdAndDesignerId_reflectsStoredApplications() {
+        repository.create("job-1", "designer-1", "x");
+
+        assertThat(repository.existsByJobIdAndDesignerId("job-1", "designer-1")).isTrue();
+        assertThat(repository.existsByJobIdAndDesignerId("job-1", "designer-2")).isFalse();
+    }
 }

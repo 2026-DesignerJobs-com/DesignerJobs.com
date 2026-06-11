@@ -81,6 +81,19 @@ public class ConversationRepository {
             return conversation;
 
         } catch (SQLException e) {
+            // Two simultaneous creates can both pass the lookup above; the loser
+            // hits UNIQUE (client_id, designer_id, job_id). Return the winner's
+            // row instead of surfacing a 500.
+            Conversation winner = findByParticipantsAndJob(
+                    conversation.clientId,
+                    conversation.designerId,
+                    conversation.jobId
+            );
+
+            if (winner != null) {
+                return winner;
+            }
+
             throw new RuntimeException("Failed to create conversation", e);
         }
     }

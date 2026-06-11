@@ -42,10 +42,23 @@ public class ApplicationController {
         }
 
         String designerId = auth.getName();
-        String coverLetter = application.coverLetter;
+
+        if (jobRepository.findById(jobId) == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "error", "job not found"
+            ));
+        }
+
+        // Up-front check for a clean 409; the UNIQUE (job_id, designer_id)
+        // constraint in the applications table is the backstop.
+        if (jobApplicationRepository.existsByJobIdAndDesignerId(jobId, designerId)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                    "error", "you have already applied to this job"
+            ));
+        }
 
         JobApplication savedApplication =
-                jobApplicationRepository.create(jobId, designerId, coverLetter);
+                jobApplicationRepository.create(jobId, designerId, application.coverLetter);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedApplication);
     }

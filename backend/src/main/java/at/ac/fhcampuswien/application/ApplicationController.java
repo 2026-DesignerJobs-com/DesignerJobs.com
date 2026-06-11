@@ -139,6 +139,12 @@ public class ApplicationController {
             ));
         }
 
+        if (!isJobOwner(application, auth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "error", "only the job owner can accept or reject applications"
+            ));
+        }
+
         String newStatus = body.get("status");
 
         if (!"ACCEPTED".equals(newStatus) && !"REJECTED".equals(newStatus)) {
@@ -191,6 +197,11 @@ public class ApplicationController {
         // TODO: trigger contract creation via ContractService once contract/ is implemented.
 
         return ResponseEntity.ok(hiredApplication);
+    }
+
+    private boolean isJobOwner(JobApplication application, Authentication auth) {
+        Job job = jobRepository.findById(application.jobId);
+        return job != null && job.clientId != null && job.clientId.equals(auth.getName());
     }
 
     private boolean isDesigner(Authentication auth) {

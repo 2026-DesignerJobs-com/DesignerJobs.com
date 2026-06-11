@@ -142,12 +142,37 @@ class ApplicationControllerTest {
 
     // ---- updateStatus ----
 
+    private JobApplication applicationForJobOwnedBy(String clientId) {
+        Job job = new Job();
+        job.id = "job-1";
+        job.clientId = clientId;
+        when(jobRepository.findById("job-1")).thenReturn(job);
+
+        JobApplication app = new JobApplication();
+        app.id = "app-1";
+        app.jobId = "job-1";
+        when(repository.findById("app-1")).thenReturn(app);
+        return app;
+    }
+
+    @Test
+    void updateStatus_rejectsNonOwner_with403() {
+        when(auth.getName()).thenReturn("not-the-owner");
+        JobApplication app = applicationForJobOwnedBy("the-owner");
+        app.status = "PENDING";
+
+        ResponseEntity<?> response =
+                controller.updateStatus("app-1", Map.of("status", "ACCEPTED"), auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        verify(repository, never()).updateStatus(anyString(), anyString());
+    }
+
     @Test
     void updateStatus_rejectsInvalidStatus_with400() {
         when(auth.getName()).thenReturn("client-1");
-        JobApplication app = new JobApplication();
+        JobApplication app = applicationForJobOwnedBy("client-1");
         app.status = "PENDING";
-        when(repository.findById("app-1")).thenReturn(app);
 
         ResponseEntity<?> response =
                 controller.updateStatus("app-1", Map.of("status", "BANANA"), auth);
@@ -158,9 +183,8 @@ class ApplicationControllerTest {
     @Test
     void updateStatus_rejectsNonPendingApplication_with400() {
         when(auth.getName()).thenReturn("client-1");
-        JobApplication app = new JobApplication();
+        JobApplication app = applicationForJobOwnedBy("client-1");
         app.status = "ACCEPTED";
-        when(repository.findById("app-1")).thenReturn(app);
 
         ResponseEntity<?> response =
                 controller.updateStatus("app-1", Map.of("status", "REJECTED"), auth);
@@ -171,10 +195,8 @@ class ApplicationControllerTest {
     @Test
     void updateStatus_acceptsPendingApplication() {
         when(auth.getName()).thenReturn("client-1");
-        JobApplication app = new JobApplication();
-        app.id = "app-1";
+        JobApplication app = applicationForJobOwnedBy("client-1");
         app.status = "PENDING";
-        when(repository.findById("app-1")).thenReturn(app);
         JobApplication updated = new JobApplication();
         updated.status = "ACCEPTED";
         when(repository.updateStatus("app-1", "ACCEPTED")).thenReturn(updated);

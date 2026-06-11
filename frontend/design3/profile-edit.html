@@ -35,7 +35,7 @@
 
       <!-- FORM -->
       <div class="col-lg-8">
-        <form id="edit-form" method="POST" action="#">
+        <form id="edit-form" method="POST" action="#" novalidate>
 
           <h2 id="edit-form-h" class="font-monospace text-uppercase fw-bold mb-4" style="font-size:1.1rem; letter-spacing:.06em">Basic Information</h2>
 
@@ -212,20 +212,20 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="app.js"></script>
 
-<script>
-  function getInitials(nameOrEmail) {
+  <script>
+    function getInitials(nameOrEmail) {
     if (!nameOrEmail) return "--";
 
     const parts = nameOrEmail.trim().split(/\s+/);
 
     if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
 
     return nameOrEmail.substring(0, 2).toUpperCase();
   }
 
-  function updatePreview() {
+    function updatePreview() {
     const fullName = document.getElementById("full-name").value.trim();
     const title = document.getElementById("title").value.trim();
     const city = document.getElementById("city").value.trim();
@@ -234,10 +234,10 @@
     const displayName = fullName || "Your Name";
     const displayTitle = title || "Profile";
     const displayLocation =
-            city && country ? city + ", " + country :
-                    city ? city :
-                            country ? country :
-                                    "Location";
+    city && country ? city + ", " + country :
+    city ? city :
+    country ? country :
+    "Location";
 
     document.getElementById("preview-avatar").textContent = getInitials(displayName);
     document.getElementById("preview-name").textContent = displayName;
@@ -245,142 +245,237 @@
     document.getElementById("preview-location").textContent = displayLocation;
   }
 
-  async function loadEditProfile() {
+
+    async function fillFormFields(user) {
+    if (!user) return;
+
+    // Basis-Informationen
+    document.getElementById("full-name").value = user.fullName || "";
+    document.getElementById("title").value = user.designType || "";
+    document.getElementById("bio").value = user.bio || "";
+    document.getElementById("skills").value = user.skills || "";
+
+    // Raten (Rates)
+    document.getElementById("hourly-min").value = user.hourlyMin || "";
+    document.getElementById("hourly-max").value = user.hourlyMax || "";
+    document.getElementById("project-min").value = user.projectMin || "";
+
+    // Social Links & Portfolio URL
+    document.getElementById("portfolio-url").value = user.portfolioUrl || "";
+    document.getElementById("twitter").value = user.twitter || "";
+    document.getElementById("linkedin").value = user.linkedin || "";
+    document.getElementById("instagram").value = user.instagram || "";
+
+    // Radio-Buttons: Verfügbarkeit (Availability)
+    if (user.availability) {
+    const radioAvail = document.querySelector(`input[name="availability"][value="${user.availability}"]`);
+    if (radioAvail) radioAvail.checked = true;
+  }
+
+    // Radio-Buttons: Portfolio-Sichtbarkeit
+    if (user.portfolioVisibility) {
+    const radioVis = document.querySelector(`input[name="portfolioVisibility"][value="${user.portfolioVisibility}"]`);
+    if (radioVis) radioVis.checked = true;
+  }
+
+    // Standort-Dropdowns nacheinander befüllen, da Städte vom Land abhängen
+    if (user.country) {
+    document.getElementById("country").value = user.country;
+
+    // Warte, bis die Städte für dieses Land geladen wurden
+    await loadCities(user.country);
+
+    if (user.city) {
+    document.getElementById("city").value = user.city;
+  }
+  }
+  }
+
+    // Profil beim Laden der Seite abrufen
+    async function loadEditProfile() {
     const message = document.getElementById("edit-profile-message");
 
     try {
-      const response = await Auth.authFetch("http://localhost:8080/auth/me");
+    // Erst die Länderliste laden, damit die Auswahloptionen existieren
+    await loadCountries();
 
-      if (!response.ok) {
-        throw new Error("Profile could not be loaded.");
-      }
+    const response = await fetch("http://localhost:8080/auth/me", {
+    method: "GET",
+    headers: {
+    "Authorization": "Bearer " + localStorage.getItem("designer_jobs_token")
+  }
+  });
 
-      const user = await response.json();
-
-      document.getElementById("full-name").value = user.fullName || "";
-
-      document.getElementById("title").value =
-              user.role === "DESIGNER"
-                      ? (user.designType || "Designer")
-                      : "Client";
-
-      document.getElementById("skills").value = user.skills || "";
-
-      updatePreview();
-
-    } catch (error) {
-      console.error("Edit profile load error:", error);
-
-      if (message) {
-        message.textContent = "Profile data could not be loaded. Please check the backend.";
-        message.className = "font-monospace small mb-3 text-danger";
-      }
-    }
+    if (!response.ok) {
+    throw new Error("Profile could not be loaded.");
   }
 
-  document.querySelector('[data-action="delete"]').addEventListener('click', () => {
-    if (confirm('Are you sure you want to delete your profile? This cannot be undone.')) {
-      console.log('Delete profile');
-    }
-  });
+    const user = await response.json();
 
-  document.getElementById('edit-form').addEventListener('submit', e => {
-    e.preventDefault();
+    // Alle Felder mit den geladenen Daten füllen
+    await fillFormFields(user);
 
-    const message = document.getElementById("edit-profile-message");
+    updatePreview();
+
+  } catch (error) {
+    console.error("Edit profile load error:", error);
 
     if (message) {
-      message.textContent = "Profile editing layout is ready. Saving to backend will be connected next.";
-      message.className = "font-monospace small mb-3 text-warning";
-    }
+    message.textContent = "Profile data could not be loaded.";
+    message.className = "text-danger";
+  }
+  }
+  }
 
-    console.log('Profile edit form submitted. Backend update endpoint is not connected yet.');
+    document.querySelector('[data-action="delete"]').addEventListener('click', () => {
+    if (confirm('Are you sure you want to delete your profile? This cannot be undone.')) {
+    console.log('Delete profile');
+  }
   });
 
-  ["full-name", "title", "city", "country"].forEach(id => {
+    // Alle Formulardaten sammeln und an das Backend senden (Save)
+    document.getElementById('edit-form').addEventListener('submit', async e => {
+    e.preventDefault();
+      console.log("Formular-Submit wurde ausgelöst!");
+    const message = document.getElementById("edit-profile-message");
+
+    // Das Payload-Objekt enthält nun ALLE Formularfelder für das Backend
+    const payload = {
+    fullName: document.getElementById("full-name").value.trim(),
+    designType: document.getElementById("title").value.trim(),
+    bio: document.getElementById("bio").value.trim(),
+    country: document.getElementById("country").value,
+    city: document.getElementById("city").value,
+    availability: document.querySelector('input[name="availability"]:checked')?.value || "available",
+    hourlyMin: parseInt(document.getElementById("hourly-min").value) || 0,
+    hourlyMax: parseInt(document.getElementById("hourly-max").value) || 0,
+    projectMin: parseInt(document.getElementById("project-min").value) || 0,
+    skills: document.getElementById("skills").value.trim(),
+    portfolioVisibility: document.querySelector('input[name="portfolioVisibility"]:checked')?.value || "public",
+    portfolioUrl: document.getElementById("portfolio-url").value.trim(),
+    twitter: document.getElementById("twitter").value.trim(),
+    linkedin: document.getElementById("linkedin").value.trim(),
+    instagram: document.getElementById("instagram").value.trim()
+  };
+
+    try {
+    const response = await Auth.authFetch("http://localhost:8080/auth/me", {
+    method: "PUT",
+    headers: {
+    "Content-Type": "application/json"
+  },
+    body: JSON.stringify(payload)
+  });
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+    throw new Error(result.error || "Profile could not be saved.");
+  }
+
+    if (message) {
+    message.textContent = "Profile changes saved successfully.";
+    message.className = "font-monospace small mb-3 text-success";
+  }
+
+    // Eingabefelder mit der Antwort vom Server aktualisieren
+    await fillFormFields(result);
+
+    updatePreview();
+
+  } catch (error) {
+    console.error("Profile save error:", error);
+
+    if (message) {
+    message.textContent = "Profile changes could not be saved. Please check backend.";
+    message.className = "font-monospace small mb-3 text-danger";
+  }
+  }
+  });
+
+    ["full-name", "title", "city", "country"].forEach(id => {
     const element = document.getElementById(id);
 
     if (element) {
-      element.addEventListener("input", updatePreview);
-    }
+    element.addEventListener("input", updatePreview);
+  }
   });
-  async function loadCountries() {
+
+    async function loadCountries() {
     const countrySelect = document.getElementById("country");
 
     try {
-      const response = await fetch("http://localhost:8080/locations/countries");
+    const response = await fetch("http://localhost:8080/locations/countries");
 
-      if (!response.ok) {
-        throw new Error("Countries could not be loaded.");
-      }
-
-      const countries = await response.json();
-
-      countrySelect.innerHTML = `<option value="">Select country</option>`;
-
-      countries.forEach(country => {
-        const option = document.createElement("option");
-        option.value = country;
-        option.textContent = country;
-        countrySelect.appendChild(option);
-      });
-
-    } catch (error) {
-      console.error("Error while loading countries:", error);
-    }
+    if (!response.ok) {
+    throw new Error("Countries could not be loaded.");
   }
 
-  async function loadCities(country) {
+    const countries = await response.json();
+
+    countrySelect.innerHTML = `<option value="">Select country</option>`;
+
+    countries.forEach(country => {
+    const option = document.createElement("option");
+    option.value = country;
+    option.textContent = country;
+    countrySelect.appendChild(option);
+  });
+
+  } catch (error) {
+    console.error("Error while loading countries:", error);
+  }
+  }
+
+    async function loadCities(country) {
     const citySelect = document.getElementById("city");
 
     citySelect.innerHTML = `<option value="">Loading cities...</option>`;
     citySelect.disabled = true;
 
     if (!country) {
-      citySelect.innerHTML = `<option value="">Select city</option>`;
-      return;
-    }
-
-    try {
-      const response = await fetch("http://localhost:8080/locations/cities?country=" + encodeURIComponent(country));
-
-      if (!response.ok) {
-        throw new Error("Cities could not be loaded.");
-      }
-
-      const cities = await response.json();
-
-      citySelect.innerHTML = `<option value="">Select city</option>`;
-
-      cities.forEach(city => {
-        const option = document.createElement("option");
-        option.value = city;
-        option.textContent = city;
-        citySelect.appendChild(option);
-      });
-
-      citySelect.disabled = false;
-
-    } catch (error) {
-      console.error("Error while loading cities:", error);
-      citySelect.innerHTML = `<option value="">Cities unavailable</option>`;
-    }
+    citySelect.innerHTML = `<option value="">Select city</option>`;
+    return;
   }
 
-  document.getElementById("country").addEventListener("change", async () => {
+    try {
+    const response = await fetch("http://localhost:8080/locations/cities?country=" + encodeURIComponent(country));
+
+    if (!response.ok) {
+    throw new Error("Cities could not be loaded.");
+  }
+
+    const cities = await response.json();
+
+    citySelect.innerHTML = `<option value="">Select city</option>`;
+
+    cities.forEach(city => {
+    const option = document.createElement("option");
+    option.value = city;
+    option.textContent = city;
+    citySelect.appendChild(option);
+  });
+
+    citySelect.disabled = false;
+
+  } catch (error) {
+    console.error("Error while loading cities:", error);
+    citySelect.innerHTML = `<option value="">Cities unavailable</option>`;
+  }
+  }
+
+    document.getElementById("country").addEventListener("change", async () => {
     const selectedCountry = document.getElementById("country").value;
     await loadCities(selectedCountry);
     updatePreview();
   });
 
-  document.getElementById("city").addEventListener("change", () => {
+    document.getElementById("city").addEventListener("change", () => {
     updatePreview();
   });
 
-  loadCountries();
-
-  loadEditProfile();
-
+    // Startet den gesamten Prozess (Länder laden & Profildaten holen)
+    loadEditProfile();
 </script>
 </body>
 </html>

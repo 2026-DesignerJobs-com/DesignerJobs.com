@@ -122,6 +122,7 @@ public class AuthController {
         // unless a blacklist is introduced — out of scope for the current iteration.
         return ResponseEntity.noContent().build();
     }
+
     @GetMapping("/me")
     public ResponseEntity<?> me(Authentication auth) {
         if (auth == null || auth.getName() == null) {
@@ -139,14 +140,90 @@ public class AuthController {
             ));
         }
 
-        return ResponseEntity.ok(Map.of(
-                "userId", user.id,
-                "email", user.email,
-                "role", user.role,
-                "createdAt", user.createdAt,
-                "fullName", user.fullName == null ? "" : user.fullName,
-                "designType", user.designType == null ? "" : user.designType,
-                "skills", user.skills == null ? "" : user.skills
-        ));
+        // Wir nutzen eine HashMap, weil Map.of maximal 10 Paare erlaubt
+        java.util.Map<String, Object> responseData = new java.util.HashMap<>();
+        responseData.put("userId", user.id);
+        responseData.put("email", user.email);
+        responseData.put("role", user.role);
+        responseData.put("createdAt", user.createdAt);
+        responseData.put("fullName", user.fullName == null ? "" : user.fullName);
+        responseData.put("designType", user.designType == null ? "" : user.designType);
+        responseData.put("bio", user.bio == null ? "" : user.bio);
+        responseData.put("country", user.country == null ? "" : user.country);
+        responseData.put("city", user.city == null ? "" : user.city);
+        responseData.put("availability", user.availability == null ? "available" : user.availability);
+        responseData.put("hourlyMin", user.hourlyMin);
+        responseData.put("hourlyMax", user.hourlyMax);
+        responseData.put("projectMin", user.projectMin);
+        responseData.put("skills", user.skills == null ? "" : user.skills);
+        responseData.put("portfolioVisibility", user.portfolioVisibility == null ? "public" : user.portfolioVisibility);
+        responseData.put("portfolioUrl", user.portfolioUrl == null ? "" : user.portfolioUrl);
+        responseData.put("twitter", user.twitter == null ? "" : user.twitter);
+        responseData.put("linkedin", user.linkedin == null ? "" : user.linkedin);
+        responseData.put("instagram", user.instagram == null ? "" : user.instagram);
+
+        return ResponseEntity.ok(responseData);
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<?> updateProfile(Authentication auth, @RequestBody java.util.Map<String, Object> body) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "not authenticated"));
+        }
+
+        String userId = auth.getName();
+        UserModel user = userRepository.findById(userId);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "user not found"));
+        }
+
+        // 1. Textfelder auslesen
+        user.fullName = body.containsKey("fullName") ? (String) body.get("fullName") : user.fullName;
+        user.designType = body.containsKey("designType") ? (String) body.get("designType") : user.designType;
+        user.bio = body.containsKey("bio") ? (String) body.get("bio") : user.bio;
+        user.country = body.containsKey("country") ? (String) body.get("country") : user.country;
+        user.city = body.containsKey("city") ? (String) body.get("city") : user.city;
+        user.availability = body.containsKey("availability") ? (String) body.get("availability") : user.availability;
+        user.skills = body.containsKey("skills") ? (String) body.get("skills") : user.skills;
+        user.portfolioVisibility = body.containsKey("portfolioVisibility") ? (String) body.get("portfolioVisibility") : user.portfolioVisibility;
+        user.portfolioUrl = body.containsKey("portfolioUrl") ? (String) body.get("portfolioUrl") : user.portfolioUrl;
+        user.twitter = body.containsKey("twitter") ? (String) body.get("twitter") : user.twitter;
+        user.linkedin = body.containsKey("linkedin") ? (String) body.get("linkedin") : user.linkedin;
+        user.instagram = body.containsKey("instagram") ? (String) body.get("instagram") : user.instagram;
+
+        // 2. Zahlenfelder auslesen
+        if (body.containsKey("hourlyMin") && body.get("hourlyMin") != null) {
+            user.hourlyMin = ((Number) body.get("hourlyMin")).intValue();
+        }
+        if (body.containsKey("hourlyMax") && body.get("hourlyMax") != null) {
+            user.hourlyMax = ((Number) body.get("hourlyMax")).intValue();
+        }
+        if (body.containsKey("projectMin") && body.get("projectMin") != null) {
+            user.projectMin = ((Number) body.get("projectMin")).intValue();
+        }
+
+        // 3. In der Datenbank speichern
+        userRepository.update(user);
+
+        // 4. Antwort via HashMap zusammenbauen (umgeht das 10-Elemente-Limit)
+        java.util.Map<String, Object> responseData = new java.util.HashMap<>();
+        responseData.put("fullName", user.fullName == null ? "" : user.fullName);
+        responseData.put("designType", user.designType == null ? "" : user.designType);
+        responseData.put("bio", user.bio == null ? "" : user.bio);
+        responseData.put("country", user.country == null ? "" : user.country);
+        responseData.put("city", user.city == null ? "" : user.city);
+        responseData.put("availability", user.availability == null ? "available" : user.availability);
+        responseData.put("hourlyMin", user.hourlyMin);
+        responseData.put("hourlyMax", user.hourlyMax);
+        responseData.put("projectMin", user.projectMin);
+        responseData.put("skills", user.skills == null ? "" : user.skills);
+        responseData.put("portfolioVisibility", user.portfolioVisibility == null ? "public" : user.portfolioVisibility);
+        responseData.put("portfolioUrl", user.portfolioUrl == null ? "" : user.portfolioUrl);
+        responseData.put("twitter", user.twitter == null ? "" : user.twitter);
+        responseData.put("linkedin", user.linkedin == null ? "" : user.linkedin);
+        responseData.put("instagram", user.instagram == null ? "" : user.instagram);
+
+        return ResponseEntity.ok(responseData);
     }
 }

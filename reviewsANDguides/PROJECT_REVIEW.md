@@ -4,7 +4,7 @@
 
 > **Update 2026-06-11:** Big day. Fixed: **B1, B5** (email casing), **B2** (partially — `listApplications` ownership), **B7** (mostly — unique applications, clean 409, conversation race). New since yesterday: **`DELETE /jobs/{id}`** + FE delete button (closes **M6**, half of M7), **search** wired end-to-end, **job-random/job-detail pages fixed** (B4 symptom gone), and a **second external REST API** (countriesnow.space → closes **S1**) with location autofill in profile-edit. `mvn test` now auto-selects JDK 17 via Maven toolchains. The red TDD board is down to **2 tests: b3 (PUT /jobs) and b4 (GET /jobs/random)**. Details inline below — each touched item is marked.
 
-> **Update 2026-06-11 (eod):** **B2** fully fixed (status/hire owner-only, get owner-or-applicant), **B3** done (`PUT /jobs/{id}` with ownership, body can't set `clientId`/`createdAt`), **B22** fixed (delete owner-only), **B4** resolved as client-side-by-design (`getRandomJob()` removed, `b4` retired). `SecurityConfig` narrowed `GET /jobs/**` → `/jobs` + `/jobs/*` so nested sub-resources are authenticated at the filter level. **TDD board complete: `mvn test` = BUILD SUCCESS (111 tests).** H1 (JaCoCo) resolves itself now that Surefire passes.
+> **Update 2026-06-11 (eod):** **B2** fully fixed (status/hire owner-only, get owner-or-applicant), **B3** done (`PUT /jobs/{id}` with ownership, body can't set `clientId`/`createdAt`), **B22** fixed (delete owner-only), **B4** resolved as client-side-by-design (`getRandomJob()` removed, `b4` retired). `SecurityConfig` narrowed `GET /jobs/**` → `/jobs` + `/jobs/*` so nested sub-resources are authenticated at the filter level. **TDD board complete: `mvn test` = BUILD SUCCESS (115 tests).** H1 (JaCoCo) resolves itself now that Surefire passes. Also shipped: **C2** (JSON+XML content negotiation via `jackson-dataformat-xml`, `ContentNegotiationTest`). New finding **H6**: the request-logging filter writes plaintext passwords and bearer JWTs to `logs/app.log` (local-only, gitignored — fix pending, see §9b).
 
 ---
 
@@ -172,7 +172,7 @@ Requires **JDK 17 + Maven**. *(Updated 2026-06-11:)* the build now uses **Maven 
 
 > ✅ **There is now a JUnit test suite** under `backend/src/test` (JUnit 5 + Mockito + AssertJ, plus `@SpringBootTest`/MockMvc for security), and a Postman/Newman black-box suite in `postman/`. Full details, coverage numbers, and the TDD red board are in **`test.md`**.
 >
-> ⚠️ **`mvn test` is intentionally RED right now.** We work test-first: there is one failing test per open bug (the §5 board in `test.md`), so the build fails *on purpose* until the bugs are fixed. Don't "fix" it by deleting tests. *(Status 2026-06-11: down to **2 red** — `b3` PUT /jobs, `b4` GET /jobs/random. `b1`, `b2`, `b5`, `b7` are green.)* Caveat: because the red tests fail the `test` phase, the JaCoCo report isn't generated on a plain `mvn test` — see harness finding **H1** in §9b.
+> ⚠️ ~~**`mvn test` is intentionally RED right now.**~~ **Board complete since 2026-06-11 (eod):** `b3` green (`PUT /jobs/{id}` implemented), `b4` retired (random-job client-side by design) — `mvn test` = BUILD SUCCESS and the JaCoCo report generates again (H1 ✅). The test-first rule stands for future bugs: one red test per open bug; don't "fix" the build by deleting tests.
 
 **Reset all state:** delete `backend/data/projectdb.mv.db` and restart. (Note: this file is currently tracked in git and churns — see **H3**.)
 
@@ -447,6 +447,9 @@ These are **not** application bugs — they're issues in the test suite, build c
 ### ✅ H1 — ~~`mvn test` no longer produces a JaCoCo coverage report~~ — RESOLVED 2026-06-11 (board green)
 The JaCoCo `report` goal is bound to the `test` phase, and the intentional red TDD tests made Surefire fail and abort the phase before `jacoco:report` could run. Since the §5 board went green (b3 fixed, b4 retired), `mvn test` exits `0` and the report regenerates normally. *(The structural fragility remains: any future red test silently kills coverage again — binding `jacoco:report` to `verify` or adding a coverage profile is still worth doing if red-TDD boards return.)*
 
+### 🟠 H6 — *(new 2026-06-11)* Request logging writes plaintext passwords and bearer tokens to `backend/logs/app.log`
+`config/RequestLoggingConfig` registers a `CommonsRequestLoggingFilter` with `includeHeaders(true)` + `includePayload(true)`, and `logging.file.name=logs/app.log` persists it at DEBUG. Verified in the live log: full `Authorization: Bearer …` JWTs on every authenticated request, and register/login payloads with `"password":"…"` in plaintext (11 occurrences after one evening, file ~555 KB). `*.log` is gitignored, so nothing reaches the repo — but the local disk holds live credentials and the file grows unbounded. **Fix:** exclude the `Authorization` header via `setHeaderPredicate`, skip payload logging on `/auth/**` (or `includePayload(false)` globally), and consider a rolling-file policy.
+
 ### 🟠 H2 — Vacuous password-encoding assertion (false confidence)
 In `AuthControllerTest`, the "password is hashed, not raw" check is `assertThat(saved.passwordHash).isNotEqualTo("secret123")`. But `passwordEncoder` is a Mockito mock whose unstubbed `encode()` returns `null`, so the assertion is `null != "secret123"` → trivially true. **It would still pass even if `register()` stored the raw password.**
 **Fix:** assert the call instead — `verify(passwordEncoder).encode("secret123")` — so a regression that drops encoding actually fails the test.
@@ -526,7 +529,7 @@ Ordering is driven by **grading points first** (see the ⭐ requirements section
 5. ✅ ~~**B4 — `GET /jobs/random`**~~ — **RESOLVED 2026-06-11**: client-side approach accepted as final; `getRandomJob()` removed, `b4` test retired.
 6. ✅ ~~**B7 — referential validation + uniqueness**~~ — **MOSTLY DONE 2026-06-11** (`a72592d`): unique `(job_id, designer_id)` + clean 404/409 in apply + idempotent conversation create. `b7` green. Remaining: job/user existence checks in `createConversation` (fold into **B14**).
 
-> Tracking: every fix above flips one red test on the §5 board of `test.md` to green. **Status 2026-06-11 (eod): board complete — `b3` green, `b4` retired (client-side by design); `mvn test` = BUILD SUCCESS, 111 tests, 0 failures.**
+> Tracking: every fix above flips one red test on the §5 board of `test.md` to green. **Status 2026-06-11 (eod): board complete — `b3` green, `b4` retired (client-side by design); `mvn test` = BUILD SUCCESS, 115 tests, 0 failures.**
 
 ### Tier 2 — chase the SHOULD points (8)
 7. ✅ ~~**S1 — add a second external REST service.**~~ — **DONE 2026-06-10** (`371b55f`): `countriesnow.space` via `location/` + profile-edit autofill. Pairs toward **C1** (one more API needed).

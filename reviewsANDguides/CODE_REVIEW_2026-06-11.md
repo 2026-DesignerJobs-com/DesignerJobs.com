@@ -2,6 +2,20 @@
 
 Process: 10 finder angles → ~70 candidates → dedup → verified (agents + manual reads; two H2 claims verified empirically on H2 2.3.232) → gap sweep. Top 15 below; verified-but-cut and cleanup backlog follow.
 
+## Status addendum — 2026-06-11 (eod)
+
+Fixed since this review ran (each as its own commit, with tests):
+
+- **Findings 1–4** (ownership): `PUT /applications/{id}/status` and `POST /applications/{id}/hire` are owner-only, `GET /applications/{id}` is owner-or-applicant, `DELETE /jobs/{id}` lost the `|| isDesigner` branch.
+- **Finding 10** (`mvn package` always fails): resolved — b3 fixed by the new owner-only `PUT /jobs/{id}` (server-side `clientId`/`createdAt`), b4 retired by team decision (random-job is client-side by design; `getRandomJob()` removed). Suite: **115 tests, BUILD SUCCESS**.
+- From "verified but cut": **SecurityConfig blanket `GET /jobs/**`** narrowed to `/jobs` + `/jobs/*`, with security-matrix tests.
+
+Also shipped: **C2** — JSON+XML content negotiation (`jackson-dataformat-xml`, `produces` on the job reads, `ContentNegotiationTest`).
+
+New finding from `backend/logs/app.log` (post-review): `config/RequestLoggingConfig`'s `CommonsRequestLoggingFilter` (includeHeaders + includePayload) plus `logging.file.name=logs/app.log` writes **plaintext register/login passwords (11×) and full bearer JWTs** to disk. Gitignored (`*.log`), so local-only — fix by excluding the `Authorization` header and `/auth/**` payloads. Tracked as **H6** in `PROJECT_REVIEW.md` §9b.
+
+Top remaining (re-ranked): finding 5 (POST /jobs role check + client-supplied `id`/`createdAt`), 6 (login `next` XSS/redirect = F2), 7 (chat counterparty validation = B14), 8 (chat shows only oldest 50 messages), 9 (shell localStorage keys = F1), 11–15, then the cut list below.
+
 ## Top 15 findings (ranked)
 
 ```json

@@ -4,6 +4,8 @@
 
 > **Update 2026-06-11:** Großer Tag. Behoben: **B1, B5** (E-Mail-Groß-/Kleinschreibung), **B2** (teilweise — `listApplications`-Eigentümer-Prüfung), **B7** (größtenteils — eindeutige Bewerbungen, sauberes 409, Conversation-Race). Neu seit gestern: **`DELETE /jobs/{id}`** + FE-Löschen-Button (schließt **M6**, halbes M7), **Suche** durchgängig verdrahtet, **job-random/job-detail-Seiten gefixt** (B4-Symptom weg) und eine **zweite externe REST-API** (countriesnow.space → schließt **S1**) mit Standort-Autofill im Profil-Editor. `mvn test` wählt jetzt automatisch JDK 17 via Maven Toolchains. Das rote TDD-Board ist auf **2 Tests runter: b3 (PUT /jobs) und b4 (GET /jobs/random)**. Details inline unten — jeder betroffene Punkt ist markiert.
 
+> **Update 2026-06-11 (Abend):** **B2** vollständig behoben (status/hire Owner-only, get Owner-oder-Bewerber), **B3** erledigt (`PUT /jobs/{id}` mit Eigentümer-Prüfung; der Body kann `clientId`/`createdAt` nicht setzen), **B22** behoben (Delete Owner-only), **B4** als clientseitig-by-Design aufgelöst (`getRandomJob()` entfernt, `b4` ausgemustert). `SecurityConfig`: `GET /jobs/**` auf `/jobs` + `/jobs/*` eingeengt — verschachtelte Sub-Ressourcen sind jetzt auf Filter-Ebene authentifiziert. **TDD-Board komplett: `mvn test` = BUILD SUCCESS (115 Tests).** H1 (JaCoCo) löst sich damit von selbst. Außerdem: **C2** erledigt (JSON+XML Content Negotiation via `jackson-dataformat-xml`, `ContentNegotiationTest`); neuer Befund **H6** — der Request-Logging-Filter schreibt Klartext-Passwörter/JWTs nach `logs/app.log` (nur lokal, gitignored — Fix offen, siehe §9b).
+
 ---
 
 ## 0. Wie man dieses Dokument nutzt
@@ -72,7 +74,7 @@ Das ist das offizielle Bewertungsraster, abgeglichen mit dem **tatsächlichen Co
 | # | Anforderung | Status | Beleg / was fehlt |
 |---|---|---|---|
 | **C1** | ≥3 externe REST-Services konsumieren | ❌ | braucht drei — **zwei jetzt vorhanden** (`timeapi.io`, `countriesnow.space`). Eine weitere echte API schließt es. |
-| **C2** | BE liefert JSON **und** XML | ❌ | nur JSON. XML via `jackson-dataformat-xml` + Content Negotiation ergänzen (`produces = {JSON, XML}`). |
+| **C2** | BE liefert JSON **und** XML | ✅ *(2026-06-11)* | `jackson-dataformat-xml` + Content Negotiation: JSON ist Default, `Accept: application/xml` liefert XML (explizites `produces` auf `GET /jobs` + `GET /jobs/{id}`, app-weit über den registrierten Converter). Abgedeckt durch `ContentNegotiationTest`. |
 | **C3** | BE-PATCH-Endpunkt, vom FE konsumiert | ❌ | kein `@PatchMapping` vorhanden (das einzige „PATCH" im Code ist ein CORS-*Allowed-Method*-Eintrag in `SecurityConfig`, kein Endpunkt). Einen PATCH-Endpunkt ergänzen (z. B. partielles Job-/Profil-Update) und vom FE aufrufen. |
 
 ### Punkte-Zusammenfassung (ehrliche Selbsteinschätzung)
@@ -170,7 +172,7 @@ Erfordert **JDK 17 + Maven**. *(Aktualisiert 2026-06-11:)* Der Build nutzt jetzt
 
 > ✅ **Es gibt jetzt eine JUnit-Test-Suite** unter `backend/src/test` (JUnit 5 + Mockito + AssertJ, plus `@SpringBootTest`/MockMvc für Security) und eine Postman/Newman-Black-Box-Suite in `postman/`. Alle Details, Coverage-Zahlen und das TDD-Rot-Board stehen in **`test.md`**.
 >
-> ⚠️ **`mvn test` ist gerade absichtlich ROT.** Wir arbeiten test-first: Es gibt einen fehlschlagenden Test pro offenem Bug (das Board in §5 von `test.md`), sodass der Build *absichtlich* fehlschlägt, bis die Bugs behoben sind. Nicht „reparieren", indem man Tests löscht. *(Stand 2026-06-11: nur noch **2 rot** — `b3` PUT /jobs, `b4` GET /jobs/random. `b1`, `b2`, `b5`, `b7` sind grün.)* Hinweis: Weil die roten Tests die `test`-Phase scheitern lassen, wird der JaCoCo-Report bei einem schlichten `mvn test` nicht erzeugt — siehe Harness-Befund **H1** in §9b.
+> ⚠️ ~~**`mvn test` ist gerade absichtlich ROT.**~~ **Board komplett seit 2026-06-11 (Abend):** `b3` grün (`PUT /jobs/{id}` implementiert), `b4` ausgemustert (Random-Job clientseitig by Design) — `mvn test` = BUILD SUCCESS und der JaCoCo-Report wird wieder erzeugt (H1 ✅). Die Test-first-Regel gilt weiter für künftige Bugs: ein roter Test pro offenem Bug; den Build nicht durch Löschen von Tests „reparieren".
 
 **Gesamten Zustand zurücksetzen:** `backend/data/projectdb.mv.db` löschen und neu starten. (Hinweis: Diese Datei ist derzeit in git getrackt und ändert sich ständig — siehe **H3**.)
 
@@ -340,8 +342,8 @@ Aus `SecurityConfig.filterChain`, der Reihe nach:
 | `auth/` | ✅ Fertig | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout` (No-op), `GET /auth/me` | Solide. |
 | `session/` | ✅ Fertig | — | Nur `JwtService`. |
 | `config/` | ✅ Fertig | — | Security + statisches Serving. |
-| `job/` | 🟠 Größtenteils | `POST /jobs`, `GET /jobs` (+ Such-Parameter), `GET /jobs/{id}`, `DELETE /jobs/{id}` *(neu 2026-06-10)* | Suche durchgängig verdrahtet (`23d4dda`). **`PUT /jobs/{id}` weiterhin NICHT implementiert** (B3, letzte Backend-Lücke). Delete-Autorisierung zu lasch — siehe **B22**. |
-| `application/` | ✅ Fertig (Review) | `POST /jobs/{jobId}/apply`, `GET /jobs/{jobId}/applications`, `GET /applications/{id}`, `PUT /applications/{id}/status`, `POST /applications/{id}/hire` | Hire ist ein Stub-Trigger (noch kein Vertrag). Apply validiert jetzt Job-Existenz + lehnt Duplikate ab (B7 ✅); Liste ist Owner-only (B2 teilweise) — get/status/hire weiterhin ungeprüft, siehe §9. |
+| `job/` | ✅ Fertig | `POST /jobs`, `GET /jobs` (+ Such-Parameter), `GET /jobs/{id}`, `PUT /jobs/{id}` *(neu 2026-06-11)*, `DELETE /jobs/{id}` | Suche durchgängig verdrahtet (`23d4dda`). PUT und DELETE sind Owner-only (B3 ✅, B22 ✅). |
+| `application/` | ✅ Fertig (Review) | `POST /jobs/{jobId}/apply`, `GET /jobs/{jobId}/applications`, `GET /applications/{id}`, `PUT /applications/{id}/status`, `POST /applications/{id}/hire` | Hire ist ein Stub-Trigger (noch kein Vertrag). Apply validiert Job-Existenz + lehnt Duplikate ab (B7 ✅); list/status/hire sind Owner-only, get ist Owner-oder-Bewerber (B2 ✅). |
 | `location/` | ✅ Fertig *(neu 2026-06-10)* | `GET /locations/countries`, `GET /locations/cities?country=…` | Länder als hartkodierte Liste; Städte via `countriesnow.space` proxied (2. externe API → S1). Öffentlich via `SecurityConfig`. |
 | `chat/` | ✅ Fertig | `GET/POST /conversations`, `GET/POST /conversations/{id}/messages` | Lokaler H2-Modus; externer API-Pfad hinter `USE_EXTERNAL_CHAT_API=false`. |
 | `worldclock/` | ✅ Fertig | `GET /world-clock` | Demo-Proxy zu timeapi.io. |
@@ -361,21 +363,21 @@ Nach Schweregrad geordnet. Gefunden durch zeilenweises Lesen jeder Backend-Quell
 `AuthController.register` speicherte `user.email = req.email.trim().toLowerCase()`, aber `login` fragte `findByEmail(req.email)` mit der **rohen** Eingabe ab. Wer sich als `John@Example.com` registrierte (kleingeschrieben gespeichert), konnte sich mit derselben Schreibweise nie einloggen → `401 invalid email or password`.
 </details>
 
-### 🟠 B2 — Autorisierungslücken im Bewerbungs-/Engagement-Flow — TEILWEISE BEHOBEN 2026-06-11 (`22c5c9b`)
+### ✅ B2 — ~~Autorisierungslücken im Bewerbungs-/Engagement-Flow~~ — BEHOBEN 2026-06-11 (`22c5c9b` + Folge-Commits)
 In `ApplicationController`:
-- ✅ `GET /jobs/{jobId}/applications` — **behoben:** lädt den Job, liefert 404 wenn er fehlt, 403 außer `job.clientId == auth.getName()`. Test `b2` grün + Unit-Tests in `ApplicationControllerTest`.
-- ❌ `GET /applications/{id}` — **weiterhin offen:** keine Eigentümer-Prüfung.
-- ❌ `PUT /applications/{id}/status` und `POST /applications/{id}/hire` — **weiterhin offen:** jeder authentifizierte Nutzer kann jede Bewerbung annehmen/ablehnen/engagieren.
+- ✅ `GET /jobs/{jobId}/applications` — lädt den Job, 404 wenn er fehlt, 403 außer `job.clientId == auth.getName()`. Test `b2` grün.
+- ✅ `GET /applications/{id}` — nur Eigentümer **oder** Bewerber (403 für Unbeteiligte).
+- ✅ `PUT /applications/{id}/status` und `POST /applications/{id}/hire` — Owner-only über einen gemeinsamen `isJobOwner(application, auth)`-Helper.
 
-Verbleibender Fix: dasselbe Muster (Bewerbung laden → ihren Job laden → `job.clientId` gegen `auth.getName()` vergleichen → 403). Das `JobRepository` ist inzwischen bereits in den Controller injiziert, also eine kleine Änderung.
+Alle Pfade durch Unit-Tests in `ApplicationControllerTest` abgedeckt (403 für Nicht-Eigentümer, Happy-Paths für Eigentümer/Bewerber). Defense-in-depth: `SecurityConfig` gibt `GET /jobs/**` nicht mehr pauschal frei — nur `/jobs` und `/jobs/*` — damit ist `GET /jobs/{jobId}/applications` auch auf Filter-Ebene authentifiziert.
 
-### 🟠 B3 — `PUT`/`DELETE /jobs/{id}` beworben, aber unerreichbar — HALB BEHOBEN 2026-06-10 (`42fb250`)
-- ✅ **`DELETE /jobs/{id}` existiert jetzt** (Auth + 404 + Autorisierungs-Prüfung) und das FE ruft es auf (Löschen-Button in `job-detail.html`, `f3d26e9`). Schließt **M6**. *Aber siehe **B22** — die Delete-Autorisierungsregel ist zu lasch.*
-- ❌ **`PUT /jobs/{id}` fehlt weiterhin** — `JobController` hat kein `@PutMapping`; `JobRepository.update()` bleibt toter Code; ein Client kann einen geposteten Job nicht bearbeiten. Test `b3` ist rot. Vorsicht für die Person, die es verdrahtet: `JobRepository.update()` überschreibt `client_id` und `created_at` aus dem Request-Body — eine `auth.getName() == job.clientId`-Eigentümer-Prüfung ergänzen und den Body nicht `clientId`/`createdAt` setzen lassen.
+### ✅ B3 — ~~`PUT`/`DELETE /jobs/{id}` beworben, aber unerreichbar~~ — BEHOBEN 2026-06-11
+- ✅ **`DELETE /jobs/{id}`** existiert (`42fb250`) und das FE ruft es auf (Löschen-Button in `job-detail.html`, `f3d26e9`). Schließt **M6**. Die zu lasche Autorisierungsregel wurde auf Owner-only verschärft — siehe **B22** (✅).
+- ✅ **`PUT /jobs/{id}`** implementiert 2026-06-11: 401/400/404/403-Pfade + Owner-only-Prüfung; die Warnung wurde befolgt — `clientId` und `createdAt` werden vor `JobRepository.update()` aus der bestehenden Zeile übernommen, der Body kann sie nicht setzen. Test `b3` grün + Unit-Tests in `JobControllerTest` (inkl. Spoofed-Body-Erhaltungstest).
 
-### 🟡 B4 — Random-Job-Seite kaputt — SYMPTOM BEHOBEN 2026-06-10 (`7ddc891`), Backend-Route fehlt weiterhin
-Der nutzersichtbare Bug ist weg: `job-random.html` wurde von einem hartkodierten Fake-Job umgebaut auf `GET /jobs` mit **clientseitiger** Zufallsauswahl. Derselbe Commit hat die „View Job"-Buttons der Suchergebnisse auf die echte `job-detail.html?id=…`-Seite umgebogen.
-**Weiterhin offen (und der Grund, warum Test `b4` rot ist):** Es gibt **keine `GET /jobs/random`-Backend-Route** — ein Request auf `/jobs/random` wird weiterhin von `@GetMapping("/{id}")` mit `id="random"` geschluckt → 404, und `JobRepository.getRandomJob()` bleibt toter Code. Team-Entscheidung nötig: entweder die Route **oberhalb** des `/{id}`-Mappings ergänzen (Reihenfolge zählt) und die Seite sie nutzen lassen, oder den clientseitigen Ansatz akzeptieren und `getRandomJob()` entfernen + den `b4`-Test umwidmen.
+### ✅ B4 — ~~Random-Job-Seite kaputt~~ — GELÖST 2026-06-11 (clientseitig by Design)
+Der nutzersichtbare Bug wurde 2026-06-10 behoben (`7ddc891`): `job-random.html` wurde von einem hartkodierten Fake-Job umgebaut auf `GET /jobs` mit **clientseitiger** Zufallsauswahl. Derselbe Commit hat die „View Job"-Buttons der Suchergebnisse auf die echte `job-detail.html?id=…`-Seite umgebogen.
+**Team-Entscheidung 2026-06-11:** Der clientseitige Ansatz ist als final akzeptiert — Random-Job ist ein Frontend-Feature, es gibt bewusst keine `GET /jobs/random`-Route. Das tote `JobRepository.getRandomJob()` samt Repository-Tests wurde entfernt und der `b4`-Test ausgemustert (Entscheidung in `KnownBugsWebTest` dokumentiert). *Vorbehalt für später: Bekommt `GET /jobs` jemals Pagination, sampelt die clientseitige Auswahl nur die erste Seite — dann erneut prüfen.*
 
 ### ✅ B5 — ~~Registrierung mit Duplikat-E-Mail liefert 500 statt 409~~ — BEHOBEN 2026-06-11 (`219e278`)
 `register` normalisiert die E-Mail jetzt einmal und nutzt den normalisierten Wert sowohl für den `existsByEmail`-Guard als auch fürs Speichern. Dadurch wird `Foo@x.com` gegen ein bestehendes `foo@x.com` sauber im Voraus als **409** abgefangen. Test `b5` ist grün. (Gleiche Ursache wie B1.)
@@ -433,8 +435,8 @@ Das aktive Frontend ist `design3/`. Klein, aber für Neulinge verwirrend. `front
 ### ⚪ B21 — Kein Connection-Pooling
 `Database.getConnection()` öffnet pro Repository-Aufruf eine frische `DriverManager`-Verbindung (kein Pool). Funktional ok für eingebettetes H2, aber verschwenderisch und unter Last unbegrenzt. *Fix: ein gepooltes `DataSource` (HikariCP).* *(Effizienz/Altitude, kein Korrektheits-Bug.)*
 
-### 🟠 B22 — *(neu 2026-06-11)* `DELETE /jobs/{id}` lässt **jeden Designer** **jeden Job** löschen
-Der neue Delete-Endpunkt (`42fb250`) autorisiert `isOwnerClient **|| isDesigner**` — d. h. neben dem besitzenden Client darf *jeder* eingeloggte Designer *jeden* Job löschen, auch Jobs, zu denen er keinerlei Beziehung hat. Das Javadoc nennt das absichtlich („A logged-in designer may also delete it"), aber es widerspricht der Eigentümer-Invariante aus §7.5 und gibt einer ganzen Rolle faktisch ein destruktives Recht. *Fix: den `isDesigner`-Zweig entfernen — nur `job.clientId == auth.getName()` (und ggf. eine künftige Admin-Rolle) sollte löschen dürfen.*
+### ✅ B22 — ~~`DELETE /jobs/{id}` lässt **jeden Designer** **jeden Job** löschen~~ — BEHOBEN 2026-06-11
+Der Delete-Endpunkt (`42fb250`) autorisierte `isOwnerClient || isDesigner` — jeder eingeloggte Designer konnte jeden Job löschen. Genau wie vorgeschlagen behoben: der `isDesigner`-Zweig wurde entfernt, nur `job.clientId == auth.getName()` darf löschen (Javadoc aktualisiert, Nicht-Eigentümer-403 in `JobControllerTest` abgedeckt).
 
 ---
 
@@ -442,10 +444,11 @@ Der neue Delete-Endpunkt (`42fb250`) autorisiert `isOwnerClient **|| isDesigner*
 
 Das sind **keine** Anwendungs-Bugs — es sind Probleme in der Test-Suite, der Build-Konfiguration und der Repo-Hygiene, die beim Hinzufügen des Test-Harness eingeführt/aufgedeckt wurden. Aufgeführt, weil sie das Sicherheitsnetz selbst untergraben. (Verifiziert am 2026-06-10.)
 
-### 🔴 H1 — `mvn test` erzeugt keinen JaCoCo-Coverage-Report mehr
-Das JaCoCo-`report`-Goal ist an die `test`-Phase gebunden, aber die absichtlich roten TDD-Tests (das Bug-Board in §5 von `test.md`) lassen Surefire scheitern und **brechen die Phase ab, bevor `jacoco:report` läuft**. Verifiziert: `mvn test` endet mit `1`, und `target/site/jacoco/jacoco.csv` wird nie neu erzeugt.
-**Auswirkung:** Der in `test.md` dokumentierte Coverage-Workflow („`target/site/jacoco/index.html` öffnen") produziert still nichts, solange das Board rot ist — also immer, bis die Bugs behoben sind.
-**Fix:** Coverage mit `mvn test -Dmaven.test.failure.ignore=true` erzeugen, oder `jacoco:report` an die `verify`-Phase binden, oder ein dediziertes Coverage-Profil ergänzen. Den gewählten Befehl in `test.md` dokumentieren.
+### ✅ H1 — ~~`mvn test` erzeugt keinen JaCoCo-Coverage-Report mehr~~ — GELÖST 2026-06-11 (Board grün)
+Das JaCoCo-`report`-Goal ist an die `test`-Phase gebunden, und die absichtlich roten TDD-Tests ließen Surefire scheitern, bevor `jacoco:report` laufen konnte. Seit das §5-Board grün ist (b3 behoben, b4 ausgemustert), endet `mvn test` mit `0` und der Report wird wieder normal erzeugt. *(Die strukturelle Fragilität bleibt: Jeder künftige rote Test killt die Coverage wieder still — `jacoco:report` an `verify` binden oder ein Coverage-Profil ergänzen lohnt weiterhin, falls rote TDD-Boards zurückkommen.)*
+
+### 🟠 H6 — *(neu 2026-06-11)* Request-Logging schreibt Klartext-Passwörter und Bearer-Tokens nach `backend/logs/app.log`
+`config/RequestLoggingConfig` registriert einen `CommonsRequestLoggingFilter` mit `includeHeaders(true)` + `includePayload(true)`, und `logging.file.name=logs/app.log` persistiert das auf DEBUG-Level. Im Live-Log verifiziert: vollständige `Authorization: Bearer …`-JWTs bei jedem authentifizierten Request sowie Register-/Login-Payloads inklusive `"password":"…"` im Klartext (11 Vorkommen nach einem Abend, Datei ~555 KB). `*.log` ist gitignored, ins Repo gelangt also nichts — aber die lokale Platte hält live Credentials und die Datei wächst unbegrenzt. **Fix:** den `Authorization`-Header via `setHeaderPredicate` ausschließen, Payload-Logging auf `/auth/**` unterbinden (oder global `includePayload(false)`), und eine Rolling-File-Policy erwägen.
 
 ### 🟠 H2 — Wirkungslose Passwort-Encoding-Assertion (falsches Vertrauen)
 In `AuthControllerTest` ist die Prüfung „Passwort gehasht, nicht roh" `assertThat(saved.passwordHash).isNotEqualTo("secret123")`. Aber `passwordEncoder` ist ein Mockito-Mock, dessen nicht gestubbtes `encode()` `null` zurückgibt, sodass die Assertion `null != "secret123"` → trivialerweise wahr ist. **Sie würde sogar bestehen, wenn `register()` das rohe Passwort speichern würde.**
@@ -517,16 +520,16 @@ Sauber (0 Fehler): `login`, `profile`, `chat`, `job-random`, `homepage`, `jobs`,
 Die Reihenfolge wird **zuerst von Bewertungspunkten** getrieben (siehe ⭐-Anforderungs-Abschnitt), dann Sicherheit/Korrektheit, dann Politur. Punkte referenzieren sowohl Bug-IDs (§9) als auch Anforderungs-IDs (M/S/C).
 
 ### Stufe 0 — die geforderten 21 Punkte absichern (MUST-Lücken — zuerst erledigen)
-1. ~~**B3 + M6 + M7**~~ → **HALB ERLEDIGT 2026-06-10:** `DELETE /jobs/{id}` + FE-Löschen-Button sind da (M6 ✅, DELETE-Hälfte von M7 ✅). **Übrig: `PUT /jobs/{id}`** über `JobController` mit Eigentümer-Prüfung (den Body nicht `clientId`/`createdAt` setzen lassen) **plus ein FE-PUT-Aufruf** (Job-bearbeiten-Formular, oder billiger: Annehmen-/Ablehnen-Button → `PUT /applications/{id}/status`). Außerdem die Delete-Autorisierung verschärfen (**B22**).
+1. 🟠 ~~**B3 + M6 + M7**~~ → **BACKEND ERLEDIGT 2026-06-11:** `DELETE /jobs/{id}` + FE-Löschen-Button sind da (M6 ✅); `PUT /jobs/{id}` implementiert mit Eigentümer-Prüfung, der Body kann `clientId`/`createdAt` nicht setzen (B3 ✅); Delete-Autorisierung verschärft (B22 ✅). **Übrig: ein FE-PUT-Aufruf** (Job-bearbeiten-Formular, oder billiger: Annehmen-/Ablehnen-Button → `PUT /applications/{id}/status`), um die FE-Hälfte von M7 zu schließen.
 2. **Verifizieren, dass M4/M5/M9 intakt bleiben** beim Editieren (AJAX, JSON, JWT) — sie sind heute erfüllt; nicht regredieren.
 
 ### Stufe 1 — Sicherheit & billig-aber-kaputte Korrektheit
 3. ✅ ~~**B1 / B5 — E-Mail normalisieren**~~ — **ERLEDIGT 2026-06-11** (`219e278`). `b1`/`b5` grün.
-4. 🟠 **B2 — Autorisierung fixen** in `ApplicationController`. **Teilweise erledigt 2026-06-11** (`22c5c9b`): `listApplications` ist Owner-only, `b2` grün. **Übrig: get/status/hire** haben weiterhin keine Eigentümer-Prüfung — gleiches Muster, das `JobRepository` ist bereits injiziert.
-5. 🟡 **B4 — `GET /jobs/random`.** Die Seite funktioniert seit 2026-06-10 (clientseitiger Zufall, `7ddc891`); die Backend-Route fehlt weiterhin und `b4` ist rot. Entscheidung: Route ergänzen (~5 Zeilen, oberhalb von `/{id}`) oder Test umwidmen.
+4. ✅ ~~**B2 — Autorisierung fixen** in `ApplicationController`~~ — **ERLEDIGT 2026-06-11**: list/status/hire Owner-only, get Owner-oder-Bewerber; `b2` grün + Unit-Tests.
+5. ✅ ~~**B4 — `GET /jobs/random`**~~ — **GELÖST 2026-06-11**: clientseitiger Ansatz als final akzeptiert; `getRandomJob()` entfernt, `b4`-Test ausgemustert.
 6. ✅ ~~**B7 — referentielle Validierung + Eindeutigkeit**~~ — **GRÖSSTENTEILS ERLEDIGT 2026-06-11** (`a72592d`): unique `(job_id, designer_id)` + saubere 404/409 in `apply` + idempotentes Conversation-Create. `b7` grün. Übrig: Job-/User-Existenzprüfungen in `createConversation` (in **B14** einarbeiten).
 
-> Tracking: Jeder Fix oben dreht einen roten Test auf dem §5-Board von `test.md` auf grün. **Stand 2026-06-11: 2 rote Tests übrig (`b3`, `b4`).** Das Projekt ist (korrektheitsseitig) „fertig", wenn dieses Board komplett grün ist.
+> Tracking: Jeder Fix oben dreht einen roten Test auf dem §5-Board von `test.md` auf grün. **Stand 2026-06-11 (Abend): Board komplett — `b3` grün, `b4` ausgemustert (clientseitig by Design); `mvn test` = BUILD SUCCESS, 115 Tests, 0 Fehlschläge.**
 
 ### Stufe 2 — die SHOULD-Punkte holen (8)
 7. ✅ ~~**S1 — einen zweiten externen REST-Service ergänzen.**~~ — **ERLEDIGT 2026-06-10** (`371b55f`): `countriesnow.space` via `location/` + Standort-Autofill im Profil-Editor. Zählt Richtung **C1** (eine weitere API nötig).
@@ -537,13 +540,13 @@ Die Reihenfolge wird **zuerst von Bewertungspunkten** getrieben (siehe ⭐-Anfor
 
 ### Stufe 3 — nach den COULD-Punkten greifen (5) + restliche Politur
 12. **C1 — dritter externer REST-Service** (nach S1).
-13. **C2 — XML-Ausgabe** neben JSON (`jackson-dataformat-xml` + `produces`).
+13. ✅ ~~**C2 — XML-Ausgabe** neben JSON~~ — **ERLEDIGT 2026-06-11** (`jackson-dataformat-xml` + `produces` auf den Job-Reads; `ContentNegotiationTest`).
 14. **C3 — ein `PATCH`-Endpunkt** (partielles Job-/Profil-Update), vom FE konsumiert.
 15. **B6 — Vertragserzeugung beim Engagieren**; **B11 — globaler `@ControllerAdvice`**; **B9 — Nachrichten-Pagination neueste zuerst**; **B8 — Paket-READMEs synchronisieren**; minimale **moderation/**.
 
 ### Neu durch die tiefen Reviews aufgetaucht — in die obigen Stufen einordnen
 - **Stufe 0 (Pflichtpunkte):** **F1** die `index.html`-Navbar-localStorage-Schlüssel fixen (winzig, aber die gesamte Eingeloggt-/Logout-UX ist gerade kaputt); **F3/M7** die FE-PUT-Aktion ergänzen *(DELETE erledigt 2026-06-10)*.
-- **Stufe 1 (Sicherheit):** **B14** Conversation-Spoofing-Prüfung in `ChatService` *(schließt auch den B7-Rest)*; **B22** `DELETE /jobs/{id}`-Autorisierung verschärfen *(neu)*; **F2** den Login-`next`-Parameter validieren (Open Redirect / `javascript:`-XSS).
+- **Stufe 1 (Sicherheit):** **B14** Conversation-Spoofing-Prüfung in `ChatService` *(schließt auch den B7-Rest)*; ~~**B22** `DELETE /jobs/{id}`-Autorisierung verschärfen~~ ✅ erledigt 2026-06-11; **F2** den Login-`next`-Parameter validieren (Open Redirect / `javascript:`-XSS).
 - **Stufe 1–2 (Robustheit/Korrektheit):** **B15** HTTP-Timeouts zu `ExternalTimeApiClient` ergänzen; **B16** lexikografische Zeitstempel-Sortierung fixen; **B17** die doppelte CORS-Konfig in `WebConfig` löschen; **B19** den Hire-/Status-Übergang atomar machen; **B20** den `design1/`-Pfad-Default fixen.
 - **Stufe 2 (SHOULD-Punkte):** **S3** die 6 W3C-scheiternden Seiten fixen (meist verirrtes `</script>` + `autocomplete`/`aria`/`label`-Attribute — siehe §9c).
 - **Build-Hygiene:** **H1** ein Coverage-Profil ergänzen, damit `mvn test` weiterhin JaCoCo ausgibt, während das Rot-Board rot ist; **H3** die H2-DB-Datei per `git rm --cached` entfernen.

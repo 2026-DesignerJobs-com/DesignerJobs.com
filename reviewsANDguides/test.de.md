@@ -81,7 +81,9 @@ Zwei Ebenen, passend zur Struktur der App:
 
 ## 5. Das rote Board — ein fehlschlagender Test pro offenem Bug (TDD-To-do-Liste)
 
-`bugs/KnownBugsTest` und `bugs/KnownBugsWebTest` prüfen jeweils das **korrekte** Verhalten für einen bekannten Defekt aus `PROJECT_REVIEW.md` §9. Sie sind **heute ROT** und werden erst grün, wenn der Bug tatsächlich behoben ist. Sie laufen im normalen `mvn test` — nichts ist ausgeschlossen oder per Tag weggefiltert. Das ist die ausführbare To-do-Liste des Teams: **Das Projekt ist fertig, wenn dieses Board grün ist.**
+`bugs/KnownBugsTest` und `bugs/KnownBugsWebTest` prüfen jeweils das **korrekte** Verhalten für einen bekannten Defekt aus `PROJECT_REVIEW.md` §9. Sie waren **beim Schreiben ROT** und werden erst grün, wenn der Bug tatsächlich behoben ist. Sie laufen im normalen `mvn test` — nichts ist ausgeschlossen oder per Tag weggefiltert. Das ist die ausführbare To-do-Liste des Teams: **Das Projekt ist fertig, wenn dieses Board grün ist.**
+
+> **Stand 2026-06-11: Board komplett.** `b1`, `b5`, `b2`, `b7`, `b3` (put + delete) sind grün; `b4` wurde per **Team-Entscheidung ausgemustert** — Random-Job ist clientseitig by Design, es gibt bewusst keine `GET /jobs/random`-Route (siehe `PROJECT_REVIEW.md` §B4). `mvn test` = BUILD SUCCESS, der JaCoCo-Report wird wieder erzeugt (H1 gelöst). Die Tabelle unten bleibt als historische Spezifikation stehen.
 
 | Fehlschlagender Test | Prüft (das gewünschte Verhalten) | Schlägt heute fehl mit | Bug |
 |---|---|---|---|
@@ -93,7 +95,7 @@ Zwei Ebenen, passend zur Struktur der App:
 | `b3_putJobShouldUpdateExistingJob` | `PUT /jobs/{id}` → `200` | `405` (kein Handler) | B3 |
 | `b3_deleteJobShouldRemoveExistingJob` | `DELETE /jobs/{id}` → `2xx` | `405` (kein Handler) | B3 |
 
-**Wie man dieses Board nutzt (rot → grün):** Einen fehlschlagenden Test wählen, seine Assertion lesen (das ist die Spezifikation), den Code in `backend/src/main` reparieren, bis er besteht. Nicht den Test an den Bug anpassen — den Code an den Test anpassen. Wenn alle 7 grün sind, sind alle aufgeführten Bugs behoben.
+**Wie man dieses Board nutzt (rot → grün):** Einen fehlschlagenden Test wählen, seine Assertion lesen (das ist die Spezifikation), den Code in `backend/src/main` reparieren, bis er besteht. Nicht den Test an den Bug anpassen — den Code an den Test anpassen. Ergebnis: 6 von 7 wurden grün; `b4` wurde per expliziter Team-Entscheidung ausgemustert (umgewidmet, nicht geschummelt — das Feature ist clientseitig umgezogen).
 
 ### Bereits zementiertes Verhalten (grün)
 

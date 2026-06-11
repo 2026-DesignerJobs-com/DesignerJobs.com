@@ -51,6 +51,20 @@ class SecurityIntegrationTest {
     }
 
     @Test
+    void getJobById_isPublic() throws Exception {
+        // reaches the controller (404 for an unknown id) instead of 401
+        mockMvc.perform(get("/jobs/no-such-id"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void listApplications_withoutToken_is401() throws Exception {
+        // nested job sub-resources are NOT covered by the public GET matchers
+        mockMvc.perform(get("/jobs/some-id/applications"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void postJobs_withoutToken_is401() throws Exception {
         mockMvc.perform(post("/jobs")
                         .contentType(MediaType.APPLICATION_JSON)

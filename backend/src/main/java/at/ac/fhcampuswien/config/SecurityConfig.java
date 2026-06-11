@@ -56,7 +56,9 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/world-clock").permitAll()
                         .requestMatchers("/locations/**" ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/jobs/**").permitAll()
+                        // Deliberately not /jobs/** — nested sub-resources such as
+                        // GET /jobs/{id}/applications must stay authenticated.
+                        .requestMatchers(HttpMethod.GET, "/jobs", "/jobs/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/designers/**").permitAll()
                         .requestMatchers("/", "/index.html", "/*.html", "/*.css", "/*.js",
                                 "/images/**", "/css/**", "/js/**", "/assets/**", "/favicon.ico").permitAll()

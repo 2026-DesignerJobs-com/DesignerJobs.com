@@ -83,6 +83,46 @@ class JobControllerTest {
     }
 
     @Test
+    void deleteJob_returns404_whenMissing() {
+        when(auth.getName()).thenReturn("client-1");
+        when(jobRepository.findById("missing")).thenReturn(null);
+
+        ResponseEntity<?> response = controller.deleteJob("missing", auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        verify(jobRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void deleteJob_rejectsNonOwner_with403() {
+        when(auth.getName()).thenReturn("designer-1");
+        Job job = new Job();
+        job.id = "job-1";
+        job.clientId = "the-owner";
+        when(jobRepository.findById("job-1")).thenReturn(job);
+
+        ResponseEntity<?> response = controller.deleteJob("job-1", auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        verify(jobRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void deleteJob_allowsOwnerClient() {
+        when(auth.getName()).thenReturn("the-owner");
+        Job job = new Job();
+        job.id = "job-1";
+        job.clientId = "the-owner";
+        when(jobRepository.findById("job-1")).thenReturn(job);
+        when(jobRepository.deleteById("job-1")).thenReturn(true);
+
+        ResponseEntity<?> response = controller.deleteJob("job-1", auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(jobRepository).deleteById("job-1");
+    }
+
+    @Test
     void search_delegatesToRepository() {
         when(jobRepository.search(any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(java.util.List.of());

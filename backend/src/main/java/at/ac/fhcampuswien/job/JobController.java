@@ -100,8 +100,7 @@ public class JobController {
      * DELETE /jobs/{id}
      * Deletes a job.
      *
-     * The logged-in client who created the job may delete it.
-     * A logged-in designer may also delete it.
+     * Only the logged-in client who created the job may delete it.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteJob(@PathVariable String id, Authentication auth) {
@@ -121,15 +120,9 @@ public class JobController {
 
         boolean isOwnerClient = existingJob.clientId != null && existingJob.clientId.equals(auth.getName());
 
-        boolean isDesigner = auth.getAuthorities().stream()
-                .anyMatch(authority ->
-                        authority.getAuthority().equals("DESIGNER")
-                                || authority.getAuthority().equals("ROLE_DESIGNER")
-                );
-
-        if (!isOwnerClient && !isDesigner) {
+        if (!isOwnerClient) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "error", "only the client who created this job or a designer can delete it"
+                    "error", "only the client who created this job can delete it"
             ));
         }
 

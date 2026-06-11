@@ -15,6 +15,30 @@ mvn spring-boot:run
 
 Requires JDK 17 + Maven. The server starts on `http://localhost:8080`. The H2 file at `data/projectdb.mv.db` is created on first run. To reset state: delete that file and restart.
 
+### JDK 17 via Maven toolchains
+
+The build compiles and runs tests with JDK 17 even if your Maven/`JAVA_HOME` points at a newer JDK (newer JDKs break Mockito and JaCoCo). This needs a one-time `~/.m2/toolchains.xml` on your machine pointing at a local JDK 17 install:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<toolchains xmlns="http://maven.apache.org/TOOLCHAINS/1.1.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/TOOLCHAINS/1.1.0 https://maven.apache.org/xsd/toolchains-1.1.0.xsd">
+  <toolchain>
+    <type>jdk</type>
+    <provides>
+      <version>17</version>
+    </provides>
+    <configuration>
+      <!-- e.g. output of: /usr/libexec/java_home -v 17 -->
+      <jdkHome>/path/to/your/jdk-17</jdkHome>
+    </configuration>
+  </toolchain>
+</toolchains>
+```
+
+Without that file the build fails fast with "Cannot find matching toolchain definitions" — that's your cue to create it.
+
 ### environment variables
 
 | var | default | what for |

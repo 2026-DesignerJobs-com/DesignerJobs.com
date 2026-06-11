@@ -50,8 +50,12 @@ public class AuthController {
             ));
         }
 
-        // Check if the email already exists.
-        if (userRepository.existsByEmail(req.email)) {
+        // Emails are stored lower-cased, so the duplicate check must use the
+        // normalized value too — otherwise "FOO@x.com" slips past and hits the
+        // UNIQUE constraint as a 500 instead of a clean 409.
+        String normalizedEmail = req.email.trim().toLowerCase();
+
+        if (userRepository.existsByEmail(normalizedEmail)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
                     "error", "email already exists"
             ));
@@ -61,7 +65,7 @@ public class AuthController {
 
         user.id = UUID.randomUUID().toString();
         user.fullName = req.fullName.trim();
-        user.email = req.email.trim().toLowerCase();
+        user.email = normalizedEmail;
         user.passwordHash = passwordEncoder.encode(req.password);
         user.role = normalizedRole;
         user.createdAt = Instant.now().toString();
@@ -94,7 +98,9 @@ public class AuthController {
             ));
         }
 
-        UserModel user = userRepository.findByEmail(req.email);
+        // Registration stores emails lower-cased — normalize the same way here,
+        // otherwise users who registered with mixed case can never log in.
+        UserModel user = userRepository.findByEmail(req.email.trim().toLowerCase());
 
         if (user == null || !passwordEncoder.matches(req.password, user.passwordHash)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(

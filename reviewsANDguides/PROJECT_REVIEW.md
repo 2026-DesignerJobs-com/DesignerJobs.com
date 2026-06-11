@@ -4,6 +4,8 @@
 
 > **Update 2026-06-11:** Big day. Fixed: **B1, B5** (email casing), **B2** (partially — `listApplications` ownership), **B7** (mostly — unique applications, clean 409, conversation race). New since yesterday: **`DELETE /jobs/{id}`** + FE delete button (closes **M6**, half of M7), **search** wired end-to-end, **job-random/job-detail pages fixed** (B4 symptom gone), and a **second external REST API** (countriesnow.space → closes **S1**) with location autofill in profile-edit. `mvn test` now auto-selects JDK 17 via Maven toolchains. The red TDD board is down to **2 tests: b3 (PUT /jobs) and b4 (GET /jobs/random)**. Details inline below — each touched item is marked.
 
+> **Update 2026-06-11 (eod):** **B2** fully fixed (status/hire owner-only, get owner-or-applicant), **B3** done (`PUT /jobs/{id}` with ownership, body can't set `clientId`/`createdAt`), **B22** fixed (delete owner-only), **B4** resolved as client-side-by-design (`getRandomJob()` removed, `b4` retired). `SecurityConfig` narrowed `GET /jobs/**` → `/jobs` + `/jobs/*` so nested sub-resources are authenticated at the filter level. **TDD board complete: `mvn test` = BUILD SUCCESS (111 tests).** H1 (JaCoCo) resolves itself now that Surefire passes.
+
 ---
 
 ## 0. How to use this document
@@ -340,8 +342,8 @@ From `SecurityConfig.filterChain`, in order:
 | `auth/` | ✅ Done | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout` (noop), `GET /auth/me` | Solid. |
 | `session/` | ✅ Done | — | `JwtService` only. |
 | `config/` | ✅ Done | — | Security + static serving. |
-| `job/` | 🟠 Mostly | `POST /jobs`, `GET /jobs` (+ search params), `GET /jobs/{id}`, `DELETE /jobs/{id}` *(new 2026-06-10)* | Search wired end-to-end (`23d4dda`). **`PUT /jobs/{id}` still NOT implemented** (B3, last backend gap). Delete authz is loose — see **B22**. |
-| `application/` | ✅ Done (review) | `POST /jobs/{jobId}/apply`, `GET /jobs/{jobId}/applications`, `GET /applications/{id}`, `PUT /applications/{id}/status`, `POST /applications/{id}/hire` | Hire is a stub-trigger (no contract yet). Apply now validates job existence + rejects duplicates (B7 ✅); list is owner-only (B2 partial) — get/status/hire still unchecked, see §9. |
+| `job/` | ✅ Done | `POST /jobs`, `GET /jobs` (+ search params), `GET /jobs/{id}`, `PUT /jobs/{id}` *(new 2026-06-11)*, `DELETE /jobs/{id}` | Search wired end-to-end (`23d4dda`). PUT and DELETE are owner-only (B3 ✅, B22 ✅). |
+| `application/` | ✅ Done (review) | `POST /jobs/{jobId}/apply`, `GET /jobs/{jobId}/applications`, `GET /applications/{id}`, `PUT /applications/{id}/status`, `POST /applications/{id}/hire` | Hire is a stub-trigger (no contract yet). Apply validates job existence + rejects duplicates (B7 ✅); list/status/hire are owner-only and get is owner-or-applicant (B2 ✅). |
 | `location/` | ✅ Done *(new 2026-06-10)* | `GET /locations/countries`, `GET /locations/cities?country=…` | Countries hardcoded list; cities proxied from `countriesnow.space` (2nd external API → S1). Public via `SecurityConfig`. |
 | `chat/` | ✅ Done | `GET/POST /conversations`, `GET/POST /conversations/{id}/messages` | Local H2 mode; external API path behind `USE_EXTERNAL_CHAT_API=false`. |
 | `worldclock/` | ✅ Done | `GET /world-clock` | Demo proxy to timeapi.io. |
@@ -361,17 +363,17 @@ Ordered by severity. Found by reading every backend source file (controllers, se
 `AuthController.register` stored `user.email = req.email.trim().toLowerCase()`, but `login` queried `findByEmail(req.email)` with the **raw** input. Someone registering as `John@Example.com` (stored lowercase) could never log in typing the same casing → `401 invalid email or password`.
 </details>
 
-### 🟠 B2 — Authorization gaps in the application/hire flow — PARTIALLY FIXED 2026-06-11 (`22c5c9b`)
+### ✅ B2 — ~~Authorization gaps in the application/hire flow~~ — FIXED 2026-06-11 (`22c5c9b` + follow-ups)
 In `ApplicationController`:
-- ✅ `GET /jobs/{jobId}/applications` — **fixed:** loads the job, returns 404 if missing, 403 unless `job.clientId == auth.getName()`. Test `b2` green + unit tests in `ApplicationControllerTest`.
-- ❌ `GET /applications/{id}` — **still open:** no ownership check.
-- ❌ `PUT /applications/{id}/status` and `POST /applications/{id}/hire` — **still open:** any authenticated user can accept/reject/hire on any application.
+- ✅ `GET /jobs/{jobId}/applications` — loads the job, 404 if missing, 403 unless `job.clientId == auth.getName()`. Test `b2` green.
+- ✅ `GET /applications/{id}` — owner **or** applicant only (403 for unrelated users).
+- ✅ `PUT /applications/{id}/status` and `POST /applications/{id}/hire` — owner-only via a shared `isJobOwner(application, auth)` helper.
 
-Remaining fix: same pattern (load application → load its job → compare `job.clientId` against `auth.getName()` → 403). The `JobRepository` is already injected into the controller now, so it's a small change.
+All paths covered by unit tests in `ApplicationControllerTest` (403 for non-owners, happy paths for owner/applicant). Defense-in-depth: `SecurityConfig` no longer permitAlls `GET /jobs/**` — only `/jobs` and `/jobs/*` — so `GET /jobs/{id}/applications` is also authenticated at the filter level.
 
-### 🟠 B3 — `PUT`/`DELETE /jobs/{id}` advertised but unreachable — HALF FIXED 2026-06-10 (`42fb250`)
-- ✅ **`DELETE /jobs/{id}` now exists** (auth + 404 + authz check) and the FE calls it (delete button in `job-detail.html`, `f3d26e9`). Closes **M6**. *But see **B22** — the delete authz rule is too loose.*
-- ❌ **`PUT /jobs/{id}` still missing** — `JobController` has no `@PutMapping`; `JobRepository.update()` remains dead code; a client cannot edit a posted job. Test `b3` is red. Caution for whoever wires it up: `JobRepository.update()` overwrites `client_id` and `created_at` from the request body — add an `auth.getName() == job.clientId` ownership check and don't let the body set `clientId`/`createdAt`.
+### ✅ B3 — ~~`PUT`/`DELETE /jobs/{id}` advertised but unreachable~~ — FIXED 2026-06-11
+- ✅ **`DELETE /jobs/{id}`** exists (`42fb250`) and the FE calls it (delete button in `job-detail.html`, `f3d26e9`). Closes **M6**. The too-loose authz rule was tightened to owner-only — see **B22** (✅).
+- ✅ **`PUT /jobs/{id}`** implemented 2026-06-11: 401/400/404/403 paths + owner-only check; the caution was followed — `clientId` and `createdAt` are copied from the existing row before `JobRepository.update()`, so the body cannot set them. Test `b3` green + unit tests in `JobControllerTest` (incl. spoofed-body preservation test).
 
 ### ✅ B4 — ~~Random-job page broken~~ — RESOLVED 2026-06-11 (client-side by design)
 The user-facing bug was fixed 2026-06-10 (`7ddc891`): `job-random.html` was rewritten from a hardcoded fake job to fetching `GET /jobs` and picking a random one **client-side**. The same commit pointed the search-result "View Job" buttons at the real `job-detail.html?id=…` page.
@@ -433,8 +435,8 @@ The live frontend is `design3/`. Minor, but confusing for newcomers. Trust `fron
 ### ⚪ B21 — No connection pooling
 `Database.getConnection()` opens a fresh `DriverManager` connection per repository call (no pool). Functionally OK for embedded H2 but wasteful and unbounded under concurrency. *Fix: a pooled `DataSource` (HikariCP).* *(Efficiency/altitude, not a correctness bug.)*
 
-### 🟠 B22 — *(new 2026-06-11)* `DELETE /jobs/{id}` lets **any designer** delete **any job**
-The new delete endpoint (`42fb250`) authorizes `isOwnerClient **|| isDesigner**` — i.e. besides the owning client, *every* logged-in designer may delete *every* job, including jobs they have no relation to. The Javadoc says this is intentional ("A logged-in designer may also delete it"), but it contradicts the ownership invariant used everywhere else (§7.5) and is effectively a destructive-action privilege for a whole role. *Fix: drop the `isDesigner` branch — only `job.clientId == auth.getName()` (and maybe a future admin role) should delete.*
+### ✅ B22 — ~~`DELETE /jobs/{id}` lets **any designer** delete **any job**~~ — FIXED 2026-06-11
+The delete endpoint (`42fb250`) authorized `isOwnerClient || isDesigner` — every logged-in designer could delete every job. Fixed exactly as proposed: the `isDesigner` branch was dropped, only `job.clientId == auth.getName()` may delete (Javadoc updated, non-owner 403 covered in `JobControllerTest`).
 
 ---
 
@@ -442,10 +444,8 @@ The new delete endpoint (`42fb250`) authorizes `isOwnerClient **|| isDesigner**`
 
 These are **not** application bugs — they're issues in the test suite, build config, and repo hygiene introduced/uncovered while adding the test harness. Listed because they undermine the safety net itself. (Verified 2026-06-10.)
 
-### 🔴 H1 — `mvn test` no longer produces a JaCoCo coverage report
-The JaCoCo `report` goal is bound to the `test` phase, but the intentional red TDD tests (the §5 bug board in `test.md`) make Surefire fail and **abort the phase before `jacoco:report` runs**. Verified: `mvn test` exits `1`, and `target/site/jacoco/jacoco.csv` is never regenerated.
-**Impact:** the coverage workflow documented in `test.md` ("open `target/site/jacoco/index.html`") silently produces nothing for as long as the board is red — i.e. always, until the bugs are fixed.
-**Fix:** generate coverage with `mvn test -Dmaven.test.failure.ignore=true`, or bind `jacoco:report` to the `verify` phase, or add a dedicated coverage profile. Document the chosen command in `test.md`.
+### ✅ H1 — ~~`mvn test` no longer produces a JaCoCo coverage report~~ — RESOLVED 2026-06-11 (board green)
+The JaCoCo `report` goal is bound to the `test` phase, and the intentional red TDD tests made Surefire fail and abort the phase before `jacoco:report` could run. Since the §5 board went green (b3 fixed, b4 retired), `mvn test` exits `0` and the report regenerates normally. *(The structural fragility remains: any future red test silently kills coverage again — binding `jacoco:report` to `verify` or adding a coverage profile is still worth doing if red-TDD boards return.)*
 
 ### 🟠 H2 — Vacuous password-encoding assertion (false confidence)
 In `AuthControllerTest`, the "password is hashed, not raw" check is `assertThat(saved.passwordHash).isNotEqualTo("secret123")`. But `passwordEncoder` is a Mockito mock whose unstubbed `encode()` returns `null`, so the assertion is `null != "secret123"` → trivially true. **It would still pass even if `register()` stored the raw password.**
@@ -517,16 +517,16 @@ Clean (0 errors): `login`, `profile`, `chat`, `job-random`, `homepage`, `jobs`, 
 Ordering is driven by **grading points first** (see the ⭐ requirements section), then security/correctness, then polish. Items reference both bug IDs (§9) and requirement IDs (M/S/C).
 
 ### Tier 0 — secure the required 21 points (MUST gaps — do these first)
-1. ~~**B3 + M6 + M7**~~ → **HALF DONE 2026-06-10:** `DELETE /jobs/{id}` + FE delete button shipped (M6 ✅, DELETE half of M7 ✅). **Remaining: `PUT /jobs/{id}`** through `JobController` with an ownership check (don't let the body set `clientId`/`createdAt`) **plus one FE PUT call** (edit-job form, or cheaper: accept/reject button → `PUT /applications/{id}/status`). Also tighten the delete authz (**B22**).
+1. 🟠 ~~**B3 + M6 + M7**~~ → **BACKEND DONE 2026-06-11:** `DELETE /jobs/{id}` + FE delete button shipped (M6 ✅); `PUT /jobs/{id}` implemented with ownership check, body cannot set `clientId`/`createdAt` (B3 ✅); delete authz tightened (B22 ✅). **Remaining: one FE PUT call** (edit-job form, or cheaper: accept/reject button → `PUT /applications/{id}/status`) to close M7's FE half.
 2. **Verify M4/M5/M9 stay intact** while editing (AJAX, JSON, JWT) — they're met today; don't regress them.
 
 ### Tier 1 — security & cheap-but-broken correctness
 3. ✅ ~~**B1 / B5 — normalize email**~~ — **DONE 2026-06-11** (`219e278`). `b1`/`b5` green.
-4. 🟠 **B2 — fix authorization** in `ApplicationController`. **Partially done 2026-06-11** (`22c5c9b`): `listApplications` is owner-only, `b2` green. **Remaining: get/status/hire** still lack ownership checks — same pattern, the `JobRepository` is already injected.
+4. ✅ ~~**B2 — fix authorization** in `ApplicationController`~~ — **DONE 2026-06-11**: list/status/hire owner-only, get owner-or-applicant; `b2` green + unit tests.
 5. ✅ ~~**B4 — `GET /jobs/random`**~~ — **RESOLVED 2026-06-11**: client-side approach accepted as final; `getRandomJob()` removed, `b4` test retired.
 6. ✅ ~~**B7 — referential validation + uniqueness**~~ — **MOSTLY DONE 2026-06-11** (`a72592d`): unique `(job_id, designer_id)` + clean 404/409 in apply + idempotent conversation create. `b7` green. Remaining: job/user existence checks in `createConversation` (fold into **B14**).
 
-> Tracking: every fix above flips one red test on the §5 board of `test.md` to green. **Status 2026-06-11: 2 red left (`b3`, `b4`).** Project is "done" (correctness-wise) when that board is all green.
+> Tracking: every fix above flips one red test on the §5 board of `test.md` to green. **Status 2026-06-11 (eod): board complete — `b3` green, `b4` retired (client-side by design); `mvn test` = BUILD SUCCESS, 111 tests, 0 failures.**
 
 ### Tier 2 — chase the SHOULD points (8)
 7. ✅ ~~**S1 — add a second external REST service.**~~ — **DONE 2026-06-10** (`371b55f`): `countriesnow.space` via `location/` + profile-edit autofill. Pairs toward **C1** (one more API needed).
@@ -543,7 +543,7 @@ Ordering is driven by **grading points first** (see the ⭐ requirements section
 
 ### Newly surfaced by the deep reviews — slot into the tiers above
 - **Tier 0 (required points):** **F1** fix the `index.html` navbar localStorage keys (tiny, but the whole logged-in/logout UX is broken right now); **F3/M7** add the FE PUT action *(DELETE done 2026-06-10)*.
-- **Tier 1 (security):** **B14** conversation-spoofing check in `ChatService` *(also closes the B7 leftover)*; **B22** tighten `DELETE /jobs/{id}` authz *(new)*; **F2** validate the login `next` param (open-redirect / `javascript:` XSS).
+- **Tier 1 (security):** **B14** conversation-spoofing check in `ChatService` *(also closes the B7 leftover)*; ~~**B22** tighten `DELETE /jobs/{id}` authz~~ ✅ done 2026-06-11; **F2** validate the login `next` param (open-redirect / `javascript:` XSS).
 - **Tier 1–2 (robustness/correctness):** **B15** add HTTP timeouts to `ExternalTimeApiClient`; **B16** fix lexicographic timestamp ordering; **B17** delete the duplicate CORS config in `WebConfig`; **B19** make the hire/status transition atomic; **B20** fix the `design1/` path default.
 - **Tier 2 (SHOULD points):** **S3** fix the 6 W3C-failing pages (mostly stray `</script>` + `autocomplete`/`aria`/`label` attributes — see §9c).
 - **Build hygiene:** **H1** add a coverage profile so `mvn test` still emits JaCoCo while the red board is red; **H3** `git rm --cached` the H2 DB file.

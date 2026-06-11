@@ -81,7 +81,9 @@ Two layers, matching the app's structure:
 
 ## 5. The red board — one failing test per open bug (TDD to-do list)
 
-`bugs/KnownBugsTest` and `bugs/KnownBugsWebTest` each assert the **correct** behavior for a known defect from `PROJECT_REVIEW.md` §9. They are **RED today** and turn green only when the bug is actually fixed. They run in the normal `mvn test` — nothing is excluded or tagged-away. This is the team's executable to-do list: **the project is done when this board is green.**
+`bugs/KnownBugsTest` and `bugs/KnownBugsWebTest` each assert the **correct** behavior for a known defect from `PROJECT_REVIEW.md` §9. They were **RED when written** and turn green only when the bug is actually fixed. They run in the normal `mvn test` — nothing is excluded or tagged-away. This is the team's executable to-do list: **the project is done when this board is green.**
+
+> **Status 2026-06-11: board complete.** `b1`, `b5`, `b2`, `b7`, `b3` (put + delete) are green; `b4` was **retired** by team decision — random-job is client-side by design, there is deliberately no `GET /jobs/random` route (see `PROJECT_REVIEW.md` §B4). `mvn test` = BUILD SUCCESS, JaCoCo report regenerates again (H1 resolved). The table below is kept as the historical spec.
 
 | Failing test | Asserts (the behavior we want) | Fails today with | Bug |
 |---|---|---|---|
@@ -93,7 +95,7 @@ Two layers, matching the app's structure:
 | `b3_putJobShouldUpdateExistingJob` | `PUT /jobs/{id}` → `200` | `405` (no handler) | B3 |
 | `b3_deleteJobShouldRemoveExistingJob` | `DELETE /jobs/{id}` → `2xx` | `405` (no handler) | B3 |
 
-**How to use this board (red → green):** pick a failing test, read its assertion (that's the spec), fix the code in `backend/src/main` until it passes. Don't change the test to match the bug — change the code to match the test. When all 7 are green, all listed bugs are fixed.
+**How to use this board (red → green):** pick a failing test, read its assertion (that's the spec), fix the code in `backend/src/main` until it passes. Don't change the test to match the bug — change the code to match the test. Outcome: 6 of 7 went green; `b4` was retired by an explicit team decision (re-scoped, not fudged — the feature moved client-side).
 
 ### Behavior already locked in (green)
 

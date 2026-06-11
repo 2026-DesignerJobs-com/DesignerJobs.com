@@ -18,15 +18,15 @@ The `jobs` table itself is created by `Database/DatabaseInitializer.init()` at a
 
 ## endpoints
 
-Base path: `/jobs`. `GET /jobs/**` is public; everything else requires a valid JWT (see `config/README.md`).
+Base path: `/jobs`. `GET /jobs` and `GET /jobs/{id}` are public — deliberately not `GET /jobs/**`, so nested sub-resources like `/jobs/{id}/applications` stay authenticated; everything else requires a valid JWT (see `config/README.md`).
 
 | method | path | auth | what it does |
 |---|---|---|---|
 | `POST`   | `/jobs`           | authenticated | store a new job — server assigns `id` (UUID) and `createdAt` (ISO-8601), client sends the rest |
 | `GET`    | `/jobs`           | public        | list/search — all query params optional; see filter table below |
 | `GET`    | `/jobs/{id}`      | public        | fetch one; `404` if missing |
-| `PUT`    | `/jobs/{id}`      | authenticated | update; `id` and `createdAt` are preserved server-side regardless of body |
-| `DELETE` | `/jobs/{id}`      | authenticated | delete; `404` if id doesn't exist, otherwise `204` |
+| `PUT`    | `/jobs/{id}`      | owner only    | update; `404` if missing, `403` for non-owners; `id`, `clientId` and `createdAt` are preserved server-side regardless of body |
+| `DELETE` | `/jobs/{id}`      | owner only    | delete; `404` if missing, `403` for non-owners, otherwise `200` + confirmation JSON |
 
 ### search filters
 
@@ -96,9 +96,8 @@ CREATE TABLE IF NOT EXISTS jobs (
 
 ## known gaps / next steps
 
-1. **Ownership enforcement** — `PUT /jobs/{id}` and `DELETE /jobs/{id}` do not check that the caller is the `clientId` who posted the job. Anyone authenticated can edit anyone's post.
-2. **Validation** — empty `title` is accepted; `category` / `budget` / `workMode` accept any string.
-3. **Pagination** — `GET /jobs` returns everything. Fine at demo scale; add `?page=&size=` when it grows.
+1. **Validation** — `title` is required (POST and PUT reject blank titles), but `category` / `budget` / `workMode` accept any string.
+2. **Pagination** — `GET /jobs` returns everything. Fine at demo scale; add `?page=&size=` when it grows.
 
 ---
 

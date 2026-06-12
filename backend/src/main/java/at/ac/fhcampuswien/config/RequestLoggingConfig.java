@@ -23,8 +23,11 @@ public class RequestLoggingConfig {
         filter.setIncludeClientInfo(true);
         filter.setIncludeQueryString(true);
         filter.setIncludeHeaders(true);
-        filter.setIncludePayload(true);
-        filter.setMaxPayloadLength(10_000);
+        // Never log credentials: drop the Authorization (bearer JWT) and Cookie headers,
+        // and don't log request bodies — login/register payloads carry plaintext passwords (H6).
+        filter.setHeaderPredicate(headerName ->
+                !headerName.equalsIgnoreCase("authorization") && !headerName.equalsIgnoreCase("cookie"));
+        filter.setIncludePayload(false);
         filter.setAfterMessagePrefix("HTTP REQUEST: ");
         return filter;
     }

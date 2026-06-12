@@ -20,8 +20,6 @@ class ChatServiceTest {
 
     @Mock ConversationRepository conversationRepository;
     @Mock MessageRepository messageRepository;
-    @Mock ExternalChatApiClient externalChatApiClient;
-
     @InjectMocks ChatService chatService;
 
     private Conversation conversation(String client, String designer, String job) {
@@ -137,6 +135,5 @@ class ChatServiceTest {
         chatService.listConversations("u1");
 
         verify(conversationRepository).findByUserId("u1");
-        verify(externalChatApiClient, never()).listConversations(any());
     }
 }

@@ -6,6 +6,8 @@
 
 > **Update 2026-06-11 (eod):** **B2** fully fixed (status/hire owner-only, get owner-or-applicant), **B3** done (`PUT /jobs/{id}` with ownership, body can't set `clientId`/`createdAt`), **B22** fixed (delete owner-only), **B4** resolved as client-side-by-design (`getRandomJob()` removed, `b4` retired). `SecurityConfig` narrowed `GET /jobs/**` → `/jobs` + `/jobs/*` so nested sub-resources are authenticated at the filter level. **TDD board complete: `mvn test` = BUILD SUCCESS (115 tests).** H1 (JaCoCo) resolves itself now that Surefire passes. Also shipped: **C2** (JSON+XML content negotiation via `jackson-dataformat-xml`, `ContentNegotiationTest`). New finding **H6**: the request-logging filter writes plaintext passwords and bearer JWTs to `logs/app.log` (local-only, gitignored — fix pending, see §9b).
 
+> **Update 2026-06-12:** Team day. **Lika** (`ee6fd9e` + follow-ups on `main`): removed the `@CrossOrigin` regression from `AuthController` (back to central CORS); **B23** user soft-delete (anonymize-in-place — no more orphaned ids); **B24** typed `ProfileUpdateRequest` DTO (wrong type → 400, not 500); and **removed the external chat-API placeholder** (`ExternalChatApiClient` + `USE_EXTERNAL_CHAT_API` gone → the latent chat-ordering finding is resolved). The time API now returns `null` instead of throwing — **but there is still no HTTP timeout (B15 stands), and `WorldClockService` doesn't null-check the result → NPE/500 on upstream failure** (new follow-up). **Kat/Yarah**: W3C fixes to `index.html` (duplicate `</script>`) + homepage header (S3 progress). DB file untracked + `*.db` gitignored. **Scope note:** this review now also covers the **`kat-second-frontend`** branch (the S2 admin dashboard) — see §9d. Remaining gaps on B23/B24 are tracked in §9.
+
 ---
 
 ## 0. How to use this document
@@ -65,8 +67,8 @@ This is the official rubric mapped against the **actual code today** (verified 2
 | # | Requirement | Status | Evidence / what's missing |
 |---|---|---|---|
 | **S1** | Consume ≥2 external REST services | ✅ | **Closed 2026-06-10:** `ExternalLocationApiClient` → `countriesnow.space` (`GET /locations/cities?country=…`, commit `371b55f`), consumed by the profile-edit location autofill. Plus `timeapi.io`. (`ExternalChatApiClient` remains a disabled placeholder.) |
-| **S2** | A second FE component using ≥3 BE endpoints | ❌ | only one FE (`design3/`). Build a second small FE (e.g. an admin/moderation dashboard or a designer portfolio page) hitting ≥3 endpoints. |
-| **S3** | FE is W3C compliant | ❌ | **Verified 2026-06-10 via validator.w3.org/nu — 6 pages fail** (~17 errors). See §9c for the list. Clean: login, profile, chat, job-random, homepage/jobs/job-detail (warnings only). |
+| **S2** | A second FE component using ≥3 BE endpoints | 🟠 | **In progress on `kat-second-frontend`** (admin dashboard, `frontend/admin/`). Currently calls **2** endpoints (`GET /jobs` real; `GET /designers` still a 501 stub → demo fallback) — needs **≥3 real**. Not yet merged to `main`. Full eval in §9d. |
+| **S3** | FE is W3C compliant | 🟠 | **6 pages failed 2026-06-10** (~17 errors; see §9c). **2026-06-12:** `index.html` (duplicate `</script>`) and `homepage.html` header fixed (Kat/Yarah). Re-validate the remaining `post-a-job` / `profile-edit` / `register` / `search-results` / `advanced-search`. |
 | **S4** | FE responsive (mobile + desktop views) | ⚠️ | Bootstrap grid is responsive; confirm a **dedicated** mobile vs desktop view (breakpoints, nav collapse) and document it. |
 
 ### COULD — 5 points
@@ -355,7 +357,7 @@ From `SecurityConfig.filterChain`, in order:
 
 ## 9. Bugs & correctness issues (review these first)
 
-Ordered by severity. Found by reading every backend source file (controllers, services, repositories) line-by-line and tracing call sites against the actual code (multiple `xhigh` review passes — backend, frontend, and test harness). **These are the concrete things to fix in the 6 days.** Numbering: **B1–B13** first pass, **B14–B21** the deep backend review (§9), **B22** new 2026-06-11, **B23–B24** new 2026-06-12 (profile commits), harness **H1–H6** in §9b, frontend **F1–F15** in §9c. Status markers: ✅ fixed · 🟠/🟡 partially fixed or downgraded · unmarked = still open.
+Ordered by severity. Found by reading every backend source file (controllers, services, repositories) line-by-line and tracing call sites against the actual code (multiple `xhigh` review passes — backend, frontend, and test harness). **These are the concrete things to fix in the 6 days.** Numbering: **B1–B13** first pass, **B14–B21** the deep backend review (§9), **B22** new 2026-06-11, **B23–B25** new 2026-06-12 (B23/B24 profile commits, B25 time-API), harness **H1–H6** in §9b, frontend **F1–F15** in §9c, second-FE/S2 eval in §9d. Status markers: ✅ fixed · 🟠/🟡 partially fixed or downgraded · unmarked = still open.
 
 ### ✅ B1 — ~~Login is case-sensitive on email~~ — FIXED 2026-06-11 (`219e278`)
 `login` now normalizes the email exactly like registration (`trim().toLowerCase()`) before `findByEmail`. Regression test `KnownBugsTest.b1` is green.
@@ -439,11 +441,14 @@ The live frontend is `design3/`. Minor, but confusing for newcomers. Trust `fron
 ### ✅ B22 — ~~`DELETE /jobs/{id}` lets **any designer** delete **any job**~~ — FIXED 2026-06-11
 The delete endpoint (`42fb250`) authorized `isOwnerClient || isDesigner` — every logged-in designer could delete every job. Fixed exactly as proposed: the `isDesigner` branch was dropped, only `job.clientId == auth.getName()` may delete (Javadoc updated, non-owner 403 covered in `JobControllerTest`).
 
-### 🟠 B23 — `DELETE /auth/me` hard-deletes the user, orphaning owned data — new 2026-06-12
-The new self-service delete (`AuthController.deleteProfile`, commit `20d3429`) runs `DELETE FROM users WHERE id=?` with no cleanup. The schema has no FK cascades, so `jobs.client_id`, `applications.designer_id`, conversations and chat messages keep referencing the now-missing id: listings persist with a dangling owner, and counterparties can still read the ex-user's applications/messages. *Fix: soft-delete (a `deleted` flag) or cascade the dependents in one transaction.*
+### 🟡 B23 — ~~`DELETE /auth/me` hard-deletes the user, orphaning owned data~~ — FIXED 2026-06-12 (gap remains)
+~~The self-service delete ran `DELETE FROM users WHERE id=?` with no cleanup, leaving `jobs.client_id` / `applications.designer_id` / chat references dangling.~~ Fixed in `ee6fd9e` (Lika): `deleteById` now **soft-deletes by anonymizing in place** — `UPDATE users SET role='DELETED', full_name='Deleted Account', email='deleted_<id>@…', password_hash='NO_ACCESS', …`. The row + id survive, so nothing dangles; login is blocked and the real email is freed. **Remaining gap:** read queries don't exclude soft-deleted rows — `findById`/`findByEmail` are still `SELECT … WHERE id/email=?` with no `AND role <> 'DELETED'`, so a deleted account is still fetchable (`GET /auth/me` returns it; a still-valid JWT could `PUT /auth/me` and repopulate it; future `/designers` listing would show it). *Fix: add `AND role <> 'DELETED'` to the read queries.*
 
-### 🟡 B24 — `PUT /auth/me` binds an untyped map with no validation — new 2026-06-12
-`AuthController.updateProfile` reads a `Map<String,Object>` and does unchecked `(String)`/`(Number)` casts with no length/value checks. A wrong JSON type (numeric `fullName`, string `hourlyMin`) throws `ClassCastException` → 500; an over-long `bio`/`portfolioUrl` past the new `VARCHAR` caps throws H2 "value too long" → 500 (same class as the long-`fullName` register sweep item). *Fix: bind a typed DTO and validate types + lengths.* *(Minor siblings: `UserRepository.updateProfile(id,model)` is dead code; `AuthController.java`/`UserModel.java` end with no newline; `data/projectdb.mv.db` churns in VCS again.)*
+### 🟡 B24 — `PUT /auth/me` binds an untyped map with no validation — PARTIALLY FIXED 2026-06-12
+~~`AuthController.updateProfile` read a `Map<String,Object>` with unchecked `(String)`/`(Number)` casts.~~ `ee6fd9e` (Lika) replaced it with a typed `ProfileUpdateRequest` DTO, so a wrong JSON type now yields a Jackson **400** instead of a `ClassCastException` 500. **Still open:** (a) **no length validation** — `spring-boot-starter-validation` isn't on the classpath and there's no `@Size`/`@Valid`, so an over-long `bio`/`portfolioUrl` past the `VARCHAR` caps still throws H2 "value too long" → 500; (b) **new regression** — the rate fields are primitive `int` in the DTO and assigned unconditionally, so a `PUT` that omits `hourlyMin`/`hourlyMax`/`projectMin` overwrites the stored values with `0` (the string fields are guarded with `!= null`; ints can't be). *Fix: add validation + use boxed `Integer` with a null check for the rates.*
+
+### 🟠 B25 — External time API: graceful-null without a timeout or a null-check — new 2026-06-12
+`ee6fd9e`/`aa28246`/`e072ab6` (Lika) changed `ExternalTimeApiClient` to **return `null`** (instead of throwing) on a non-2xx / IOException, to "prevent server crashes." Two problems remain: (a) **still no connect/request timeout**, so a hung `timeapi.io` still pins a Tomcat worker indefinitely (the original **B15**); and (b) **`WorldClockService.loadCityTime` never null-checks** the client's result — it calls `apiResponse.path("date")` on the returned value, so a `null` now throws a **NullPointerException → 500**, i.e. the crash wasn't actually prevented, just moved. *Fix: set `.connectTimeout`/`.timeout`, and have the service skip/degrade per city when the client returns `null`.* *(Note: the external **chat** client + `USE_EXTERNAL_CHAT_API` were removed the same day, which resolves the latent chat-ordering finding.)*
 
 ---
 
@@ -547,6 +552,27 @@ Hardcoded mock cards (`search-results.html:269-471`) are visible before `DOMCont
 | `advanced-search.html` | 1 | `label[for]` points at a hidden/missing control |
 
 Clean (0 errors): `login`, `profile`, `chat`, `job-random`, `homepage`, `jobs`, `job-detail` (last three have a minor warning). `about`/`impressum` warn only (Lorem-ipsum vs `lang="en"`). *Fix these 6 pages to claim S3's points.*
+
+---
+
+## 9d. Second-FE / S2 evaluation — branch `kat-second-frontend` (2026-06-12)
+
+Kat's admin dashboard (`frontend/admin/dashboard.html` + `dashboard.js` + `dashboard.css`), the S2 candidate. **Not yet merged to `main`** — evaluated on the branch. Backend wiring added on the branch: `SecurityConfig` permits `/admin/**`, `WebConfig` adds an `/admin/**` resource handler (`→ ../frontend/admin/`) and fixed the `design1`→`design3` default path.
+
+### S2 requirement: 🟠 not yet met
+S2 needs **≥3 BE endpoints**. The dashboard calls **2** — `GET /jobs` (real) and `GET /designers` (still a 501 stub → demo-row fallback). The action buttons (`editJob`/`deleteJob`/`editUser`/`banUser`) are `alert()` stubs, not endpoint calls. *To pass: wire a third real endpoint (e.g. delete → `DELETE /jobs/{id}`, or implement `UserController.listDesigners` so `/designers` counts).*
+
+### Bugs found (branch state)
+- **Was completely broken** — `dashboard.js` had a missing closing brace in `banUser` → the whole file failed to parse, so neither table loaded. (Fixed on the branch.)
+- **`/designers` 501 mishandled** — `loadUsersFromServer` threw on `!response.ok` before reaching the `not_implemented` fallback, so the user table showed "Fehler beim Laden der Benutzerdaten" (501 must be let through first). (Fixed on the branch.)
+- **Stylesheet path** — `../design3/theme.css` resolves to `/design3/theme.css` → **401** (design3 is served at the web root); must be `/theme.css`. This only works when the page is loaded via **Spring on `:8080`** — opening it from IntelliJ's built-in server / `file://` yields wrong-MIME / 404 blocks. (Path-vs-server-root was the root cause of the "rejected"/MIME confusion.)
+- **Framing** — the shell footer linked the dashboard with `data-page="/admin/dashboard.html"`, which loads it **inside the content iframe**; with `X-Frame-Options: SAMEORIGIN` that's blocked cross-origin (and 404s on the wrong origin). A standalone admin page should be a top-level link, not a `data-page` iframe swap.
+- **No auth gate** — `/admin/**` static files are public and the page pulls in neither `auth.js` nor a role check, so anyone can open the dashboard. There's no `ADMIN` role yet; gate on authentication now and on the role once it exists.
+- **CORS regressed wider (B17)** — the branch *widened* `WebConfig.addCorsMappings` (added `localhost:8080`) instead of removing it; that second CORS source still conflicts with the central `SecurityConfig` one. Same-origin on `:8080` means the dashboard needs no CORS at all.
+- Minor: inline `onclick="…('${id}')"` injects unescaped ids; `bi-exclame-triangle` icon typo; stat cards only partially wired (`4c9a1d4` "Job counter works"); empty/misnamed placeholder files (`JobsVerwalte.js` etc.).
+
+### Verdict
+A solid scaffold that now loads on `:8080`, but **S2 is not satisfied** (2 endpoints, one a stub) and it carries the CORS/auth/framing issues above. Don't merge to `main` until it hits ≥3 real endpoints and drops the duplicate `WebConfig` CORS.
 
 ---
 

@@ -6,6 +6,8 @@
 
 > **Update 2026-06-11 (Abend):** **B2** vollständig behoben (status/hire Owner-only, get Owner-oder-Bewerber), **B3** erledigt (`PUT /jobs/{id}` mit Eigentümer-Prüfung; der Body kann `clientId`/`createdAt` nicht setzen), **B22** behoben (Delete Owner-only), **B4** als clientseitig-by-Design aufgelöst (`getRandomJob()` entfernt, `b4` ausgemustert). `SecurityConfig`: `GET /jobs/**` auf `/jobs` + `/jobs/*` eingeengt — verschachtelte Sub-Ressourcen sind jetzt auf Filter-Ebene authentifiziert. **TDD-Board komplett: `mvn test` = BUILD SUCCESS (115 Tests).** H1 (JaCoCo) löst sich damit von selbst. Außerdem: **C2** erledigt (JSON+XML Content Negotiation via `jackson-dataformat-xml`, `ContentNegotiationTest`); neuer Befund **H6** — der Request-Logging-Filter schreibt Klartext-Passwörter/JWTs nach `logs/app.log` (nur lokal, gitignored — Fix offen, siehe §9b).
 
+> **Update 2026-06-12:** Team-Tag. **Lika** (`ee6fd9e` + Folge-Commits auf `main`): die `@CrossOrigin`-Regression am `AuthController` entfernt (zurück zu zentralem CORS); **B23** User-Soft-Delete (in-place anonymisiert — keine verwaisten ids mehr); **B24** typisiertes `ProfileUpdateRequest`-DTO (falscher Typ → 400 statt 500); und **den externen Chat-API-Platzhalter entfernt** (`ExternalChatApiClient` + `USE_EXTERNAL_CHAT_API` weg → der latente Chat-Reihenfolge-Befund ist erledigt). Die Time-API gibt jetzt `null` zurück statt zu werfen — **aber weiterhin kein HTTP-Timeout (B15 bleibt), und `WorldClockService` prüft das Ergebnis nicht auf `null` → NPE/500 bei Upstream-Fehler** (neuer Follow-up). **Kat/Yarah**: W3C-Fixes an `index.html` (doppeltes `</script>`) + Homepage-Header (S3-Fortschritt). DB-Datei aus dem Tracking + `*.db` gitignored. **Scope-Hinweis:** dieser Review umfasst jetzt auch den Branch **`kat-second-frontend`** (das S2-Admin-Dashboard) — siehe §9d. Offene B23/B24-Lücken in §9.
+
 ---
 
 ## 0. Wie man dieses Dokument nutzt
@@ -65,8 +67,8 @@ Das ist das offizielle Bewertungsraster, abgeglichen mit dem **tatsächlichen Co
 | # | Anforderung | Status | Beleg / was fehlt |
 |---|---|---|---|
 | **S1** | ≥2 externe REST-Services konsumieren | ✅ | **Geschlossen 2026-06-10:** `ExternalLocationApiClient` → `countriesnow.space` (`GET /locations/cities?country=…`, Commit `371b55f`), konsumiert vom Standort-Autofill im Profil-Editor. Plus `timeapi.io`. (`ExternalChatApiClient` bleibt ein deaktivierter Platzhalter.) |
-| **S2** | Eine zweite FE-Komponente, die ≥3 BE-Endpunkte nutzt | ❌ | nur ein FE (`design3/`). Ein zweites kleines FE bauen (z. B. ein Admin-/Moderations-Dashboard oder eine Designer-Portfolio-Seite), das ≥3 Endpunkte anspricht. |
-| **S3** | FE ist W3C-konform | ❌ | **Verifiziert am 2026-06-10 via validator.w3.org/nu — 6 Seiten scheitern** (~17 Fehler). Siehe §9c für die Liste. Sauber: login, profile, chat, job-random, homepage/jobs/job-detail (nur Warnungen). |
+| **S2** | Eine zweite FE-Komponente, die ≥3 BE-Endpunkte nutzt | 🟠 | **In Arbeit auf `kat-second-frontend`** (Admin-Dashboard, `frontend/admin/`). Ruft aktuell **2** Endpunkte (`GET /jobs` echt; `GET /designers` noch ein 501-Stub → Demo-Fallback) — braucht **≥3 echte**. Noch nicht auf `main` gemergt. Volle Bewertung in §9d. |
+| **S3** | FE ist W3C-konform | 🟠 | **6 Seiten scheiterten 2026-06-10** (~17 Fehler; siehe §9c). **2026-06-12:** `index.html` (doppeltes `</script>`) und `homepage.html`-Header gefixt (Kat/Yarah). Rest neu validieren: `post-a-job` / `profile-edit` / `register` / `search-results` / `advanced-search`. |
 | **S4** | FE responsiv (Mobil- + Desktop-Ansicht) | ⚠️ | Bootstrap-Grid ist responsiv; eine **dedizierte** Mobil- vs. Desktop-Ansicht bestätigen (Breakpoints, Nav-Collapse) und dokumentieren. |
 
 ### COULD — 5 Punkte
@@ -355,7 +357,7 @@ Aus `SecurityConfig.filterChain`, der Reihe nach:
 
 ## 9. Bugs & Korrektheitsprobleme (diese zuerst reviewen)
 
-Nach Schweregrad geordnet. Gefunden durch zeilenweises Lesen jeder Backend-Quelldatei (Controller, Services, Repositories) und Verfolgen der Aufrufstellen gegen den tatsächlichen Code (mehrere `xhigh`-Review-Durchgänge — Backend, Frontend und Test-Harness). **Das sind die konkreten Dinge, die in den 6 Tagen zu beheben sind.** Nummerierung: **B1–B13** erster Durchgang, **B14–B21** der tiefe Backend-Review (§9), **B22** neu 2026-06-11, **B23–B24** neu 2026-06-12 (Profil-Commits), Harness **H1–H6** in §9b, Frontend **F1–F15** in §9c. Status-Markierungen: ✅ behoben · 🟠/🟡 teilweise behoben oder herabgestuft · unmarkiert = weiterhin offen.
+Nach Schweregrad geordnet. Gefunden durch zeilenweises Lesen jeder Backend-Quelldatei (Controller, Services, Repositories) und Verfolgen der Aufrufstellen gegen den tatsächlichen Code (mehrere `xhigh`-Review-Durchgänge — Backend, Frontend und Test-Harness). **Das sind die konkreten Dinge, die in den 6 Tagen zu beheben sind.** Nummerierung: **B1–B13** erster Durchgang, **B14–B21** der tiefe Backend-Review (§9), **B22** neu 2026-06-11, **B23–B25** neu 2026-06-12 (B23/B24 Profil-Commits, B25 Time-API), Harness **H1–H6** in §9b, Frontend **F1–F15** in §9c, Second-FE/S2-Bewertung in §9d. Status-Markierungen: ✅ behoben · 🟠/🟡 teilweise behoben oder herabgestuft · unmarkiert = weiterhin offen.
 
 ### ✅ B1 — ~~Login ist case-sensitiv bei der E-Mail~~ — BEHOBEN 2026-06-11 (`219e278`)
 `login` normalisiert die E-Mail jetzt genau wie die Registrierung (`trim().toLowerCase()`) vor `findByEmail`. Regression-Test `KnownBugsTest.b1` ist grün.
@@ -439,11 +441,14 @@ Das aktive Frontend ist `design3/`. Klein, aber für Neulinge verwirrend. `front
 ### ✅ B22 — ~~`DELETE /jobs/{id}` lässt **jeden Designer** **jeden Job** löschen~~ — BEHOBEN 2026-06-11
 Der Delete-Endpunkt (`42fb250`) autorisierte `isOwnerClient || isDesigner` — jeder eingeloggte Designer konnte jeden Job löschen. Genau wie vorgeschlagen behoben: der `isDesigner`-Zweig wurde entfernt, nur `job.clientId == auth.getName()` darf löschen (Javadoc aktualisiert, Nicht-Eigentümer-403 in `JobControllerTest` abgedeckt).
 
-### 🟠 B23 — `DELETE /auth/me` löscht den User hart und verwaist dessen Daten — neu 2026-06-12
-Das neue Self-Service-Delete (`AuthController.deleteProfile`, Commit `20d3429`) führt `DELETE FROM users WHERE id=?` ohne Aufräumen aus. Das Schema hat keine FK-Cascades, also referenzieren `jobs.client_id`, `applications.designer_id`, Conversations und Chat-Nachrichten weiter die nun fehlende id: Inserate bleiben mit verwaistem Eigentümer bestehen, und Gegenparteien können die Bewerbungen/Nachrichten des Ex-Users weiter lesen. *Fix: Soft-Delete (ein `deleted`-Flag) oder die abhängigen Datensätze in einer Transaktion mit-löschen.*
+### 🟡 B23 — ~~`DELETE /auth/me` löscht den User hart und verwaist dessen Daten~~ — BEHOBEN 2026-06-12 (Lücke bleibt)
+~~Das Self-Service-Delete führte `DELETE FROM users WHERE id=?` ohne Aufräumen aus und ließ `jobs.client_id` / `applications.designer_id` / Chat-Referenzen verwaisen.~~ Behoben in `ee6fd9e` (Lika): `deleteById` macht jetzt **Soft-Delete durch In-place-Anonymisierung** — `UPDATE users SET role='DELETED', full_name='Deleted Account', email='deleted_<id>@…', password_hash='NO_ACCESS', …`. Zeile + id bleiben, nichts verwaist; Login ist blockiert und die echte E-Mail wird frei. **Verbleibende Lücke:** Lese-Queries schließen Soft-Deletes nicht aus — `findById`/`findByEmail` sind weiter `SELECT … WHERE id/email=?` ohne `AND role <> 'DELETED'`, ein gelöschtes Konto ist also weiter abrufbar (`GET /auth/me` liefert es; ein noch gültiges JWT könnte per `PUT /auth/me` repopulieren; eine künftige `/designers`-Liste würde es zeigen). *Fix: `AND role <> 'DELETED'` zu den Lese-Queries ergänzen.*
 
-### 🟡 B24 — `PUT /auth/me` bindet eine untypisierte Map ohne Validierung — neu 2026-06-12
-`AuthController.updateProfile` liest eine `Map<String,Object>` und macht ungeprüfte `(String)`/`(Number)`-Casts ohne Längen-/Wert-Prüfungen. Ein falscher JSON-Typ (numerischer `fullName`, String-`hourlyMin`) wirft `ClassCastException` → 500; ein zu langer `bio`/`portfolioUrl` über die neuen `VARCHAR`-Grenzen wirft H2 „value too long" → 500 (gleiche Klasse wie der lange-`fullName`-Sweep-Punkt). *Fix: ein typisiertes DTO binden und Typen + Längen validieren.* *(Kleinere Geschwister: `UserRepository.updateProfile(id,model)` ist toter Code; `AuthController.java`/`UserModel.java` enden ohne Newline; `data/projectdb.mv.db` churnt erneut im VCS.)*
+### 🟡 B24 — `PUT /auth/me` bindet eine untypisierte Map ohne Validierung — TEILWEISE BEHOBEN 2026-06-12
+~~`AuthController.updateProfile` las eine `Map<String,Object>` mit ungeprüften `(String)`/`(Number)`-Casts.~~ `ee6fd9e` (Lika) ersetzte das durch ein typisiertes `ProfileUpdateRequest`-DTO, ein falscher JSON-Typ ergibt jetzt ein Jackson-**400** statt `ClassCastException` 500. **Weiterhin offen:** (a) **keine Längen-Validierung** — `spring-boot-starter-validation` ist nicht im Classpath, kein `@Size`/`@Valid`, ein zu langer `bio`/`portfolioUrl` über die `VARCHAR`-Grenzen wirft weiter H2 „value too long" → 500; (b) **neue Regression** — die Tarif-Felder sind primitive `int` im DTO und werden bedingungslos zugewiesen, ein `PUT` ohne `hourlyMin`/`hourlyMax`/`projectMin` überschreibt also die gespeicherten Werte mit `0` (die String-Felder sind mit `!= null` geschützt; ints nicht). *Fix: Validierung ergänzen + boxed `Integer` mit Null-Check für die Tarife.*
+
+### 🟠 B25 — Externe Time-API: Graceful-null ohne Timeout oder Null-Check — neu 2026-06-12
+`ee6fd9e`/`aa28246`/`e072ab6` (Lika) änderten `ExternalTimeApiClient` so, dass er bei Non-2xx / IOException **`null` zurückgibt** statt zu werfen, um „Server-Crashes zu verhindern". Zwei Probleme bleiben: (a) **weiterhin kein Connect-/Request-Timeout**, ein hängendes `timeapi.io` blockiert also weiter unbegrenzt einen Tomcat-Worker (das ursprüngliche **B15**); und (b) **`WorldClockService.loadCityTime` prüft das Ergebnis nie auf `null`** — es ruft `apiResponse.path("date")` auf dem Rückgabewert, ein `null` wirft also jetzt eine **NullPointerException → 500**, der Crash wurde nicht verhindert, nur verschoben. *Fix: `.connectTimeout`/`.timeout` setzen und im Service pro Stadt überspringen/degradieren, wenn der Client `null` liefert.* *(Hinweis: der externe **Chat**-Client + `USE_EXTERNAL_CHAT_API` wurden am selben Tag entfernt, was den latenten Chat-Reihenfolge-Befund erledigt.)*
 
 ---
 
@@ -547,6 +552,27 @@ Hartkodierte Mock-Karten (`search-results.html:269-471`) sind vor `DOMContentLoa
 | `advanced-search.html` | 1 | `label[for]` zeigt auf ein verstecktes/fehlendes Control |
 
 Sauber (0 Fehler): `login`, `profile`, `chat`, `job-random`, `homepage`, `jobs`, `job-detail` (die letzten drei mit einer kleinen Warnung). `about`/`impressum` warnen nur (Lorem-ipsum vs. `lang="en"`). *Diese 6 Seiten fixen, um die Punkte von S3 zu holen.*
+
+---
+
+## 9d. Second-FE / S2-Bewertung — Branch `kat-second-frontend` (2026-06-12)
+
+Kats Admin-Dashboard (`frontend/admin/dashboard.html` + `dashboard.js` + `dashboard.css`), der S2-Kandidat. **Noch nicht auf `main` gemergt** — auf dem Branch bewertet. Backend-Verdrahtung auf dem Branch: `SecurityConfig` erlaubt `/admin/**`, `WebConfig` ergänzt einen `/admin/**`-Resource-Handler (`→ ../frontend/admin/`) und fixte den `design1`→`design3`-Default-Pfad.
+
+### S2-Anforderung: 🟠 noch nicht erfüllt
+S2 braucht **≥3 BE-Endpunkte**. Das Dashboard ruft **2** — `GET /jobs` (echt) und `GET /designers` (noch 501-Stub → Demo-Fallback). Die Aktions-Buttons (`editJob`/`deleteJob`/`editUser`/`banUser`) sind `alert()`-Stubs, keine Endpoint-Aufrufe. *Zum Bestehen: einen dritten echten Endpunkt verdrahten (z. B. Löschen → `DELETE /jobs/{id}`, oder `UserController.listDesigners` implementieren, damit `/designers` zählt).*
+
+### Gefundene Bugs (Branch-Stand)
+- **War komplett kaputt** — `dashboard.js` hatte eine fehlende schließende Klammer in `banUser` → die ganze Datei parste nicht, keine Tabelle lud. (Auf dem Branch gefixt.)
+- **`/designers` 501 falsch behandelt** — `loadUsersFromServer` warf bei `!response.ok` vor dem `not_implemented`-Fallback, die User-Tabelle zeigte „Fehler beim Laden der Benutzerdaten" (501 muss zuerst durchgelassen werden). (Auf dem Branch gefixt.)
+- **Stylesheet-Pfad** — `../design3/theme.css` löst zu `/design3/theme.css` auf → **401** (design3 wird am Web-Root ausgeliefert); muss `/theme.css` sein. Funktioniert nur, wenn die Seite über **Spring auf `:8080`** geladen wird — Öffnen über IntelliJ-Server / `file://` ergibt falsche-MIME-/404-Blocks. (Pfad-vs-Server-Root war die Ursache der „rejected"/MIME-Verwirrung.)
+- **Framing** — der Shell-Footer verlinkte das Dashboard mit `data-page="/admin/dashboard.html"`, was es **ins Content-iframe** lädt; mit `X-Frame-Options: SAMEORIGIN` ist das cross-origin blockiert (und 404t auf dem falschen Origin). Eine eigenständige Admin-Seite gehört als Top-Level-Link, nicht als `data-page`-iframe-Swap.
+- **Kein Auth-Gate** — die `/admin/**`-Statics sind öffentlich, die Seite zieht weder `auth.js` noch eine Rollen-Prüfung, also kann jeder das Dashboard öffnen. Es gibt noch keine `ADMIN`-Rolle; vorerst auf Authentifizierung gaten, auf die Rolle sobald sie existiert.
+- **CORS weiter verschärft (B17)** — der Branch hat `WebConfig.addCorsMappings` *erweitert* (`localhost:8080` ergänzt) statt es zu entfernen; diese zweite CORS-Quelle konkurriert weiter mit der zentralen `SecurityConfig`. Same-origin auf `:8080` heißt: das Dashboard braucht gar kein CORS.
+- Klein: inline `onclick="…('${id}')"` injiziert ungeescapte ids; `bi-exclame-triangle`-Icon-Typo; Stat-Karten nur teils verdrahtet (`4c9a1d4` „Job counter works"); leere/falsch benannte Platzhalter-Dateien (`JobsVerwalte.js` usw.).
+
+### Fazit
+Ein solides Gerüst, das jetzt auf `:8080` lädt, aber **S2 ist nicht erfüllt** (2 Endpunkte, einer ein Stub) und es trägt die CORS-/Auth-/Framing-Probleme oben. Nicht nach `main` mergen, bis es ≥3 echte Endpunkte erreicht und das doppelte `WebConfig`-CORS entfernt ist.
 
 ---
 

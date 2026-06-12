@@ -169,7 +169,13 @@ public class ApplicationController {
         }
 
         JobApplication updatedApplication =
-                jobApplicationRepository.updateStatus(id, newStatus);
+                jobApplicationRepository.updateStatusFrom(id, "PENDING", newStatus);
+
+        if (updatedApplication == null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                    "error", "application is no longer PENDING"
+            ));
+        }
 
         return ResponseEntity.ok(updatedApplication);
     }
@@ -207,7 +213,13 @@ public class ApplicationController {
         }
 
         JobApplication hiredApplication =
-                jobApplicationRepository.updateStatus(id, "HIRED");
+                jobApplicationRepository.updateStatusFrom(id, "ACCEPTED", "HIRED");
+
+        if (hiredApplication == null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                    "error", "application is no longer ACCEPTED"
+            ));
+        }
 
         // TODO: trigger contract creation via ContractService once contract/ is implemented.
 

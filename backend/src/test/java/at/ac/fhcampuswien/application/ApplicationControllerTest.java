@@ -247,7 +247,7 @@ class ApplicationControllerTest {
         app.status = "PENDING";
         JobApplication updated = new JobApplication();
         updated.status = "ACCEPTED";
-        when(repository.updateStatus("app-1", "ACCEPTED")).thenReturn(updated);
+        when(repository.updateStatusFrom("app-1", "PENDING", "ACCEPTED")).thenReturn(updated);
 
         ResponseEntity<?> response =
                 controller.updateStatus("app-1", Map.of("status", "ACCEPTED"), auth);
@@ -299,11 +299,11 @@ class ApplicationControllerTest {
         app.status = "ACCEPTED";
         JobApplication hired = new JobApplication();
         hired.status = "HIRED";
-        when(repository.updateStatus("app-1", "HIRED")).thenReturn(hired);
+        when(repository.updateStatusFrom("app-1", "ACCEPTED", "HIRED")).thenReturn(hired);
 
         ResponseEntity<?> response = controller.hire("app-1", auth);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        verify(repository).updateStatus("app-1", "HIRED");
+        verify(repository).updateStatusFrom("app-1", "ACCEPTED", "HIRED");
     }
 }

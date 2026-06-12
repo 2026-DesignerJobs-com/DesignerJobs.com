@@ -178,3 +178,5 @@ backend/data/projectdb.trace.db
 !organisation/planung/akzeptanzkriterien.md
 !organisation/planung/spec.md
 !organisation/planung/user-stories.md
+/backend/data/
+/.githooks/prepare-commit-msg

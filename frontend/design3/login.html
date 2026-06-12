@@ -112,12 +112,18 @@
 <script src="auth.js"></script>
 
 <script>
+    // Accept only a same-origin relative path as a post-login redirect target;
+    // reject javascript:/data: and off-site (//host) URLs — open-redirect/XSS (F2).
+    function safeNext(raw) {
+        if (!raw || raw.includes(":") || raw.startsWith("//")) return "homepage.html";
+        return raw;
+    }
+
     // If the user is already authenticated (token in localStorage, not expired),
     // skip the form and bounce straight to the homepage — closes US-04.
     if (window.Auth && Auth.isAuthenticated()) {
         const params = new URLSearchParams(window.location.search);
-        const next = params.get("next");
-        window.location.replace(next || "homepage.html");
+        window.location.replace(safeNext(params.get("next")));
     }
 
     // Surface a hint when we were redirected here because a token expired.
@@ -171,12 +177,12 @@
             message.className = "font-monospace small mb-3 text-success";
 
             const params = new URLSearchParams(window.location.search);
-            const next = params.get("next");
+            const next = safeNext(params.get("next"));
 
 // Tell the parent index.html that the login state changed.
             window.parent.postMessage({ type: "auth-changed" }, "*");
 
-            window.location.href = next || "homepage.html";
+            window.location.href = next;
         } catch (error) {
             console.error("Login error:", error);
             message.textContent = "Login request failed. Please check if the backend is running.";

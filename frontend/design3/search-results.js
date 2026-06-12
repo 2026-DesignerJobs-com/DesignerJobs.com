@@ -115,7 +115,7 @@ function mapBudgetToBackendValue(value) {
   const budgets = {
     "1": "small",
     "2": "medium",
-    "3": "large"
+    "3": "big"      // matches the value post-a-job.html stores (not "large")
   };
 
   return budgets[value] || value;

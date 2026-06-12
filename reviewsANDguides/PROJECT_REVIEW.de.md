@@ -54,11 +54,11 @@ Das ist das offizielle Bewertungsraster, abgeglichen mit dem **tatsächlichen Co
 | **M4** | Asynchrone Übertragung (AJAX) | ✅ | FE nutzt `fetch()` / `Auth.authFetch()` (21 Aufrufe) |
 | **M5** | BE liefert JSON oder XML | ✅ | JSON via `@RestController` |
 | **M6** | BE nutzt GET, POST, PUT **und DELETE**, jeweils auf ≥1 Endpunkt | ✅ | ~~DELETE nur 501-Stubs~~ **Behoben 2026-06-10:** funktionierendes `DELETE /jobs/{id}` mit Auth + Autorisierungs-Prüfung (Commit `42fb250`). PUT war bereits funktional (`PUT /applications/{id}/status`). |
-| **M7** | FE konsumiert GET, POST, PUT **und DELETE** von ≥1 Endpunkt | ⚠️ | **Halb geschlossen 2026-06-10:** FE setzt jetzt **DELETE** ab (Job-löschen-Button in `job-detail.html`, Commit `f3d26e9`). **Weiterhin 0 PUT-Aufrufe aus dem FE** — z. B. Job bearbeiten → `PUT /jobs/{id}` (braucht B3) oder Bewerbung annehmen → `PUT /applications/{id}/status` ergänzen. |
+| **M7** | FE konsumiert GET, POST, PUT **und DELETE** von ≥1 Endpunkt | ✅ | **Erfüllt 2026-06-12:** `profile-edit.html` setzt jetzt **PUT** und **DELETE** `/auth/me` ab (Commits `826d09c`/`20d3429`); der Job-löschen-Button deckte DELETE bereits ab. Das FE nutzt nun alle vier Verben. (Job-Bearbeiten/Löschen-UI weiterhin Nice-to-have — siehe F3.) |
 | **M8** | ≥1 externen REST-Service konsumieren | ✅ | `ExternalTimeApiClient` → `timeapi.io` (`GET /world-clock`) |
 | **M9** | Session-Verwaltung (Login/JWT) | ✅ | zustandsloses JWT — siehe §7 |
 
-> **Aktion für volle 21 Punkte:** nur noch **M7** offen — das FE muss ein **PUT** absetzen. Billigster Weg: ein Annehmen-/Ablehnen-Button auf der Bewerberliste, der das existierende `PUT /applications/{id}/status` aufruft. Der schönere Weg: `PUT /jobs/{id}` umsetzen (**B3**, der letzte rote Backend-Test) plus ein Job-bearbeiten-Formular.
+> **Aktion für volle 21 Punkte:** ~~nur noch **M7** offen~~ — **M7 erfüllt 2026-06-12** (`profile-edit.html` setzt `PUT`/`DELETE /auth/me` ab, Commits `826d09c`/`20d3429`). Alle MUST-Anforderungen sind nun erfüllt.
 
 ### SHOULD — 8 Punkte
 
@@ -79,7 +79,7 @@ Das ist das offizielle Bewertungsraster, abgeglichen mit dem **tatsächlichen Co
 
 ### Punkte-Zusammenfassung (ehrliche Selbsteinschätzung)
 
-- **MUST (21):** 8 von 9 voll erfüllt *(M6 am 2026-06-10 geschlossen)*; nur noch **M7 gefährdet** → sichere 21, sobald das FE ein `PUT` absetzt.
+- **MUST (21):** alle 9 erfüllt *(M6 am 2026-06-10 geschlossen, M7 am 2026-06-12 via Profil-`PUT`/`DELETE /auth/me`)* → volle 21.
 - **SHOULD (8):** **S1 erfüllt** (2 externe APIs); S4 wahrscheinlich; S3 scheitert weiterhin (6 Seiten); S2 braucht Arbeit.
 - **COULD (5):** noch keiner erfüllt (C1 ist eine API entfernt).
 
@@ -355,7 +355,7 @@ Aus `SecurityConfig.filterChain`, der Reihe nach:
 
 ## 9. Bugs & Korrektheitsprobleme (diese zuerst reviewen)
 
-Nach Schweregrad geordnet. Gefunden durch zeilenweises Lesen jeder Backend-Quelldatei (Controller, Services, Repositories) und Verfolgen der Aufrufstellen gegen den tatsächlichen Code (mehrere `xhigh`-Review-Durchgänge — Backend, Frontend und Test-Harness). **Das sind die konkreten Dinge, die in den 6 Tagen zu beheben sind.** Nummerierung: **B1–B13** erster Durchgang, **B14–B21** der tiefe Backend-Review (§9), **B22** neu 2026-06-11, Harness **H1–H5** in §9b, Frontend **F1–F6** in §9c. Status-Markierungen: ✅ behoben · 🟠/🟡 teilweise behoben oder herabgestuft · unmarkiert = weiterhin offen.
+Nach Schweregrad geordnet. Gefunden durch zeilenweises Lesen jeder Backend-Quelldatei (Controller, Services, Repositories) und Verfolgen der Aufrufstellen gegen den tatsächlichen Code (mehrere `xhigh`-Review-Durchgänge — Backend, Frontend und Test-Harness). **Das sind die konkreten Dinge, die in den 6 Tagen zu beheben sind.** Nummerierung: **B1–B13** erster Durchgang, **B14–B21** der tiefe Backend-Review (§9), **B22** neu 2026-06-11, **B23–B24** neu 2026-06-12 (Profil-Commits), Harness **H1–H6** in §9b, Frontend **F1–F15** in §9c. Status-Markierungen: ✅ behoben · 🟠/🟡 teilweise behoben oder herabgestuft · unmarkiert = weiterhin offen.
 
 ### ✅ B1 — ~~Login ist case-sensitiv bei der E-Mail~~ — BEHOBEN 2026-06-11 (`219e278`)
 `login` normalisiert die E-Mail jetzt genau wie die Registrierung (`trim().toLowerCase()`) vor `findByEmail`. Regression-Test `KnownBugsTest.b1` ist grün.
@@ -422,6 +422,7 @@ Das aktive Frontend ist `design3/`. Klein, aber für Neulinge verwirrend. `front
 
 ### 🟠 B17 — Widersprüchliche CORS-Konfiguration
 `config/WebConfig.addCorsMappings` registriert eine **zweite** CORS-Policy (hartkodierte `localhost:63342`-Origins), die mit der einzigen `SecurityConfig.corsConfigurationSource` konkurriert, die das Design beabsichtigt (CORS sollte einmal, zentral konfiguriert werden). Das Verhalten weicht zwischen security-gefilterten API-Pfaden und MVC-/Handler-Pfaden ab. *Fix: `WebConfig.addCorsMappings` löschen; nur die `SecurityConfig`-Source behalten.*
+**2026-06-12 weiter verschärft:** Commit `826d09c` fügte `@CrossOrigin(origins="*", allowedHeaders="*", methods={GET,POST,PUT,DELETE})` direkt an `AuthController` hinzu (mit zurückgelassenem `// DAS HIER ERWEITERN`-Kommentar) — eine *dritte* CORS-Quelle, nun mit Wildcard-Origin, gegen die explizite CLAUDE.md-Regel „kein Per-Controller-`@CrossOrigin`". *Fix: die Annotation entfernen; auf `SecurityConfig` + `app.cors.allowed-origins` verlassen.*
 
 ### 🟡 B18 — `/world-clock` ist Alles-oder-nichts und sequenziell
 `WorldClockService` macht 4 blockierende externe Aufrufe nacheinander und lässt jeden einzelnen Fehler werfen, sodass eine langsame/fehlerhafte Stadt den ganzen Endpunkt scheitern lässt und die Latenz die Summe von 4 Round-Trips ist. *Fix: parallel abrufen und pro Stadt graceful degradieren.*
@@ -437,6 +438,12 @@ Das aktive Frontend ist `design3/`. Klein, aber für Neulinge verwirrend. `front
 
 ### ✅ B22 — ~~`DELETE /jobs/{id}` lässt **jeden Designer** **jeden Job** löschen~~ — BEHOBEN 2026-06-11
 Der Delete-Endpunkt (`42fb250`) autorisierte `isOwnerClient || isDesigner` — jeder eingeloggte Designer konnte jeden Job löschen. Genau wie vorgeschlagen behoben: der `isDesigner`-Zweig wurde entfernt, nur `job.clientId == auth.getName()` darf löschen (Javadoc aktualisiert, Nicht-Eigentümer-403 in `JobControllerTest` abgedeckt).
+
+### 🟠 B23 — `DELETE /auth/me` löscht den User hart und verwaist dessen Daten — neu 2026-06-12
+Das neue Self-Service-Delete (`AuthController.deleteProfile`, Commit `20d3429`) führt `DELETE FROM users WHERE id=?` ohne Aufräumen aus. Das Schema hat keine FK-Cascades, also referenzieren `jobs.client_id`, `applications.designer_id`, Conversations und Chat-Nachrichten weiter die nun fehlende id: Inserate bleiben mit verwaistem Eigentümer bestehen, und Gegenparteien können die Bewerbungen/Nachrichten des Ex-Users weiter lesen. *Fix: Soft-Delete (ein `deleted`-Flag) oder die abhängigen Datensätze in einer Transaktion mit-löschen.*
+
+### 🟡 B24 — `PUT /auth/me` bindet eine untypisierte Map ohne Validierung — neu 2026-06-12
+`AuthController.updateProfile` liest eine `Map<String,Object>` und macht ungeprüfte `(String)`/`(Number)`-Casts ohne Längen-/Wert-Prüfungen. Ein falscher JSON-Typ (numerischer `fullName`, String-`hourlyMin`) wirft `ClassCastException` → 500; ein zu langer `bio`/`portfolioUrl` über die neuen `VARCHAR`-Grenzen wirft H2 „value too long" → 500 (gleiche Klasse wie der lange-`fullName`-Sweep-Punkt). *Fix: ein typisiertes DTO binden und Typen + Längen validieren.* *(Kleinere Geschwister: `UserRepository.updateProfile(id,model)` ist toter Code; `AuthController.java`/`UserModel.java` enden ohne Newline; `data/projectdb.mv.db` churnt erneut im VCS.)*
 
 ---
 
@@ -477,26 +484,54 @@ In `AuthControllerTest` ist die Prüfung „Passwort gehasht, nicht roh" `assert
 
 `frontend/design3/` reviewt. Zuerst die gute Nachricht: XSS ist dort behandelt, wo es zählt — `jobs.html`, `job-detail.html`, `chat.html` escapen API-/Nutzerdaten mit `escapeHtml`; andere Seiten nutzen `textContent`/DOM-Aufbau.
 
-### 🔴 F1 — Navbar-Shell nutzt die falschen `localStorage`-Schlüssel
-`index.html` (die iframe-Shell, die Navbar + Footer rendert) liest `localStorage.getItem('token')` und entfernt beim Logout `'token'`/`'userId'`/`'role'` — aber die ganze App speichert die Session unter `designer_jobs_token`/`_userId`/`_role` (via `auth.js`). Die `auth-changed`-`postMessage`-Verdrahtung ist korrekt (Listener in `index.html:204`), aber `updateAuthNavigation` liest immer `null`, sodass:
-- nach dem Login die Navbar weiter **Login/Register** zeigt und **Profile/Logout** versteckt;
-- der Logout-Button nicht existierende Schlüssel entfernt und die echte Session intakt lässt (der Nutzer *wirkt* ausgeloggt, ist es aber nicht).
-*Fix: die `designer_jobs_*`-Schlüssel nutzen (oder besser `window.Auth` aufrufen).*
+### ✅ F1 — ~~Navbar-Shell nutzt die falschen `localStorage`-Schlüssel~~ — BEHOBEN (verifiziert 2026-06-12)
+`index.html:122` liest jetzt `localStorage.getItem('designer_jobs_token')` und der Logout (`147-149`) entfernt alle drei `designer_jobs_*`-Schlüssel, sodass Navbar-Auth-Status und Logout funktionieren. *(Ursprünglicher Bug: die Shell las `'token'`/`'userId'`/`'role'`, während `auth.js` die `designer_jobs_*`-Schlüssel schreibt — die Navbar aktualisierte sich nie und der Logout ließ die echte Session intakt.)*
 
 ### 🟠 F2 — Open Redirect / `javascript:`-XSS über den Login-`next`-Parameter
 `login.html:179` macht `window.location.href = next || "homepage.html"` mit `next` unvalidiert aus dem Query-String. `login.html?next=https://evil.com` leitet nach dem Login auf eine fremde Seite um; `login.html?next=javascript:…` führt Skript im App-Origin aus (und kann das localStorage-Token lesen). *Fix: nur einen relativen Pfad akzeptieren — Werte ablehnen, die `:` enthalten oder mit `//` beginnen.*
 
-### 🟠 F3 — FE setzt noch kein PUT ab (M7 halb erfüllt; CRUD halb gebaut)
-Das FE setzt inzwischen **DELETE** ab (Job-löschen-Button in `job-detail.html`, Commit `f3d26e9`), aber weiterhin **kein PUT**. Damit ist **M7** nur halb geschlossen: GET/POST/DELETE werden konsumiert, aber der Pflichtpunkt verlangt auch einen FE-Aufruf mit PUT. *Fix: einen Annehmen-/Ablehnen-Button ergänzen, der `PUT /applications/{id}/status` nutzt, oder nach B3 ein Job-bearbeiten-Formular mit `PUT /jobs/{id}` bauen.*
+### 🟠 F3 — FE-PUT/DELETE — Profil erledigt, Job-CRUD fehlt noch (M7 jetzt erfüllt) — aktualisiert 2026-06-12
+`profile-edit.html` setzt jetzt `PUT /auth/me` (Speichern) und `DELETE /auth/me` (Löschen) ab — Commits `826d09c`/`20d3429` —, sodass das FE GET+POST+PUT+DELETE nutzt und **M7 erfüllt ist**. Verbleibende Lücke: es gibt weiterhin keine UI, um einen **Job** zu bearbeiten (PUT) oder zu löschen (DELETE) (`PUT`/`DELETE /jobs/{id}` existieren seit B3 serverseitig, werden vom FE aber nicht genutzt). *Fix: Job-Bearbeiten/Löschen-Aktionen ergänzen, verdrahtet mit `PUT`/`DELETE /jobs/{id}`. (Durch die Profil-Verdrahtung neu eingeführte Probleme: siehe F13 und §9 B23/B24.)*
 
 ### 🟡 F4 — World-Clock rendert externe Daten ungeescapet
 `homepage.html:168` und `login.html:223` interpolieren `entry.city`/`entry.time` direkt in `innerHTML`. Geringes Risiko (serverseitig fixe Stadt, vertrauenswürdige Quelle), aber es ist die einzige netzwerkgespeiste `innerHTML`-Senke ohne Escaping. *Fix: zur Konsistenz `textContent`/`escapeHtml` nutzen.*
 
-### 🟡 F5 — Einige Seiten umgehen `Auth.authFetch`
-`jobs.html:224`, `job-detail.html:250` lesen das Token manuell und rufen rohes `fetch`, sodass ihnen die zentrale 401-/Ablauf- → Login-Weiterleitung von `Auth.authFetch` entgeht. Inkonsistentes Session-Handling + duplizierte Logik. *Fix: geschützte Aufrufe über `Auth.authFetch` leiten.*
+### 🟡 F5 — Einige Seiten umgehen `Auth.authFetch` — erweitert 2026-06-12
+`jobs.html:224`, `job-detail.html:259+` lesen das Token manuell und rufen rohes `fetch`, sodass ihnen die zentrale 401-/Ablauf- → Login-Weiterleitung von `Auth.authFetch` entgeht. **Das neue `profile-edit.html` macht dasselbe an 3 Stellen** (Laden/Speichern/Löschen), mit einem Kommentar, der das Umgehen von `Auth.authFetch` einräumt — fehlt das Token, wird `Bearer null` gesendet. Inkonsistentes Session-Handling + duplizierte Logik. *Fix: geschützte Aufrufe über `Auth.authFetch` leiten.*
 
 ### ⚪ F6 — JWT im `localStorage` gespeichert (XSS-exponiert)
 Jedes Skript im Origin kann `designer_jobs_token` lesen; in Kombination mit F2 ist es direkt ausnutzbar. Für ein Studienprojekt akzeptabel, aber erwähnenswert; httpOnly-Cookies würden es härten. (Architektonisch bereits in §7.7 angemerkt.)
+
+### Neue Frontend-Befunde (ergänzt 2026-06-12 aus dem geplanten Frontend-Review + den Profil-Commits)
+
+> Der CODE_REVIEW-Bericht vom 2026-06-12 nutzt eigene F1–F16-Label; diese kanonischen IDs setzen ab F6 fort. Zuordnung je Eintrag angemerkt.
+
+### 🔴 F7 — Such-Filterwerte passen nie zu den gespeicherten Job-Werten (Bericht F4)
+Drei Mismatches unter dem `LOWER(x)=LOWER(?)`-Abgleich des Backends: Budget `"3"→"large"` (`search-results.js:118`) vs gespeichert `"big"` (`post-a-job.html`); `advanced-search.html` sendet `"onsite"` vs gespeichert `"on site"`; Disziplin-Codes `"web"`/`"ux"` vs Kategorien `"Web Design"`/`"UI/UX Design"`. Jeder dieser drei Filter liefert **„No Results Found"** für existierende Jobs. *Fix: Optionswerte an das angleichen, was `post-a-job.html` speichert (oder serverseitig normalisieren).*
+
+### 🔴 F8 — Shell-`message`-Listener ohne `event.origin`-Prüfung (Bericht F14)
+`index.html:203` verarbeitet `{type:"auth-changed"}` von **jedem** Origin und ruft, wenn `event.data.page` gesetzt ist, `navigate(page)` auf, das `frame.src` setzt. Kombiniert mit F4 (ungeescapetes World-Clock-`innerHTML`) kann ein injizierter Städtename `postMessage({type:"auth-changed", page:"https://evil/"})` an die Shell senden und das iframe auf eine Angreifer-URL zeigen, während die Adresszeile weiter `localhost` anzeigt. *Fix: `if (event.origin !== window.location.origin) return;` am Anfang des Listeners.*
+
+### 🟡 F9 — `index.html`-pushState-Hash wird beim Laden nie wiederhergestellt (Bericht F8)
+`navigate()` macht `history.pushState({page}, '', '#'+page)` (`index.html:157`), aber nichts liest `location.hash` beim Laden, sodass Refresh/Deep-Link immer die Standard-Homepage zeigt. *Fix: beim Laden das iframe-`src` aus `location.hash` wiederherstellen.*
+
+### 🟡 F10 — Chat paginiert nie; nur die ältesten 50 werden gerendert (Bericht F9; FE-Hälfte von B9)
+`chat.html:498` `loadMessages` holt `/conversations/{id}/messages` ohne `?page=`; das Backend liefert die ältesten 50 ASC, sodass in langen Threads die neuesten Nachrichten unerreichbar sind. *Fix: paginieren oder Scroll-to-Load (gehört zu Backend B9).*
+
+### 🟡 F11 — `register.html` postet nach Auto-Login kein `auth-changed` (Bericht F10)
+Nach Register + Auto-Login navigiert `register.html:171` ohne `window.parent.postMessage({type:"auth-changed"},"*")`, sodass die Shell-Navbar bis zum manuellen Refresh auf Login/Register bleibt (`login.html` macht es korrekt). *Fix: `auth-changed` vor dem Navigieren posten.*
+
+### 🟡 F12 — `loadCities` lässt das Stadt-`<select>` dauerhaft deaktiviert (Bericht F11)
+`profile-edit.html` setzt `citySelect.disabled = true` vor dem `!country`-Early-Return und vor dem catch-Block; keiner aktiviert es wieder. Wird das Land geleert (oder schlägt der Cities-API-Call fehl), bleibt das Select deaktiviert. *Fix: auf Early-Return/catch wieder aktivieren.*
+
+### 🟠 F13 — Delete Profile hinterlässt veraltete Identität + benachrichtigt die Shell nicht (Bericht F13)
+Bei erfolgreichem `DELETE /auth/me` entfernt `profile-edit.html:350` nur `designer_jobs_token`; `designer_jobs_userId`/`_role` bleiben und es wird kein `auth-changed` gepostet, sodass `Auth.getUserId()/getRole()` für laufende Callbacks noch das gelöschte Konto zurückgeben und die Navbar bis zum vollständigen Reload nachhinkt. *Fix: `Auth.clearSession()` + `auth-changed` posten vor dem Navigieren.*
+
+### 🟠 F14 — `search-results`-Sidebar-Filter sind tot; Multi-Disziplin abgeschnitten (Bericht F15)
+Die Sidebar-Filterkacheln haben kein `name`/Formular/Handler (Klicken bewirkt nichts), und `search-results.js:11` nutzt `pageParams.get("discipline")`, sodass `?discipline=web&discipline=ux` nur den ersten Wert behält. *Fix: die Kacheln verdrahten; `URLSearchParams.getAll()` nutzen.*
+
+### 🟠 F15 — `search-results.html` liefert 7 statische Platzhalter-Karten mit Links auf `job-random.html` (Bericht F16)
+Hartkodierte Mock-Karten (`search-results.html:269-471`) sind vor `DOMContentLoaded` sichtbar — oder dauerhaft, falls `search-results.js` vor `resultsContainer.innerHTML=""` (`:31`) wirft — und ihre „View Job"-Buttons zeigen auf `job-random.html` statt auf echte Detailseiten. *Fix: die statischen Karten löschen; das JS rendert Ergebnisse + Leerzustand bereits.*
 
 ### S3 — W3C-Validierungsergebnisse (validator.w3.org/nu, alle 15 Seiten)
 
@@ -520,7 +555,7 @@ Sauber (0 Fehler): `login`, `profile`, `chat`, `job-random`, `homepage`, `jobs`,
 Die Reihenfolge wird **zuerst von Bewertungspunkten** getrieben (siehe ⭐-Anforderungs-Abschnitt), dann Sicherheit/Korrektheit, dann Politur. Punkte referenzieren sowohl Bug-IDs (§9) als auch Anforderungs-IDs (M/S/C).
 
 ### Stufe 0 — die geforderten 21 Punkte absichern (MUST-Lücken — zuerst erledigen)
-1. 🟠 ~~**B3 + M6 + M7**~~ → **BACKEND ERLEDIGT 2026-06-11:** `DELETE /jobs/{id}` + FE-Löschen-Button sind da (M6 ✅); `PUT /jobs/{id}` implementiert mit Eigentümer-Prüfung, der Body kann `clientId`/`createdAt` nicht setzen (B3 ✅); Delete-Autorisierung verschärft (B22 ✅). **Übrig: ein FE-PUT-Aufruf** (Job-bearbeiten-Formular, oder billiger: Annehmen-/Ablehnen-Button → `PUT /applications/{id}/status`), um die FE-Hälfte von M7 zu schließen.
+1. ✅ ~~**B3 + M6 + M7**~~ → **ERLEDIGT:** `DELETE /jobs/{id}` + FE-Löschen-Button (M6 ✅); `PUT /jobs/{id}` mit Eigentümer-Prüfung, der Body kann `clientId`/`createdAt` nicht setzen (B3 ✅); Delete-Autorisierung verschärft (B22 ✅); **M7 am 2026-06-12 geschlossen** — `profile-edit.html` setzt `PUT`/`DELETE /auth/me` ab. *(Optionaler Feinschliff: eine Job-Bearbeiten/Löschen-UI — siehe F3.)*
 2. **Verifizieren, dass M4/M5/M9 intakt bleiben** beim Editieren (AJAX, JSON, JWT) — sie sind heute erfüllt; nicht regredieren.
 
 ### Stufe 1 — Sicherheit & billig-aber-kaputte Korrektheit
@@ -545,7 +580,7 @@ Die Reihenfolge wird **zuerst von Bewertungspunkten** getrieben (siehe ⭐-Anfor
 15. **B6 — Vertragserzeugung beim Engagieren**; **B11 — globaler `@ControllerAdvice`**; **B9 — Nachrichten-Pagination neueste zuerst**; **B8 — Paket-READMEs synchronisieren**; minimale **moderation/**.
 
 ### Neu durch die tiefen Reviews aufgetaucht — in die obigen Stufen einordnen
-- **Stufe 0 (Pflichtpunkte):** **F1** die `index.html`-Navbar-localStorage-Schlüssel fixen (winzig, aber die gesamte Eingeloggt-/Logout-UX ist gerade kaputt); **F3/M7** die FE-PUT-Aktion ergänzen *(DELETE erledigt 2026-06-10)*.
+- **Stufe 0 (Pflichtpunkte):** ~~**F1** Navbar-localStorage-Schlüssel~~ ✅ behoben; ~~**F3/M7** FE-PUT-Aktion~~ ✅ erfüllt 2026-06-12 (Profil-`PUT`/`DELETE /auth/me`). Stufe 0 ist klar — aber die Profil-Verdrahtung hat **F8** (Shell-postMessage-Origin), **F13** und Backend-**B23/B24** hinzugefügt.
 - **Stufe 1 (Sicherheit):** **B14** Conversation-Spoofing-Prüfung in `ChatService` *(schließt auch den B7-Rest)*; ~~**B22** `DELETE /jobs/{id}`-Autorisierung verschärfen~~ ✅ erledigt 2026-06-11; **F2** den Login-`next`-Parameter validieren (Open Redirect / `javascript:`-XSS).
 - **Stufe 1–2 (Robustheit/Korrektheit):** **B15** HTTP-Timeouts zu `ExternalTimeApiClient` ergänzen; **B16** lexikografische Zeitstempel-Sortierung fixen; **B17** die doppelte CORS-Konfig in `WebConfig` löschen; **B19** den Hire-/Status-Übergang atomar machen; **B20** den `design1/`-Pfad-Default fixen.
 - **Stufe 2 (SHOULD-Punkte):** **S3** die 6 W3C-scheiternden Seiten fixen (meist verirrtes `</script>` + `autocomplete`/`aria`/`label`-Attribute — siehe §9c).

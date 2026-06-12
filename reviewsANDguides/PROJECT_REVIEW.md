@@ -54,11 +54,11 @@ This is the official rubric mapped against the **actual code today** (verified 2
 | **M4** | Asynchronous transfer (AJAX) | ✅ | FE uses `fetch()` / `Auth.authFetch()` (21 calls) |
 | **M5** | BE returns JSON or XML | ✅ | JSON via `@RestController` |
 | **M6** | BE uses GET, POST, PUT **and DELETE**, each on ≥1 endpoint | ✅ | ~~DELETE only 501 stubs~~ **Fixed 2026-06-10:** functional `DELETE /jobs/{id}` with auth + ownership check (commit `42fb250`). PUT was already functional (`PUT /applications/{id}/status`). |
-| **M7** | FE consumes GET, POST, PUT **and DELETE** from ≥1 endpoint | ⚠️ | **Half closed 2026-06-10:** FE now issues **DELETE** (delete-job button in `job-detail.html`, commit `f3d26e9`). **Still 0 PUT calls from the FE** — add e.g. edit job → `PUT /jobs/{id}` (needs B3) or accept application → `PUT /applications/{id}/status`. |
+| **M7** | FE consumes GET, POST, PUT **and DELETE** from ≥1 endpoint | ✅ | **Met 2026-06-12:** `profile-edit.html` now issues **PUT** and **DELETE** `/auth/me` (commits `826d09c`/`20d3429`); the delete-job button already covered DELETE. The FE now exercises all four verbs. (Job edit/delete UI still nice-to-have — see F3.) |
 | **M8** | Consume ≥1 external REST service | ✅ | `ExternalTimeApiClient` → `timeapi.io` (`GET /world-clock`) |
 | **M9** | Session management (Login/JWT) | ✅ | stateless JWT — see §7 |
 
-> **Action for full 21 points:** only **M7** remains — the FE must issue one **PUT**. Cheapest path: an accept/reject button on the applicant list calling the existing `PUT /applications/{id}/status`. The nicer path: implement `PUT /jobs/{id}` (**B3**, the last red backend test) plus an edit-job form.
+> **Action for full 21 points:** ~~only **M7** remains~~ — **M7 met 2026-06-12** (`profile-edit.html` issues `PUT`/`DELETE /auth/me`, commits `826d09c`/`20d3429`). All MUST requirements are now satisfied.
 
 ### SHOULD — 8 points
 
@@ -79,7 +79,7 @@ This is the official rubric mapped against the **actual code today** (verified 2
 
 ### Points summary (honest self-assessment)
 
-- **MUST (21):** 8 of 9 fully met *(M6 closed 2026-06-10)*; only **M7 at risk** → safe 21 once the FE issues one `PUT`.
+- **MUST (21):** all 9 met *(M6 closed 2026-06-10, M7 closed 2026-06-12 via profile `PUT`/`DELETE /auth/me`)* → full 21.
 - **SHOULD (8):** **S1 met** (2 external APIs); S4 likely; S3 still failing (6 pages); S2 needs work.
 - **COULD (5):** none met yet (C1 is one API away).
 
@@ -355,7 +355,7 @@ From `SecurityConfig.filterChain`, in order:
 
 ## 9. Bugs & correctness issues (review these first)
 
-Ordered by severity. Found by reading every backend source file (controllers, services, repositories) line-by-line and tracing call sites against the actual code (multiple `xhigh` review passes — backend, frontend, and test harness). **These are the concrete things to fix in the 6 days.** Numbering: **B1–B13** first pass, **B14–B21** the deep backend review (§9), **B22** new 2026-06-11, harness **H1–H5** in §9b, frontend **F1–F6** in §9c. Status markers: ✅ fixed · 🟠/🟡 partially fixed or downgraded · unmarked = still open.
+Ordered by severity. Found by reading every backend source file (controllers, services, repositories) line-by-line and tracing call sites against the actual code (multiple `xhigh` review passes — backend, frontend, and test harness). **These are the concrete things to fix in the 6 days.** Numbering: **B1–B13** first pass, **B14–B21** the deep backend review (§9), **B22** new 2026-06-11, **B23–B24** new 2026-06-12 (profile commits), harness **H1–H6** in §9b, frontend **F1–F15** in §9c. Status markers: ✅ fixed · 🟠/🟡 partially fixed or downgraded · unmarked = still open.
 
 ### ✅ B1 — ~~Login is case-sensitive on email~~ — FIXED 2026-06-11 (`219e278`)
 `login` now normalizes the email exactly like registration (`trim().toLowerCase()`) before `findByEmail`. Regression test `KnownBugsTest.b1` is green.
@@ -422,6 +422,7 @@ The live frontend is `design3/`. Minor, but confusing for newcomers. Trust `fron
 
 ### 🟠 B17 — Conflicting CORS configuration
 `config/WebConfig.addCorsMappings` registers a **second** CORS policy (hardcoded `localhost:63342` origins) competing with the single `SecurityConfig.corsConfigurationSource` the design intends (CORS should be configured once, centrally). Behavior diverges between security-filtered API paths and MVC/handler paths. *Fix: delete `WebConfig.addCorsMappings`; keep only the `SecurityConfig` source.*
+**Regressed wider 2026-06-12:** commit `826d09c` added `@CrossOrigin(origins="*", allowedHeaders="*", methods={GET,POST,PUT,DELETE})` directly on `AuthController` (with a leftover `// DAS HIER ERWEITERN` comment) — a *third* CORS source, now with a wildcard origin, against CLAUDE.md's explicit "no per-controller `@CrossOrigin`" rule. *Fix: remove the annotation; rely on `SecurityConfig` + `app.cors.allowed-origins`.*
 
 ### 🟡 B18 — `/world-clock` is all-or-nothing and sequential
 `WorldClockService` makes 4 blocking external calls in sequence and lets any single failure throw, so one slow/failing city fails the whole endpoint and latency is the sum of 4 round-trips. *Fix: fetch in parallel and degrade gracefully per city.*
@@ -437,6 +438,12 @@ The live frontend is `design3/`. Minor, but confusing for newcomers. Trust `fron
 
 ### ✅ B22 — ~~`DELETE /jobs/{id}` lets **any designer** delete **any job**~~ — FIXED 2026-06-11
 The delete endpoint (`42fb250`) authorized `isOwnerClient || isDesigner` — every logged-in designer could delete every job. Fixed exactly as proposed: the `isDesigner` branch was dropped, only `job.clientId == auth.getName()` may delete (Javadoc updated, non-owner 403 covered in `JobControllerTest`).
+
+### 🟠 B23 — `DELETE /auth/me` hard-deletes the user, orphaning owned data — new 2026-06-12
+The new self-service delete (`AuthController.deleteProfile`, commit `20d3429`) runs `DELETE FROM users WHERE id=?` with no cleanup. The schema has no FK cascades, so `jobs.client_id`, `applications.designer_id`, conversations and chat messages keep referencing the now-missing id: listings persist with a dangling owner, and counterparties can still read the ex-user's applications/messages. *Fix: soft-delete (a `deleted` flag) or cascade the dependents in one transaction.*
+
+### 🟡 B24 — `PUT /auth/me` binds an untyped map with no validation — new 2026-06-12
+`AuthController.updateProfile` reads a `Map<String,Object>` and does unchecked `(String)`/`(Number)` casts with no length/value checks. A wrong JSON type (numeric `fullName`, string `hourlyMin`) throws `ClassCastException` → 500; an over-long `bio`/`portfolioUrl` past the new `VARCHAR` caps throws H2 "value too long" → 500 (same class as the long-`fullName` register sweep item). *Fix: bind a typed DTO and validate types + lengths.* *(Minor siblings: `UserRepository.updateProfile(id,model)` is dead code; `AuthController.java`/`UserModel.java` end with no newline; `data/projectdb.mv.db` churns in VCS again.)*
 
 ---
 
@@ -477,26 +484,54 @@ In `AuthControllerTest`, the "password is hashed, not raw" check is `assertThat(
 
 Reviewed `frontend/design3/`. Good news first: XSS is handled where it matters — `jobs.html`, `job-detail.html`, `chat.html` escape API/user data with `escapeHtml`; other pages use `textContent`/DOM building.
 
-### 🔴 F1 — Navbar shell uses the wrong `localStorage` keys
-`index.html` (the iframe shell that renders navbar + footer) reads `localStorage.getItem('token')` and on logout removes `'token'`/`'userId'`/`'role'` — but the whole app stores the session under `designer_jobs_token`/`_userId`/`_role` (via `auth.js`). The `auth-changed` `postMessage` wiring is correct (listener at `index.html:204`), but `updateAuthNavigation` always reads `null`, so:
-- after login the navbar keeps showing **Login/Register** and hides **Profile/Logout**;
-- the Logout button removes non-existent keys, leaving the real session intact (user *looks* logged out but isn't).
-*Fix: use the `designer_jobs_*` keys (or better, call `window.Auth`).*
+### ✅ F1 — ~~Navbar shell uses the wrong `localStorage` keys~~ — FIXED (verified 2026-06-12)
+`index.html:122` now reads `localStorage.getItem('designer_jobs_token')` and logout (`147-149`) removes all three `designer_jobs_*` keys, so navbar auth state and Logout work. *(Original bug: the shell read `'token'`/`'userId'`/`'role'` while `auth.js` writes the `designer_jobs_*` keys, so the navbar never updated and Logout left the real session intact.)*
 
 ### 🟠 F2 — Open redirect / `javascript:` XSS via the login `next` param
 `login.html:179` does `window.location.href = next || "homepage.html"` with `next` taken unvalidated from the query string. `login.html?next=https://evil.com` redirects off-site after login; `login.html?next=javascript:…` executes script in the app origin (and can read the localStorage token). *Fix: accept only a relative path — reject values containing `:` or starting with `//`.*
 
-### 🟠 F3 — FE never issues PUT or DELETE (fails M7; CRUD half-built)
-Across all pages only `POST` + implicit `GET` are used (grep: 7 × `method:"POST"`). There is no UI to edit (PUT) or delete (DELETE) a job, nor to update a profile via PUT. This **fails required requirement M7** and is a real functional gap once the BE endpoints exist (B3). *Fix: add edit/delete actions wired to `PUT`/`DELETE /jobs/{id}` and `PUT /designers/{id}`.*
+### 🟠 F3 — FE PUT/DELETE — profile done, job CRUD still missing (M7 now met) — updated 2026-06-12
+`profile-edit.html` now issues `PUT /auth/me` (Save) and `DELETE /auth/me` (Delete) — commits `826d09c`/`20d3429` — so the FE exercises GET+POST+PUT+DELETE and **M7 is satisfied**. Remaining gap: there is still no UI to edit (PUT) or delete (DELETE) a **job** (`PUT`/`DELETE /jobs/{id}` exist server-side since B3 but are unused by the FE). *Fix: add job edit/delete actions wired to `PUT`/`DELETE /jobs/{id}`. (New issues introduced by the profile wiring: see F13 and §9 B23/B24.)*
 
 ### 🟡 F4 — World-clock renders external data unescaped
 `homepage.html:168` and `login.html:223` interpolate `entry.city`/`entry.time` straight into `innerHTML`. Low risk (server-fixed city, trusted upstream) but it's the lone network-fed `innerHTML` sink without escaping. *Fix: use `textContent`/`escapeHtml` for consistency.*
 
-### 🟡 F5 — Some pages bypass `Auth.authFetch`
-`jobs.html:224`, `job-detail.html:250` read the token manually and call raw `fetch`, so they miss the centralized 401/expiry → login redirect that `Auth.authFetch` provides. Inconsistent session handling + duplicated logic. *Fix: route protected calls through `Auth.authFetch`.*
+### 🟡 F5 — Some pages bypass `Auth.authFetch` — widened 2026-06-12
+`jobs.html:224`, `job-detail.html:259+` read the token manually and call raw `fetch`, so they miss the centralized 401/expiry → login redirect that `Auth.authFetch` provides. **The new `profile-edit.html` does the same at 3 sites** (load/save/delete), with a comment that admits dodging `Auth.authFetch` — so a missing token sends `Bearer null`. Inconsistent session handling + duplicated logic. *Fix: route protected calls through `Auth.authFetch`.*
 
 ### ⚪ F6 — JWT stored in `localStorage` (XSS-exposed)
 Any script on the origin can read `designer_jobs_token`; combined with F2 it's directly exploitable. Acceptable for a student project but worth noting; httpOnly cookies would harden it. (Already flagged architecturally in §7.7.)
+
+### New frontend findings (added 2026-06-12 from the scheduled frontend review + the profile commits)
+
+> The 2026-06-12 CODE_REVIEW report uses its own F1–F16 labels; these canonical IDs continue from F6. Mapping is noted per item.
+
+### 🔴 F7 — Search filter values never match stored job values (report F4)
+Three mismatches under the backend's `LOWER(x)=LOWER(?)` match: budget `"3"→"large"` (`search-results.js:118`) vs stored `"big"` (`post-a-job.html`); `advanced-search.html` sends `"onsite"` vs stored `"on site"`; discipline codes `"web"`/`"ux"` vs stored categories `"Web Design"`/`"UI/UX Design"`. Any of these three facets returns **"No Results Found"** for jobs that exist. *Fix: align the option values with what `post-a-job.html` stores (or normalize server-side).*
+
+### 🔴 F8 — Shell `message` listener has no `event.origin` check (report F14)
+`index.html:203` handles `{type:"auth-changed"}` from **any** origin and, when `event.data.page` is present, calls `navigate(page)` which sets `frame.src`. Compounded with F4 (unescaped world-clock `innerHTML`), an injected city name can `postMessage({type:"auth-changed", page:"https://evil/"})` to the shell and point the iframe at an attacker URL while the address bar still shows `localhost`. *Fix: `if (event.origin !== window.location.origin) return;` at the top of the listener.*
+
+### 🟡 F9 — `index.html` pushState hash never restored on load (report F8)
+`navigate()` does `history.pushState({page}, '', '#'+page)` (`index.html:157`) but nothing reads `location.hash` on load, so refresh/deep-link always shows the default homepage. *Fix: on load, restore the iframe `src` from `location.hash`.*
+
+### 🟡 F10 — Chat never paginates; only the oldest 50 render (report F9; FE half of B9)
+`chat.html:498` `loadMessages` fetches `/conversations/{id}/messages` with no `?page=`; the backend returns the oldest 50 ASC, so in a long thread the newest messages are unreachable. *Fix: page or scroll-to-load (pairs with backend B9).*
+
+### 🟡 F11 — `register.html` doesn't post `auth-changed` after auto-login (report F10)
+After register + auto-login, `register.html:171` navigates without `window.parent.postMessage({type:"auth-changed"},"*")`, so the shell navbar stays on Login/Register until a manual refresh (`login.html` does this correctly). *Fix: post `auth-changed` before navigating.*
+
+### 🟡 F12 — `loadCities` leaves the city `<select>` permanently disabled (report F11)
+`profile-edit.html` sets `citySelect.disabled = true` before the `!country` early-return and before the catch block; neither re-enables it. Clearing the country (or a failed cities API call) strands the select disabled. *Fix: re-enable on the early-return/catch paths.*
+
+### 🟠 F13 — Delete Profile leaves stale identity + doesn't notify the shell (report F13)
+On successful `DELETE /auth/me`, `profile-edit.html:350` removes only `designer_jobs_token`; `designer_jobs_userId`/`_role` persist and no `auth-changed` is posted, so `Auth.getUserId()/getRole()` still return the deleted account for in-flight callbacks and the navbar lags until full reload. *Fix: `Auth.clearSession()` + post `auth-changed` before navigating.*
+
+### 🟠 F14 — `search-results` sidebar filters are dead; multi-discipline truncated (report F15)
+The sidebar filter tiles have no `name`/form/handlers (clicking does nothing), and `search-results.js:11` uses `pageParams.get("discipline")`, so `?discipline=web&discipline=ux` keeps only the first value. *Fix: wire the tiles; use `URLSearchParams.getAll()`.*
+
+### 🟠 F15 — `search-results.html` ships 7 static placeholder cards linking to `job-random.html` (report F16)
+Hardcoded mock cards (`search-results.html:269-471`) are visible before `DOMContentLoaded` — or permanently if `search-results.js` throws before `resultsContainer.innerHTML=""` (`:31`) — and their "View Job" buttons point at `job-random.html`, not real detail pages. *Fix: delete the static cards; the JS already renders results + empty state.*
 
 ### S3 — W3C validation results (validator.w3.org/nu, all 15 pages)
 
@@ -520,7 +555,7 @@ Clean (0 errors): `login`, `profile`, `chat`, `job-random`, `homepage`, `jobs`, 
 Ordering is driven by **grading points first** (see the ⭐ requirements section), then security/correctness, then polish. Items reference both bug IDs (§9) and requirement IDs (M/S/C).
 
 ### Tier 0 — secure the required 21 points (MUST gaps — do these first)
-1. 🟠 ~~**B3 + M6 + M7**~~ → **BACKEND DONE 2026-06-11:** `DELETE /jobs/{id}` + FE delete button shipped (M6 ✅); `PUT /jobs/{id}` implemented with ownership check, body cannot set `clientId`/`createdAt` (B3 ✅); delete authz tightened (B22 ✅). **Remaining: one FE PUT call** (edit-job form, or cheaper: accept/reject button → `PUT /applications/{id}/status`) to close M7's FE half.
+1. ✅ ~~**B3 + M6 + M7**~~ → **DONE:** `DELETE /jobs/{id}` + FE delete button (M6 ✅); `PUT /jobs/{id}` with ownership check, body cannot set `clientId`/`createdAt` (B3 ✅); delete authz tightened (B22 ✅); **M7 closed 2026-06-12** — `profile-edit.html` issues `PUT`/`DELETE /auth/me`. *(Optional polish: a job edit/delete UI — see F3.)*
 2. **Verify M4/M5/M9 stay intact** while editing (AJAX, JSON, JWT) — they're met today; don't regress them.
 
 ### Tier 1 — security & cheap-but-broken correctness
@@ -545,7 +580,7 @@ Ordering is driven by **grading points first** (see the ⭐ requirements section
 15. **B6 — contract generation on hire**; **B11 — global `@ControllerAdvice`**; **B9 — newest-first message pagination**; **B8 — sync package READMEs**; minimal **moderation/**.
 
 ### Newly surfaced by the deep reviews — slot into the tiers above
-- **Tier 0 (required points):** **F1** fix the `index.html` navbar localStorage keys (tiny, but the whole logged-in/logout UX is broken right now); **F3/M7** add the FE PUT action *(DELETE done 2026-06-10)*.
+- **Tier 0 (required points):** ~~**F1** navbar localStorage keys~~ ✅ fixed; ~~**F3/M7** FE PUT action~~ ✅ met 2026-06-12 (profile `PUT`/`DELETE /auth/me`). Tier 0 is clear — but the profile wiring added **F8** (shell postMessage origin), **F13**, and backend **B23/B24** to address.
 - **Tier 1 (security):** **B14** conversation-spoofing check in `ChatService` *(also closes the B7 leftover)*; ~~**B22** tighten `DELETE /jobs/{id}` authz~~ ✅ done 2026-06-11; **F2** validate the login `next` param (open-redirect / `javascript:` XSS).
 - **Tier 1–2 (robustness/correctness):** **B15** add HTTP timeouts to `ExternalTimeApiClient`; **B16** fix lexicographic timestamp ordering; **B17** delete the duplicate CORS config in `WebConfig`; **B19** make the hire/status transition atomic; **B20** fix the `design1/` path default.
 - **Tier 2 (SHOULD points):** **S3** fix the 6 W3C-failing pages (mostly stray `</script>` + `autocomplete`/`aria`/`label` attributes — see §9c).

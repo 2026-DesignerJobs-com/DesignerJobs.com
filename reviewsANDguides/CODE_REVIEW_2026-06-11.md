@@ -77,3 +77,49 @@ Top remaining (re-ranked): finding 5 (POST /jobs role check + client-supplied `i
 
 - 3 finder/verifier agents died on API usage-policy false positives (security-flavored wording); their clusters were re-verified manually from source — all key claims held.
 - PROJECT_REVIEW.md in the repo already tracks some of these as B14/B19/B22 — reconcile before filing duplicates.
+
+---
+
+## Frontend review 2026-06-12 (scheduled)
+
+Scope: `frontend/design3/` (19 files) plus the two profile commits that landed on `origin/main` overnight — `826d09c` + `20d3429` (Lika, profile update/save/delete). The scheduled cloud routine `trig_01WAYMvgMhAPoFkRFQTs1ofc` fired at 2026-06-12T01:37Z; it produced the review below but could **not** open a branch/PR (the cloud checkout had no push path to the private repo, `persist_session:false` left no transcript) — the report was retrieved and pasted in manually. Re-verified inline against `origin/main` (local main has since been fast-forwarded to `20d3429`).
+
+**The two profile commits — beneficial, not an overwrite.** Clean fast-forward over `91223ce`; nothing from the 2026-06-11 work was touched (changed files: `auth/AuthController.java`, `auth/UserModel.java`, `auth/UserRepository.java`, `profile-edit.html`, committed H2 file). They add `PUT`/`DELETE /auth/me` + ~15 profile columns with non-destructive `ALTER TABLE … ADD COLUMN IF NOT EXISTS` migrations, and rewire `profile-edit.html` Save/Delete from stubs to real calls. Repository SQL stays parameterised; `PUT /auth/me` cannot change `email`/`role`/`createdAt`. This closes **F1** (already done earlier), **F3/F6**, and the profile half of **M7**. New problems they introduce are F13/F14/F15 + the backend addendum below.
+
+### Known frontend findings — status (verified file:line, canonical PROJECT_REVIEW F-IDs in brackets)
+
+| Report ID | Finding | Status |
+|---|---|---|
+| F1 [F1] | shell reads wrong `localStorage` keys | ✅ FIXED — `index.html:122` reads `designer_jobs_token`; logout clears all three `designer_jobs_*` (`147-149`). |
+| F2/F12 [F2] | login `next` → open-redirect / `javascript:` (two sinks: `:120`, `:179`) | ❌ OPEN — both unvalidated; patch together. |
+| F3/F6 [F3] | FE issues no PUT/DELETE (M7) | ✅ FIXED for profile (`PUT`/`DELETE /auth/me`); 🟠 **job** edit/delete UI still missing. |
+| F4 [→F7] | search filter value mismatches (budget `3`→`large` vs stored `big`; `onsite` vs `on site`; `web`/`ux` vs `Web Design`/`UI/UX Design`) | ❌ OPEN — `search-results.js:118`, `advanced-search.html`, `post-a-job.html`. |
+| F5 [F4] | world-clock unescaped `innerHTML` | ❌ OPEN — `homepage.html:165`, `login.html:222` (low risk; third-party data; compounds with F14). |
+| F7 [F5] | `jobs.html`/`job-detail.html` bypass `Auth.authFetch` | ❌ OPEN + WIDENED — also new `profile-edit.html` raw `fetch`+manual Bearer at 3 sites (load/save/delete). |
+| F8 [→F9] | index pushState `#page` never restored on load | ❌ OPEN — `index.html:157` navigate(); no `location.hash` read. |
+| F9 [→F10] | chat shows only oldest 50 | ❌ OPEN — `chat.html:498` no `?page=`. |
+| F10 [→F11] | register no `auth-changed` postMessage | ❌ OPEN — `register.html:171`. |
+| F11 [→F12] | `loadCities` leaves city `<select>` disabled | ❌ OPEN — `profile-edit.html` early-return + catch. |
+
+### New findings, 2026-06-12 (canonical PROJECT_REVIEW IDs in brackets)
+
+```json
+[
+  {"report_id": "F14", "canonical": "F8", "severity": "high", "file": "frontend/design3/index.html", "line": 203, "summary": "Shell `message` listener has no event.origin check and navigates to event.data.page (sets frame.src).", "failure_scenario": "Compounds with F5 world-clock innerHTML: an injected city name posts {type:'auth-changed', page:'https://evil/'} to the shell; navigate() sets the iframe to the attacker URL while the address bar still shows localhost. Add `if (event.origin !== window.location.origin) return;`."},
+  {"report_id": "F13", "canonical": "F13", "severity": "medium", "file": "frontend/design3/profile-edit.html", "line": 350, "summary": "Successful Delete Profile removes only designer_jobs_token; designer_jobs_userId/_role stay in localStorage and no auth-changed is posted to the shell.", "failure_scenario": "Auth.getUserId()/getRole() keep returning the deleted account for in-flight callbacks; navbar lags until full reload. Use Auth.clearSession() + postMessage auth-changed before navigating."},
+  {"report_id": "F15", "canonical": "F14", "severity": "medium", "file": "frontend/design3/search-results.html", "line": 160, "summary": "Sidebar filter tiles have no name/form/handlers (dead), and search-results.js:11 uses pageParams.get('discipline') so multi-discipline ?discipline=web&discipline=ux silently keeps only the first.", "failure_scenario": "Clicking sidebar facets does nothing; multi-select advanced searches drop all but one discipline. Wire handlers; use URLSearchParams.getAll()."},
+  {"report_id": "F16", "canonical": "F15", "severity": "medium", "file": "frontend/design3/search-results.html", "line": 269, "summary": "Seven hardcoded placeholder job cards whose 'View Job' links point to job-random.html; only cleared if search-results.js reaches line 31.", "failure_scenario": "Visible before DOMContentLoaded, or permanently if the JS throws before resultsContainer.innerHTML=''; users click fake cards into job-random.html. Remove the static cards."}
+]
+```
+
+### Backend addendum — regressions from the two profile commits (FE-only review missed these)
+
+```json
+[
+  {"canonical": "B17 (extend) / B23", "severity": "high", "file": "backend/src/main/java/at/ac/fhcampuswien/auth/AuthController.java", "line": 16, "summary": "@CrossOrigin(origins=\"*\", allowedHeaders=\"*\", methods={GET,POST,PUT,DELETE}) re-added on AuthController (commit 826d09c) with a leftover '// DAS HIER ERWEITERN' comment.", "failure_scenario": "Violates CLAUDE.md's centralized-CORS rule (per-controller @CrossOrigin was deliberately removed; CORS belongs only in SecurityConfig.corsConfigurationSource); wildcard origin diverges from the app.cors.allowed-origins allowlist. Same root as B17. Remove the annotation."},
+  {"canonical": "B23", "severity": "medium", "file": "backend/src/main/java/at/ac/fhcampuswien/auth/AuthController.java", "line": 231, "summary": "DELETE /auth/me hard-deletes the user with no cleanup of owned data.", "failure_scenario": "jobs.client_id / applications.designer_id / conversations / messages still reference the deleted id (no FK cascade in the raw-JDBC schema) -> orphaned listings, counterparties still read the ex-user's data. Soft-delete or cascade."},
+  {"canonical": "B24", "severity": "medium", "file": "backend/src/main/java/at/ac/fhcampuswien/auth/AuthController.java", "line": 150, "summary": "PUT /auth/me binds an untyped Map<String,Object> with unchecked (String)/(Number) casts and no length/value validation.", "failure_scenario": "Wrong JSON type (numeric fullName, string hourlyMin) -> ClassCastException -> 500; over-long bio/url past the new VARCHAR caps -> H2 'value too long' -> 500. Bind a typed DTO; validate. Also: UserRepository.updateProfile(id,model) is dead code; AuthController/UserModel lack a trailing newline; data/projectdb.mv.db churns in VCS again."}
+]
+```
+
+> Numbering note: this dated report keeps the scheduled routine's own F1–F16 labels (self-contained); the canonical registry is PROJECT_REVIEW.md §9c, where statuses are updated and new findings continue from F6 as **F7–F15** (mapping in the brackets above). Backend items are filed under §9 (B17 extended, B23–B24).

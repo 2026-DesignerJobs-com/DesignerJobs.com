@@ -106,6 +106,10 @@ public class JobApplicationRepository {
 
             return application;
 
+        } catch (java.sql.SQLIntegrityConstraintViolationException e) {
+            // Race: a concurrent apply for the same (job, designer) won the UNIQUE
+            // constraint — surface a clean duplicate signal instead of a 500.
+            throw new DuplicateApplicationException();
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create job application", e);
         }

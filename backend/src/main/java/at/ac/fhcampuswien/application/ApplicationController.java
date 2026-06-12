@@ -57,10 +57,18 @@ public class ApplicationController {
             ));
         }
 
-        JobApplication savedApplication =
-                jobApplicationRepository.create(jobId, designerId, application.coverLetter);
+        try {
+            JobApplication savedApplication =
+                    jobApplicationRepository.create(jobId, designerId, application.coverLetter);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedApplication);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedApplication);
+        } catch (DuplicateApplicationException e) {
+            // The up-front check above races with concurrent applies; the UNIQUE
+            // constraint is the backstop, mapped to 409 here.
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                    "error", "you have already applied to this job"
+            ));
+        }
     }
 
     // GET  /jobs/{jobId}/applications       → client lists received applications

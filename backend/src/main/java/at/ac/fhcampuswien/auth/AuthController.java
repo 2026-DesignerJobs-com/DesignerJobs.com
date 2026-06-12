@@ -174,9 +174,9 @@ public class AuthController {
         if (body.linkedin != null) user.linkedin = body.linkedin.trim();
         if (body.instagram != null) user.instagram = body.instagram.trim();
 
-        user.hourlyMin = body.hourlyMin;
-        user.hourlyMax = body.hourlyMax;
-        user.projectMin = body.projectMin;
+        if (body.hourlyMin != null) user.hourlyMin = body.hourlyMin;
+        if (body.hourlyMax != null) user.hourlyMax = body.hourlyMax;
+        if (body.projectMin != null) user.projectMin = body.projectMin;
 
         userRepository.update(user);
 

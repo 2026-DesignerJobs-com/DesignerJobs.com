@@ -14,7 +14,8 @@ public class ProfileUpdateRequest {
     public String linkedin;
     public String instagram;
 
-    public int hourlyMin;
-    public int hourlyMax;
-    public int projectMin;
+    // Boxed so an omitted field is null (not 0) and a partial update doesn't clobber the stored rate.
+    public Integer hourlyMin;
+    public Integer hourlyMax;
+    public Integer projectMin;
 }

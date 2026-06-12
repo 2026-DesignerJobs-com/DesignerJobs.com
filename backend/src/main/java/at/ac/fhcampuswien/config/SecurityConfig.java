@@ -61,7 +61,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/jobs", "/jobs/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/designers/**").permitAll()
                         .requestMatchers("/", "/index.html", "/*.html", "/*.css", "/*.js",
-                                "/images/**", "/css/**", "/js/**", "/assets/**", "/favicon.ico").permitAll()
+                                "/images/**", "/css/**", "/js/**", "/assets/**", "/favicon.ico", "/admin/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

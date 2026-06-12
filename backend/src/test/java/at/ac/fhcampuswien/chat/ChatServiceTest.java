@@ -1,6 +1,5 @@
 package at.ac.fhcampuswien.chat;
 
-import at.ac.fhcampuswien.external.ExternalChatApiClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

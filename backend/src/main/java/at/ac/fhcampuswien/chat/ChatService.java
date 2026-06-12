@@ -1,6 +1,5 @@
 package at.ac.fhcampuswien.chat;
 
-import at.ac.fhcampuswien.external.ExternalChatApiClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;

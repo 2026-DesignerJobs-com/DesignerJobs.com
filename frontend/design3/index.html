@@ -201,6 +201,9 @@
     });
 
     window.addEventListener("message", event => {
+      // Only trust messages from our own origin — otherwise any framed/foreign page
+      // could drive navigate() to an attacker URL (F8).
+      if (event.origin !== window.location.origin) return;
       if (event.data && event.data.type === "auth-changed") {
         updateAuthNavigation();
 

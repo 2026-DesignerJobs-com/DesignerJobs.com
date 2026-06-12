@@ -30,6 +30,12 @@ public class WorldClockService {
     private WorldClockResponse loadCityTime(String city, String timezone) {
         JsonNode apiResponse = externalTimeApiClient.getCurrentTimeForTimezone(timezone);
 
+        // The client returns null when the upstream API fails or times out — degrade
+        // per city instead of NPE-ing the whole /world-clock response.
+        if (apiResponse == null) {
+            return new WorldClockResponse(city, timezone, "", "", "");
+        }
+
         String date = apiResponse.path("date").asText("");
         String time = apiResponse.path("time").asText("");
         String dayOfWeek = apiResponse.path("dayOfWeek").asText("");

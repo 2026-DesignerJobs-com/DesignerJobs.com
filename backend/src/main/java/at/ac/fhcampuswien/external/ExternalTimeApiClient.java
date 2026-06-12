@@ -11,17 +11,22 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 @Component
 public class ExternalTimeApiClient {
 
     private static final String BASE_URL = "https://www.timeapi.io/api/Time/current/zone?timeZone=";
+    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(10);
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
     public ExternalTimeApiClient(ObjectMapper objectMapper) {
-        this.httpClient = HttpClient.newHttpClient();
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(CONNECT_TIMEOUT)
+                .build();
         this.objectMapper = objectMapper;
     }
 
@@ -32,6 +37,7 @@ public class ExternalTimeApiClient {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(uri)
+                    .timeout(REQUEST_TIMEOUT)
                     .GET()
                     .build();
 

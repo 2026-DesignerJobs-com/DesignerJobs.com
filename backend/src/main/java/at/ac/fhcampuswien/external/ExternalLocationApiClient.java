@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,12 +18,15 @@ import java.util.List;
 public class ExternalLocationApiClient {
 
     private static final String CITIES_API_URL = "https://countriesnow.space/api/v0.1/countries/cities";
+    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(10);
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
     public ExternalLocationApiClient() {
         this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(CONNECT_TIMEOUT)
                 .followRedirects(HttpClient.Redirect.ALWAYS)
                 .build();
         this.objectMapper = new ObjectMapper();
@@ -38,6 +42,7 @@ public class ExternalLocationApiClient {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(CITIES_API_URL))
+                    .timeout(REQUEST_TIMEOUT)
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))

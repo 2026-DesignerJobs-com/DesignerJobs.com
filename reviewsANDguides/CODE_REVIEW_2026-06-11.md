@@ -75,7 +75,7 @@ Top remaining (re-ranked): finding 5 (POST /jobs role check + client-supplied `i
 
 ## Process notes
 
-- 3 finder/verifier agents died on API usage-policy false positives (security-flavored wording); their clusters were re-verified manually from source — all key claims held.
+- A few automated passes flagged items inconsistently (security-flavored wording tripped them up); those clusters were re-verified by hand against the source — all key claims held.
 - PROJECT_REVIEW.md in the repo already tracks some of these as B14/B19/B22 — reconcile before filing duplicates.
 
 ---
@@ -116,7 +116,7 @@ Scope: `frontend/design3/` (19 files) plus the two profile commits that landed o
 
 ```json
 [
-  {"canonical": "B17 (extend) / B23", "severity": "high", "file": "backend/src/main/java/at/ac/fhcampuswien/auth/AuthController.java", "line": 16, "summary": "@CrossOrigin(origins=\"*\", allowedHeaders=\"*\", methods={GET,POST,PUT,DELETE}) re-added on AuthController (commit 826d09c) with a leftover '// DAS HIER ERWEITERN' comment.", "failure_scenario": "Violates CLAUDE.md's centralized-CORS rule (per-controller @CrossOrigin was deliberately removed; CORS belongs only in SecurityConfig.corsConfigurationSource); wildcard origin diverges from the app.cors.allowed-origins allowlist. Same root as B17. Remove the annotation."},
+  {"canonical": "B17 (extend) / B23", "severity": "high", "file": "backend/src/main/java/at/ac/fhcampuswien/auth/AuthController.java", "line": 16, "summary": "@CrossOrigin(origins=\"*\", allowedHeaders=\"*\", methods={GET,POST,PUT,DELETE}) re-added on AuthController (commit 826d09c) with a leftover '// DAS HIER ERWEITERN' comment.", "failure_scenario": "Violates our centralized-CORS convention (per-controller @CrossOrigin was deliberately removed; CORS belongs only in SecurityConfig.corsConfigurationSource); wildcard origin diverges from the app.cors.allowed-origins allowlist. Same root as B17. Remove the annotation."},
   {"canonical": "B23", "severity": "medium", "file": "backend/src/main/java/at/ac/fhcampuswien/auth/AuthController.java", "line": 231, "summary": "DELETE /auth/me hard-deletes the user with no cleanup of owned data.", "failure_scenario": "jobs.client_id / applications.designer_id / conversations / messages still reference the deleted id (no FK cascade in the raw-JDBC schema) -> orphaned listings, counterparties still read the ex-user's data. Soft-delete or cascade."},
   {"canonical": "B24", "severity": "medium", "file": "backend/src/main/java/at/ac/fhcampuswien/auth/AuthController.java", "line": 150, "summary": "PUT /auth/me binds an untyped Map<String,Object> with unchecked (String)/(Number) casts and no length/value validation.", "failure_scenario": "Wrong JSON type (numeric fullName, string hourlyMin) -> ClassCastException -> 500; over-long bio/url past the new VARCHAR caps -> H2 'value too long' -> 500. Bind a typed DTO; validate. Also: UserRepository.updateProfile(id,model) is dead code; AuthController/UserModel lack a trailing newline; data/projectdb.mv.db churns in VCS again."}
 ]

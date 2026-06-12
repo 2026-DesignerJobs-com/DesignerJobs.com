@@ -422,7 +422,7 @@ The live frontend is `design3/`. Minor, but confusing for newcomers. Trust `fron
 
 ### 🟠 B17 — Conflicting CORS configuration
 `config/WebConfig.addCorsMappings` registers a **second** CORS policy (hardcoded `localhost:63342` origins) competing with the single `SecurityConfig.corsConfigurationSource` the design intends (CORS should be configured once, centrally). Behavior diverges between security-filtered API paths and MVC/handler paths. *Fix: delete `WebConfig.addCorsMappings`; keep only the `SecurityConfig` source.*
-**Regressed wider 2026-06-12:** commit `826d09c` added `@CrossOrigin(origins="*", allowedHeaders="*", methods={GET,POST,PUT,DELETE})` directly on `AuthController` (with a leftover `// DAS HIER ERWEITERN` comment) — a *third* CORS source, now with a wildcard origin, against CLAUDE.md's explicit "no per-controller `@CrossOrigin`" rule. *Fix: remove the annotation; rely on `SecurityConfig` + `app.cors.allowed-origins`.*
+**Regressed wider 2026-06-12:** commit `826d09c` added `@CrossOrigin(origins="*", allowedHeaders="*", methods={GET,POST,PUT,DELETE})` directly on `AuthController` (with a leftover `// DAS HIER ERWEITERN` comment) — a *third* CORS source, now with a wildcard origin, against our convention that CORS is configured once centrally (no per-controller `@CrossOrigin`). *Fix: remove the annotation; rely on `SecurityConfig` + `app.cors.allowed-origins`.*
 
 ### 🟡 B18 — `/world-clock` is all-or-nothing and sequential
 `WorldClockService` makes 4 blocking external calls in sequence and lets any single failure throw, so one slow/failing city fails the whole endpoint and latency is the sum of 4 round-trips. *Fix: fetch in parallel and degrade gracefully per city.*

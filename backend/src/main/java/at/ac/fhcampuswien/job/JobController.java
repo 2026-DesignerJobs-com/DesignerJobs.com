@@ -52,6 +52,10 @@ public class JobController {
         }
 
         job.clientId = auth.getName();
+        // Never trust a client-supplied id/createdAt on create — they'd let a caller force a
+        // PRIMARY KEY collision (500) or forge the sort order. Let the repository generate them.
+        job.id = null;
+        job.createdAt = null;
 
         Job savedJob = jobRepository.create(job);
 

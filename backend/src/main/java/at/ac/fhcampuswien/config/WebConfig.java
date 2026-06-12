@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${app.frontend.path:../frontend/design1/}")
+    @Value("${app.frontend.path:../frontend/design3/}")
     private String frontendPath;
 
     @Override

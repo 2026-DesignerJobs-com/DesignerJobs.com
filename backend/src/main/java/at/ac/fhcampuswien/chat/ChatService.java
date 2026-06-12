@@ -4,38 +4,31 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
 import java.util.List;
 
-// Service layer for in-platform messaging.
-// Current mode: local H2 repositories.
-// Future mode: external chat API via ExternalChatApiClient.
 @Service
 public class ChatService {
 
-    /*
-     * Set this to true later when the external chat API is fully connected.
-     * For now it must stay false, so the current working local chat flow does not break.
-     */
-    private static final boolean USE_EXTERNAL_CHAT_API = false;
-
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
-    private final ExternalChatApiClient externalChatApiClient;
 
     public ChatService(ConversationRepository conversationRepository,
-                       MessageRepository messageRepository,
-                       ExternalChatApiClient externalChatApiClient) {
+                       MessageRepository messageRepository) {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
-        this.externalChatApiClient = externalChatApiClient;
     }
 
     public List<Conversation> listConversations(String currentUserId) {
-        if (USE_EXTERNAL_CHAT_API) {
-            return externalChatApiClient.listConversations(currentUserId);
+        try {
+            if (currentUserId == null || currentUserId.isBlank()) {
+                return Collections.emptyList();
+            }
+            return conversationRepository.findByUserId(currentUserId);
+        } catch (Exception e) {
+            System.err.println("Database error listing conversations: " + e.getMessage());
+            return Collections.emptyList();
         }
-
-        return conversationRepository.findByUserId(currentUserId);
     }
 
     public Conversation createConversation(Conversation conversation, String currentUserId) {
@@ -52,21 +45,23 @@ public class ChatService {
             );
         }
 
-        if (USE_EXTERNAL_CHAT_API) {
-            return externalChatApiClient.createConversation(conversation, currentUserId);
+        try {
+            return conversationRepository.create(conversation);
+        } catch (Exception e) {
+            System.err.println("Database error creating conversation: " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create conversation");
         }
-
-        return conversationRepository.create(conversation);
     }
 
     public List<Message> getMessages(String conversationId, int page, String currentUserId) {
-        if (USE_EXTERNAL_CHAT_API) {
-            return externalChatApiClient.getMessages(conversationId, page, currentUserId);
-        }
-
         validateParticipant(conversationId, currentUserId);
 
-        return messageRepository.findByConversationId(conversationId, page);
+        try {
+            return messageRepository.findByConversationId(conversationId, page);
+        } catch (Exception e) {
+            System.err.println("Database error fetching messages: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     public Message sendMessage(String conversationId, Message message, String currentUserId) {
@@ -77,17 +72,18 @@ public class ChatService {
             );
         }
 
-        if (USE_EXTERNAL_CHAT_API) {
-            return externalChatApiClient.sendMessage(conversationId, message, currentUserId);
-        }
-
         validateParticipant(conversationId, currentUserId);
 
         message.conversationId = conversationId;
         message.senderId = currentUserId;
         message.flagged = false;
 
-        return messageRepository.save(message);
+        try {
+            return messageRepository.save(message);
+        } catch (Exception e) {
+            System.err.println("Database error saving message: " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to send message");
+        }
     }
 
     private void validateConversationRequest(Conversation conversation) {

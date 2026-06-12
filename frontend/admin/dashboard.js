@@ -187,3 +187,4 @@ async function banUser(id) {
         // Bereit für Phase 2: DELETE /users/{id} aufrufen
         alert(`User ${id} gesperrt (Hier wird später DELETE /users/${id} aufgerufen)`);
     }
+}

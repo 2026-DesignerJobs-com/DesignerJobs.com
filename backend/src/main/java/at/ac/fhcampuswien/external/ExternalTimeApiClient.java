@@ -40,17 +40,23 @@ public class ExternalTimeApiClient {
                     HttpResponse.BodyHandlers.ofString()
             );
 
+            // Handle non-2xx server responses without throwing exceptions
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                throw new RuntimeException("External time API returned status " + response.statusCode());
+                System.err.println("External time API returned status: " + response.statusCode());
+                return null;
             }
 
             return objectMapper.readTree(response.body());
 
         } catch (IOException e) {
-            throw new RuntimeException("Failed to read response from external time API", e);
+            // Log network or parsing issues safely
+            System.err.println("Failed to read response from external time API: " + e.getMessage());
+            return null;
         } catch (InterruptedException e) {
+            // Restore interrupted status and log
+            System.err.println("External time API request was interrupted: " + e.getMessage());
             Thread.currentThread().interrupt();
-            throw new RuntimeException("External time API request was interrupted", e);
+            return null;
         }
     }
 }

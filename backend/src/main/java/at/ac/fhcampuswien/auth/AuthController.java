@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Locale;
@@ -151,7 +152,7 @@ public class AuthController {
     }
 
     @PutMapping("/me")
-    public ResponseEntity<?> updateProfile(Authentication auth, @RequestBody ProfileUpdateRequest body) {
+    public ResponseEntity<?> updateProfile(Authentication auth, @Valid @RequestBody ProfileUpdateRequest body) {
         if (auth == null || auth.getName() == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "not authenticated"));
         }

@@ -29,6 +29,12 @@ async function loadJobsFromServer() {
         // JSON-Daten extrahieren
         const jobs = await response.json();
 
+        //Counter im Overwiew anpassen
+        const jobCounter = document.getElementById('stats-job-count');
+        if (jobCounter) {
+            jobCounter.textContent = jobs.length;
+        }
+
         // Tabelle leeren
         tableBody.innerHTML = '';
 

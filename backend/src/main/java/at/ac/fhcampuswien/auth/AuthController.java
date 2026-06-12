@@ -8,12 +8,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE}) // <-- DAS HIER ERWEITERN/HINZUFÜGEN
 public class AuthController {
 
     private final UserRepository userRepository;
@@ -30,8 +30,6 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody AuthRequest req) {
-
-        // Basic validation: fullName, email, password and role are required.
         if (req.fullName == null || req.fullName.isBlank()
                 || req.email == null || req.email.isBlank()
                 || req.password == null || req.password.isBlank()
@@ -42,20 +40,14 @@ public class AuthController {
             ));
         }
 
-        // Normalize role to avoid problems like "designer" instead of "DESIGNER".
         String normalizedRole = req.role.trim().toUpperCase();
-
         if (!normalizedRole.equals("CLIENT") && !normalizedRole.equals("DESIGNER")) {
             return ResponseEntity.badRequest().body(Map.of(
                     "error", "role must be CLIENT or DESIGNER"
             ));
         }
 
-        // Emails are stored lower-cased, so the duplicate check must use the
-        // normalized value too — otherwise "FOO@x.com" slips past and hits the
-        // UNIQUE constraint as a 500 instead of a clean 409.
         String normalizedEmail = req.email.trim().toLowerCase();
-
         if (userRepository.existsByEmail(normalizedEmail)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
                     "error", "email already exists"
@@ -63,7 +55,6 @@ public class AuthController {
         }
 
         UserModel user = new UserModel();
-
         user.id = UUID.randomUUID().toString();
         user.fullName = req.fullName.trim();
         user.email = normalizedEmail;
@@ -71,7 +62,6 @@ public class AuthController {
         user.role = normalizedRole;
         user.createdAt = Instant.now().toString();
 
-        // Designer fields are only relevant for DESIGNER accounts.
         if (normalizedRole.equals("DESIGNER")) {
             user.designType = req.designType == null ? "" : req.designType.trim();
             user.skills = req.skills == null ? "" : req.skills.trim();
@@ -99,10 +89,7 @@ public class AuthController {
             ));
         }
 
-        // Registration stores emails lower-cased — normalize the same way here,
-        // otherwise users who registered with mixed case can never log in.
         UserModel user = userRepository.findByEmail(req.email.trim().toLowerCase());
-
         if (user == null || !passwordEncoder.matches(req.password, user.passwordHash)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
                     "error", "invalid email or password"
@@ -119,8 +106,6 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
-        // Stateless JWT: the client discards the token. Server has nothing to invalidate
-        // unless a blacklist is introduced — out of scope for the current iteration.
         return ResponseEntity.noContent().build();
     }
 
@@ -134,15 +119,13 @@ public class AuthController {
 
         String userId = auth.getName();
         UserModel user = userRepository.findById(userId);
-
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
                     "error", "user no longer exists"
             ));
         }
 
-        // Wir nutzen eine HashMap, weil Map.of maximal 10 Paare erlaubt
-        java.util.Map<String, Object> responseData = new java.util.HashMap<>();
+        Map<String, Object> responseData = new HashMap<>();
         responseData.put("userId", user.id);
         responseData.put("email", user.email);
         responseData.put("role", user.role);
@@ -167,48 +150,37 @@ public class AuthController {
     }
 
     @PutMapping("/me")
-    public ResponseEntity<?> updateProfile(Authentication auth, @RequestBody java.util.Map<String, Object> body) {
+    public ResponseEntity<?> updateProfile(Authentication auth, @RequestBody ProfileUpdateRequest body) {
         if (auth == null || auth.getName() == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "not authenticated"));
         }
 
         String userId = auth.getName();
         UserModel user = userRepository.findById(userId);
-
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "user not found"));
         }
 
-        // 1. Textfelder auslesen
-        user.fullName = body.containsKey("fullName") ? (String) body.get("fullName") : user.fullName;
-        user.designType = body.containsKey("designType") ? (String) body.get("designType") : user.designType;
-        user.bio = body.containsKey("bio") ? (String) body.get("bio") : user.bio;
-        user.country = body.containsKey("country") ? (String) body.get("country") : user.country;
-        user.city = body.containsKey("city") ? (String) body.get("city") : user.city;
-        user.availability = body.containsKey("availability") ? (String) body.get("availability") : user.availability;
-        user.skills = body.containsKey("skills") ? (String) body.get("skills") : user.skills;
-        user.portfolioVisibility = body.containsKey("portfolioVisibility") ? (String) body.get("portfolioVisibility") : user.portfolioVisibility;
-        user.portfolioUrl = body.containsKey("portfolioUrl") ? (String) body.get("portfolioUrl") : user.portfolioUrl;
-        user.twitter = body.containsKey("twitter") ? (String) body.get("twitter") : user.twitter;
-        user.linkedin = body.containsKey("linkedin") ? (String) body.get("linkedin") : user.linkedin;
-        user.instagram = body.containsKey("instagram") ? (String) body.get("instagram") : user.instagram;
+        if (body.fullName != null) user.fullName = body.fullName.trim();
+        if (body.designType != null) user.designType = body.designType.trim();
+        if (body.bio != null) user.bio = body.bio.trim();
+        if (body.country != null) user.country = body.country;
+        if (body.city != null) user.city = body.city;
+        if (body.availability != null) user.availability = body.availability;
+        if (body.skills != null) user.skills = body.skills.trim();
+        if (body.portfolioVisibility != null) user.portfolioVisibility = body.portfolioVisibility;
+        if (body.portfolioUrl != null) user.portfolioUrl = body.portfolioUrl.trim();
+        if (body.twitter != null) user.twitter = body.twitter.trim();
+        if (body.linkedin != null) user.linkedin = body.linkedin.trim();
+        if (body.instagram != null) user.instagram = body.instagram.trim();
 
-        // 2. Zahlenfelder auslesen
-        if (body.containsKey("hourlyMin") && body.get("hourlyMin") != null) {
-            user.hourlyMin = ((Number) body.get("hourlyMin")).intValue();
-        }
-        if (body.containsKey("hourlyMax") && body.get("hourlyMax") != null) {
-            user.hourlyMax = ((Number) body.get("hourlyMax")).intValue();
-        }
-        if (body.containsKey("projectMin") && body.get("projectMin") != null) {
-            user.projectMin = ((Number) body.get("projectMin")).intValue();
-        }
+        user.hourlyMin = body.hourlyMin;
+        user.hourlyMax = body.hourlyMax;
+        user.projectMin = body.projectMin;
 
-        // 3. In der Datenbank speichern
         userRepository.update(user);
 
-        // 4. Antwort via HashMap zusammenbauen (umgeht das 10-Elemente-Limit)
-        java.util.Map<String, Object> responseData = new java.util.HashMap<>();
+        Map<String, Object> responseData = new HashMap<>();
         responseData.put("fullName", user.fullName == null ? "" : user.fullName);
         responseData.put("designType", user.designType == null ? "" : user.designType);
         responseData.put("bio", user.bio == null ? "" : user.bio);
@@ -236,15 +208,12 @@ public class AuthController {
 
         String userId = auth.getName();
         UserModel user = userRepository.findById(userId);
-
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "user not found"));
         }
 
-        // User aus der Datenbank löschen
         userRepository.deleteById(userId);
 
-        // Erfolgsmeldung zurückgeben
         return ResponseEntity.ok(Map.of("message", "Profile deleted successfully"));
     }
 }

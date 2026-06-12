@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -40,14 +41,14 @@ public class AuthController {
             ));
         }
 
-        String normalizedRole = req.role.trim().toUpperCase();
+        String normalizedRole = req.role.trim().toUpperCase(Locale.ROOT);
         if (!normalizedRole.equals("CLIENT") && !normalizedRole.equals("DESIGNER")) {
             return ResponseEntity.badRequest().body(Map.of(
                     "error", "role must be CLIENT or DESIGNER"
             ));
         }
 
-        String normalizedEmail = req.email.trim().toLowerCase();
+        String normalizedEmail = req.email.trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmail(normalizedEmail)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
                     "error", "email already exists"
@@ -89,7 +90,7 @@ public class AuthController {
             ));
         }
 
-        UserModel user = userRepository.findByEmail(req.email.trim().toLowerCase());
+        UserModel user = userRepository.findByEmail(req.email.trim().toLowerCase(Locale.ROOT));
         if (user == null || !passwordEncoder.matches(req.password, user.passwordHash)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
                     "error", "invalid email or password"

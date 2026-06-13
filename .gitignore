@@ -2,6 +2,8 @@
 workspace.xml
 .idea/
 .vs
+*.db
+data/
 
 ### project-specific
 backend/jobs.json

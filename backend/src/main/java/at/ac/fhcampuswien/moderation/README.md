@@ -2,7 +2,7 @@
 
 Lets users flag jobs, chat messages, and other users; gives admins a queue to triage. **Currently all endpoints are 501 stubs (Phase 2).**
 
-This README documents the contract the frontend will target and the hooks other packages (`chat/`, `job/`, `user/`) will need.
+This README documents the contract the frontend will target and the hooks other packages (`chat/`, `job/`, `account/`) will need.
 
 ---
 
@@ -92,4 +92,4 @@ The index keeps the admin queue query (`WHERE status = 'OPEN'`) fast.
 ## see also
 
 - `chat/README.md` — moderation hook on message creation, `messages.flagged` column.
-- `auth/README.md` — caller identity, role authority.
+- `account/README.md` — caller identity, role authority.

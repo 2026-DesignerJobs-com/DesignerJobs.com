@@ -88,6 +88,6 @@ Until `moderation/` is implemented, persist messages with `flagged = false` and 
 
 ## see also
 
-- `auth/README.md` — caller identity via `Authentication`.
+- `account/README.md` — caller identity via `Authentication`.
 - `application/README.md` — applications are typically what triggers a conversation; `conversation.jobId` ties back to the job.
 - `moderation/Report.java` — the report shape for flagging a message after the fact.

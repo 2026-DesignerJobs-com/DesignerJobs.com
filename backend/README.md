@@ -55,16 +55,27 @@ Both are read from `src/main/resources/application.properties` via `${VAR:defaul
 ```
 at.ac.fhcampuswien
 ├── Main.java          ← @SpringBootApplication entry; calls DatabaseInitializer.init() before SpringApplication.run()
-├── Database/          ← H2 connection + jobs-table bootstrap
-├── config/            ← Spring config: security filter chain, CORS, WebConfig (static files)
-├── auth/              ← register / login / /auth/me; users table; BCrypt
-├── session/           ← JWT issuance (JwtService); verification delegated to Spring's BearerTokenAuthenticationFilter
-├── user/              ← designer profiles & portfolio (stubs)
+│
+│   # feature packages (one domain each: controller + service + repository + model)
+├── account/           ← identity: register/login/me + users table + BCrypt (done); designer profiles & portfolio (stubs)
 ├── job/               ← job listings — fully implemented (POST/GET/PUT/DELETE + search)
 ├── application/       ← apply & hire flow (stubs)
 ├── chat/              ← in-platform messaging (stubs)
 ├── contract/          ← auto-generated freelance contracts (stubs)
-└── moderation/        ← reports & content moderation (stubs)
+├── moderation/        ← reports & content moderation (stubs)
+│
+│   # third-party API integrations
+├── integration/
+│   ├── external/      ← HTTP clients (ExternalTimeApiClient, ExternalLocationApiClient)
+│   ├── worldclock/    ← proxies timeapi.io (GET /world-clock)
+│   ├── location/      ← location lookup endpoint
+│   └── pexels/        ← Pexels image API proxy
+│
+│   # cross-cutting plumbing
+└── infrastructure/
+    ├── Database/      ← H2 connection + jobs-table bootstrap
+    ├── config/        ← Spring config: security filter chain, CORS, WebConfig (static files)
+    └── session/       ← JWT issuance (JwtService); verification delegated to Spring's BearerTokenAuthenticationFilter
 ```
 
 Each package has its own `README.md` documenting endpoints, models, and design choices. **Read those before editing a package** — the top-level view here only catalogs them.
@@ -73,12 +84,11 @@ Each package has its own `README.md` documenting endpoints, models, and design c
 
 | package | state |
 |---|---|
-| `Database/`    | implemented |
-| `config/`      | implemented |
-| `auth/`        | implemented |
-| `session/`     | implemented |
+| `infrastructure/Database/`    | implemented |
+| `infrastructure/config/`      | implemented |
+| `account/`     | auth done; profiles stubbed |
+| `infrastructure/session/`     | implemented |
 | `job/`         | implemented |
-| `user/`        | stubs |
 | `application/` | stubs |
 | `chat/`        | stubs |
 | `contract/`    | stubs (Phase 2) |
@@ -99,7 +109,7 @@ HTTP request                                    │ Spring Security filters  │
                        @RestController ─► Repository ─► Database.getConnection() ─► H2 file
 ```
 
-- **CORS** is centralised in `config/SecurityConfig#corsConfigurationSource`. Origins come from `app.cors.allowed-origins`; methods/headers are in code.
+- **CORS** is centralised in `infrastructure/config/SecurityConfig#corsConfigurationSource`. Origins come from `app.cors.allowed-origins`; methods/headers are in code.
 - **Auth** is stateless — no `HttpSession`, no `JSESSIONID`. Each request carries its own JWT or it's anonymous.
 - **Static files** outside `/auth/**`, `/jobs/**`, `/designers/**`, `/users/**`, `/applications/**`, `/conversations/**`, `/contracts/**`, `/moderation/**` are served by `WebConfig` from `../frontend/landing/` (configurable via `app.frontend.path`).
 
@@ -113,12 +123,12 @@ Two tables today:
 
 | table   | created by                                    | owned by             |
 |---------|-----------------------------------------------|----------------------|
-| `jobs`  | `Database/DatabaseInitializer.init()` on boot | `job/JobRepository`  |
-| `users` | `auth/UserRepository` constructor             | `auth/UserRepository`|
+| `jobs`  | `infrastructure/Database/DatabaseInitializer.init()` on boot | `job/JobRepository`  |
+| `users` | `account/UserRepository` constructor             | `account/UserRepository`|
 
-There is no migrations framework. Schema changes mean editing the relevant `CREATE TABLE` statement and either deleting the DB file or adding `ALTER TABLE` SQL. See `Database/ReadMe.md` for the full Job-side documentation.
+There is no migrations framework. Schema changes mean editing the relevant `CREATE TABLE` statement and either deleting the DB file or adding `ALTER TABLE` SQL. See `infrastructure/Database/README.md` for the full Job-side documentation.
 
-When new packages (`application/`, `chat/`, `contract/`, `moderation/`) get implemented, decide per package whether the table-creation goes into `DatabaseInitializer` (alongside `jobs`) or into the repository's constructor (the pattern `auth/` uses). The current split is historical, not principled.
+When new packages (`application/`, `chat/`, `contract/`, `moderation/`) get implemented, decide per package whether the table-creation goes into `DatabaseInitializer` (alongside `jobs`) or into the repository's constructor (the pattern `account/` uses). The current split is historical, not principled.
 
 ---
 
@@ -128,10 +138,10 @@ Implemented:
 
 | method | path | auth | package |
 |---|---|---|---|
-| `POST`   | `/auth/register`     | public        | `auth/`     |
-| `POST`   | `/auth/login`        | public        | `auth/`     |
-| `POST`   | `/auth/logout`       | public        | `auth/` (noop) |
-| `GET`    | `/auth/me`           | authenticated | `auth/`     |
+| `POST`   | `/auth/register`     | public        | `account/`     |
+| `POST`   | `/auth/login`        | public        | `account/`     |
+| `POST`   | `/auth/logout`       | public        | `account/` (noop) |
+| `GET`    | `/auth/me`           | authenticated | `account/`     |
 | `POST`   | `/jobs`              | authenticated | `job/`      |
 | `GET`    | `/jobs`              | public        | `job/`      |
 | `GET`    | `/jobs/{id}`         | public        | `job/`      |
@@ -140,13 +150,13 @@ Implemented:
 
 Everything else returns `501 Not Implemented` for now — see each package's README for the contract.
 
-**Response formats (C2, since 2026-06-11):** the API answers in JSON by default and in XML when the client sends `Accept: application/xml` — enabled by `jackson-dataformat-xml` in `pom.xml`, which registers an app-wide XML message converter. `GET /jobs` and `GET /jobs/{id}` declare it explicitly via `produces`; covered by `config/ContentNegotiationTest`. Note: browsers rank `application/xml` above `*/*` in their Accept header, so opening an API URL in a browser tab shows XML, while `fetch()` calls (Accept `*/*`) keep getting JSON.
+**Response formats (C2, since 2026-06-11):** the API answers in JSON by default and in XML when the client sends `Accept: application/xml` — enabled by `jackson-dataformat-xml` in `pom.xml`, which registers an app-wide XML message converter. `GET /jobs` and `GET /jobs/{id}` declare it explicitly via `produces`; covered by `infrastructure/config/ContentNegotiationTest`. Note: browsers rank `application/xml` above `*/*` in their Accept header, so opening an API URL in a browser tab shows XML, while `fetch()` calls (Accept `*/*`) keep getting JSON.
 
 ---
 
 ## see also
 
 - `docu.md` — the original "how Spring works" walkthrough written when this project was migrated off the prog2 `HttpServer` implementation. Tutorial-style; useful if you're new to Spring.
-- `Database/ReadMe.md` — H2 setup and `jobs` table details.
-- `config/README.md` — security filter chain, CORS, static-file mapping.
+- `infrastructure/Database/README.md` — H2 setup and `jobs` table details.
+- `infrastructure/config/README.md` — security filter chain, CORS, static-file mapping.
 - `../README.md` — repo-wide README (frontend + backend together).

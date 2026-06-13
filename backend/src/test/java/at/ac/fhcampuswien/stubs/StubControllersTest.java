@@ -2,7 +2,7 @@ package at.ac.fhcampuswien.stubs;
 
 import at.ac.fhcampuswien.contract.ContractController;
 import at.ac.fhcampuswien.moderation.ModerationController;
-import at.ac.fhcampuswien.user.UserController;
+import at.ac.fhcampuswien.account.UserController;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

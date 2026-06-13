@@ -94,4 +94,4 @@ CREATE TABLE IF NOT EXISTS contracts (
 ## see also
 
 - `application/README.md` — the hire path that triggers contract creation.
-- `auth/README.md` — caller identity via `Authentication`.
+- `account/README.md` — caller identity via `Authentication`.

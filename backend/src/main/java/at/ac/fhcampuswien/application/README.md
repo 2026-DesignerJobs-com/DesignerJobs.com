@@ -96,5 +96,5 @@ CREATE TABLE IF NOT EXISTS applications (
 
 ## see also
 
-- `auth/README.md` — how to read the caller via `Authentication`.
-- `config/README.md` — where to add public route exceptions if any (probably none — apply/hire is private).
+- `account/README.md` — how to read the caller via `Authentication`.
+- `infrastructure/config/README.md` — where to add public route exceptions if any (probably none — apply/hire is private).

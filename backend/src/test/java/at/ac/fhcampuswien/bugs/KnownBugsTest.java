@@ -2,12 +2,12 @@ package at.ac.fhcampuswien.bugs;
 
 import at.ac.fhcampuswien.application.ApplicationController;
 import at.ac.fhcampuswien.application.JobApplicationRepository;
-import at.ac.fhcampuswien.auth.AuthController;
-import at.ac.fhcampuswien.auth.AuthRequest;
-import at.ac.fhcampuswien.auth.UserRepository;
+import at.ac.fhcampuswien.account.AuthController;
+import at.ac.fhcampuswien.account.AuthRequest;
+import at.ac.fhcampuswien.account.UserRepository;
 import at.ac.fhcampuswien.job.Job;
 import at.ac.fhcampuswien.job.JobRepository;
-import at.ac.fhcampuswien.session.JwtService;
+import at.ac.fhcampuswien.infrastructure.session.JwtService;
 import at.ac.fhcampuswien.testsupport.H2TestSupport;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.OctetSequenceKey;

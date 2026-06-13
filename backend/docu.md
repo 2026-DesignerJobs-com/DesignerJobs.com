@@ -114,7 +114,7 @@ spring boot includes jackson by default. it converts java objects to json and ba
 
 CORS (cross-origin resource sharing) is the browser-enforced rule that blocks JavaScript on one origin from reading responses from a different origin unless the server opts in. In Spring Boot you opt in either per-controller (`@CrossOrigin`) or centrally (a `CorsConfigurationSource` bean wired into the security filter chain). This project uses **the central approach** — there is exactly one place to look for the policy:
 
-- **Bean:** `config/SecurityConfig#corsConfigurationSource`
+- **Bean:** `infrastructure/config/SecurityConfig#corsConfigurationSource`
 - **Origins:** read from `application.properties` via `app.cors.allowed-origins` (comma-separated string)
 - **Activation:** `http.cors(cors -> {})` in `SecurityConfig#filterChain` — Spring picks the bean up by type and registers a `CorsFilter` before the auth filters
 

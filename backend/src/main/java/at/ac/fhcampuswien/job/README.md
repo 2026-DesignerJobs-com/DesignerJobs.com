@@ -12,13 +12,13 @@ REST surface and persistence for job posts. This is the **first feature on the p
 | `JobController.java` | REST endpoints under `/jobs` |
 | `JobRepository.java` | hand-rolled JDBC repository against the H2 `jobs` table |
 
-The `jobs` table itself is created by `Database/DatabaseInitializer.init()` at application startup, **not** in `JobRepository`'s constructor. This is different from `auth/UserRepository`, which creates its own table — see `Database/ReadMe.md` for the rationale.
+The `jobs` table itself is created by `infrastructure/Database/DatabaseInitializer.init()` at application startup, **not** in `JobRepository`'s constructor. This is different from `account/UserRepository`, which creates its own table — see `infrastructure/Database/README.md` for the rationale.
 
 ---
 
 ## endpoints
 
-Base path: `/jobs`. `GET /jobs` and `GET /jobs/{id}` are public — deliberately not `GET /jobs/**`, so nested sub-resources like `/jobs/{id}/applications` stay authenticated; everything else requires a valid JWT (see `config/README.md`).
+Base path: `/jobs`. `GET /jobs` and `GET /jobs/{id}` are public — deliberately not `GET /jobs/**`, so nested sub-resources like `/jobs/{id}/applications` stay authenticated; everything else requires a valid JWT (see `infrastructure/config/README.md`).
 
 | method | path | auth | what it does |
 |---|---|---|---|
@@ -107,6 +107,6 @@ CREATE TABLE IF NOT EXISTS jobs (
 
 ## see also
 
-- `Database/ReadMe.md` — Database/DatabaseInitializer wiring and SQL details.
+- `infrastructure/Database/README.md` — Database/DatabaseInitializer wiring and SQL details.
 - `application/README.md` — applications reference `jobs.id`.
-- `config/README.md` — `/jobs/**` GET is the only public `/jobs` route; everything else falls through to `authenticated()`.
+- `infrastructure/config/README.md` — `/jobs/**` GET is the only public `/jobs` route; everything else falls through to `authenticated()`.

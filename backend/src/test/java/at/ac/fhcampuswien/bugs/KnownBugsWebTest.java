@@ -1,6 +1,6 @@
 package at.ac.fhcampuswien.bugs;
 
-import at.ac.fhcampuswien.session.JwtService;
+import at.ac.fhcampuswien.infrastructure.session.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

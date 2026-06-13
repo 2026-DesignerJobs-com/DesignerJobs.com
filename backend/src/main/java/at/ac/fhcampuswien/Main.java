@@ -1,6 +1,6 @@
 package at.ac.fhcampuswien;
 
-import at.ac.fhcampuswien.Database.DatabaseInitializer;
+import at.ac.fhcampuswien.infrastructure.Database.DatabaseInitializer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;

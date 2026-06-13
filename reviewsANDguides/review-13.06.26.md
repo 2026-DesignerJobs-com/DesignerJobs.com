@@ -74,7 +74,7 @@ regression shipped. Fix the test first; it immediately surfaces the SQL bug.
     "failure_scenario": "User-Verwaltung always shows the red error row (fallback unreachable); and anyone reaching /admin/dashboard.html sees the full admin UI + live data with no login enforced."
   },
   {
-    "file": "frontend/design3/profile.html",
+    "file": "frontend/landing/profile.html",
     "line": 264,
     "summary": "LOW: loadDesignInspiration injects Pexels photo.alt / photographer into innerHTML and photo.url into an href, unescaped, while the rest of the file uses escapeHtml.",
     "failure_scenario": "A field with a quote/angle-bracket (or a future proxy substitution) breaks the card markup or escapes the attribute; inconsistent with the file's own escaping."

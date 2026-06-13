@@ -62,7 +62,7 @@ Create a service user and the directories:
 sudo useradd --system --home /opt/designerjobs --shell /usr/sbin/nologin designerjobs
 sudo mkdir -p /opt/designerjobs/{data,logs}
 sudo cp /tmp/app.jar /opt/designerjobs/app.jar
-sudo cp -r frontend/design3 /opt/designerjobs/frontend/design3   # (copy from a checkout)
+sudo cp -r frontend/landing /opt/designerjobs/frontend/landing   # (copy from a checkout)
 sudo chown -R designerjobs:designerjobs /opt/designerjobs
 ```
 

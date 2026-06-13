@@ -2,7 +2,7 @@
 
 This package issues JWT bearer tokens at login. Verification is delegated to **Spring Security's OAuth2 Resource Server** (`spring-boot-starter-oauth2-resource-server`).
 
-There is **no server-side session state**. Logout is a noop on the backend; the client drops the token. Session persistence across page reloads is the *client's* responsibility (see `frontend/design3/auth.js`).
+There is **no server-side session state**. Logout is a noop on the backend; the client drops the token. Session persistence across page reloads is the *client's* responsibility (see `frontend/landing/auth.js`).
 
 ---
 
@@ -21,7 +21,7 @@ Verification, parsing, and `SecurityContext` population are done by `BearerToken
 
 ```
                   ┌────────────────────────────────────────────┐
-                  │ Frontend (design3) — login.html            │
+                  │ Frontend (landing) — login.html            │
                   └──────────────────┬─────────────────────────┘
                                      │ POST /auth/login {email, password}
                                      ▼
@@ -120,7 +120,7 @@ The JWT is the *only* memory the server has of who the caller is. The client hol
 > Then ist er weiterhin eingeloggt (Token aus localStorage wieder verwendet)
 > Abgelaufenes Token (exp < jetzt) → automatischer Redirect zum Login
 
-Implemented by `frontend/design3/auth.js`. On every page that includes it:
+Implemented by `frontend/landing/auth.js`. On every page that includes it:
 
 1. **Eager expiry guard** — on load, the script base64-decodes the JWT payload from `localStorage`, reads `exp`, and redirects to `login.html?expired=1` if `exp * 1000 < Date.now()`. This catches expired tokens *before* the user clicks anything.
 2. **Authenticated fetch helper** — `authFetch(url, options)` attaches `Authorization: Bearer <token>` to every request and watches the response status. A 401 from the server (e.g., signature invalidated by a server-side secret rotation) also triggers a redirect.
@@ -168,4 +168,4 @@ app.jwt.expiry-millis=7200000
 - `at.ac.fhcampuswien.auth.AuthController` — the issuer side.
 - `at.ac.fhcampuswien.auth.UserRepository` — the user store backing register/login.
 - `at.ac.fhcampuswien.config.SecurityConfig` — filter-chain wiring, decoder/encoder beans, converter, CORS.
-- `frontend/design3/auth.js` — client-side session persistence (US-04).
+- `frontend/landing/auth.js` — client-side session persistence (US-04).

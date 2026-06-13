@@ -2,7 +2,7 @@
 
 Spring Boot 3.2 REST API on Java 17. Job listings and user accounts persist to an embedded H2 file database. Auth is stateless JWT — bearer tokens issued at login, verified by Spring's OAuth2 Resource Server.
 
-The same Spring process also serves the `frontend/design3/` static files via `WebConfig`, so the whole app runs on `http://localhost:8080` in dev.
+The same Spring process also serves the `frontend/landing/` static files via `WebConfig`, so the whole app runs on `http://localhost:8080` in dev.
 
 ---
 
@@ -101,7 +101,7 @@ HTTP request                                    │ Spring Security filters  │
 
 - **CORS** is centralised in `config/SecurityConfig#corsConfigurationSource`. Origins come from `app.cors.allowed-origins`; methods/headers are in code.
 - **Auth** is stateless — no `HttpSession`, no `JSESSIONID`. Each request carries its own JWT or it's anonymous.
-- **Static files** outside `/auth/**`, `/jobs/**`, `/designers/**`, `/users/**`, `/applications/**`, `/conversations/**`, `/contracts/**`, `/moderation/**` are served by `WebConfig` from `../frontend/design3/` (configurable via `app.frontend.path`).
+- **Static files** outside `/auth/**`, `/jobs/**`, `/designers/**`, `/users/**`, `/applications/**`, `/conversations/**`, `/contracts/**`, `/moderation/**` are served by `WebConfig` from `../frontend/landing/` (configurable via `app.frontend.path`).
 
 ---
 

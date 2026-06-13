@@ -4,7 +4,7 @@ REST surface for designer profiles and portfolio items. **Currently all endpoint
 
 This README is a starter — it documents the contract the frontend already targets and what implementing it will need. It will grow as the package fills in.
 
-> **Note:** a partial profile surface already exists outside this package — `auth/UserModel` carries `fullName`, `designType`, and `skills` (set at registration), and `GET /auth/me` returns them. The design3 profile pages currently read/display these via `/auth/me` rather than `/designers/{id}`. When this package is implemented, decide whether to migrate those columns into `designer_profiles` or keep core identity in `users` and only put richer profile data (bio, portfolio link, hourly rate, etc.) here.
+> **Note:** a partial profile surface already exists outside this package — `auth/UserModel` carries `fullName`, `designType`, and `skills` (set at registration), and `GET /auth/me` returns them. The landing frontend's profile pages currently read/display these via `/auth/me` rather than `/designers/{id}`. When this package is implemented, decide whether to migrate those columns into `designer_profiles` or keep core identity in `users` and only put richer profile data (bio, portfolio link, hourly rate, etc.) here.
 
 ---
 

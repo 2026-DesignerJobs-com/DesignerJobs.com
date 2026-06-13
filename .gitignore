@@ -182,3 +182,4 @@ backend/data/projectdb.trace.db
 !organisation/planung/user-stories.md
 /backend/data/
 /.githooks/prepare-commit-msg
+/log-after-meeting_13-06-26.txt

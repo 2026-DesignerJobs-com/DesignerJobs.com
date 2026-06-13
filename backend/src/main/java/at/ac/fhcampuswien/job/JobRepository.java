@@ -67,11 +67,6 @@ public class JobRepository {
         return insert(job);
     }
 
-    // Keeps compatibility with older controller code that may still call add(job).
-    public Job add(Job job) {
-        return create(job);
-    }
-
     private Job insert(Job job) {
         String sql = """
             INSERT INTO jobs (

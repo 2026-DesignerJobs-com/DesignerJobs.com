@@ -17,7 +17,7 @@ public class UserRepository {
     }
 
     private void createTableIfNotExists() {
-        // 1. Die Haupt-Tabelle um alle neuen Profil-Felder erweitern
+        // Main users table, including all profile fields.
         String sql = """
             CREATE TABLE IF NOT EXISTS users (
                 id VARCHAR(255) PRIMARY KEY,
@@ -71,7 +71,7 @@ public class UserRepository {
     }
 
     public UserModel save(UserModel user) {
-        // Erweitert für den Fall, dass ein User direkt mit Profil-Daten registriert wird
+        // Covers the case where a user is registered together with profile data.
         String sql = """
             INSERT INTO users (
                 id, full_name, email, password_hash, role, design_type, bio, 
@@ -209,7 +209,7 @@ public class UserRepository {
         String sql = """
             UPDATE users
             SET full_name = 'Deleted Account',
-                email = 'deleted_' || id || '@designerjobs.com', -- Verhindert E-Mail-Duplikate
+                email = 'deleted_' || id || '@designerjobs.com', -- avoids email collisions between deleted accounts
                 password_hash = 'NO_ACCESS',
                 role = 'DELETED',
                 design_type = '',

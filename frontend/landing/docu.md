@@ -1,4 +1,4 @@
-# DESIGNJOBS.COM — design3 Developer Documentation
+# DESIGNJOBS.COM — landing Developer Documentation
 
 Pure Bootstrap 5.3 frontend for the freelance design-jobs portal.
 **Bootstrap 5.3** for everything — grid, utilities, components, dark mode.
@@ -12,7 +12,7 @@ Pure Bootstrap 5.3 frontend for the freelance design-jobs portal.
 ```bash
 cd frontend
 python3 -m http.server 8080
-# Visit http://localhost:8080/design3/
+# Visit http://localhost:8080/landing/
 ```
 
 No bundler, no transpiler, no `node_modules`.
@@ -22,7 +22,7 @@ No bundler, no transpiler, no `node_modules`.
 ## Project Tree
 
 ```
-frontend/design3/
+frontend/landing/
 ├── index.html          ← Shell — navbar + iframe + footer (entry point)
 ├── shell.html          ← Redirect to index.html
 ├── homepage.html       ← Homepage content (search banner + recent jobs)
@@ -42,7 +42,7 @@ frontend/design3/
 
 ## Design Approach: Pure Bootstrap
 
-design3 reproduces the visuals design1 — violet brand, monospace headings, pill buttons, dark cards — but uses **only Bootstrap utility classes** in the HTML. There is no `styles.css` and no custom CSS component classes like `.job-card` or `.stamp-btn`.
+The landing frontend reproduces the visuals of design1 — violet brand, monospace headings, pill buttons, dark cards — but uses **only Bootstrap utility classes** in the HTML. There is no `styles.css` and no custom CSS component classes like `.job-card` or `.stamp-btn`.
 
 ### What "pure Bootstrap" means here
 
@@ -250,7 +250,7 @@ Replaces design1's `.search-panel` used as a decorative page header:
 
 ### Buttons
 
-| Design1 | design3 Bootstrap |
+| Design1 | landing Bootstrap |
 |---|---|
 | `.stamp-btn` | `btn btn-outline-primary rounded-pill fw-bold text-uppercase` |
 | `.stamp-btn.filled` | `btn btn-primary rounded-pill fw-bold text-uppercase` |

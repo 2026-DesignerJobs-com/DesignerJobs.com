@@ -1,33 +1,33 @@
 package at.ac.fhcampuswien.auth;
 
 public class UserModel {
-    // Authentifizierungs- und Basisdaten
+    // Authentication and core identity
     public String id;
     public String email;
     public String passwordHash;
     public String role;       // CLIENT or DESIGNER
     public String createdAt;
 
-    // Profil-Basisinformationen
+    // Basic profile information
     public String fullName;
     public String designType;
-    public String bio;        // <-- NEU
+    public String bio;
     public String skills;
 
-    // Standort & Verfügbarkeit
-    public String country;    // <-- NEU
-    public String city;       // <-- NEU
-    public String availability; // <-- NEU
+    // Location and availability
+    public String country;
+    public String city;
+    public String availability;
 
-    // Tarife / Rates
-    public int hourlyMin;     // <-- NEU
-    public int hourlyMax;     // <-- NEU
-    public int projectMin;    // <-- NEU
+    // Rates
+    public int hourlyMin;
+    public int hourlyMax;
+    public int projectMin;
 
-    // Portfolio & Social Links
-    public String portfolioVisibility; // <-- NEU
-    public String portfolioUrl;        // <-- NEU
-    public String twitter;             // <-- NEU
-    public String linkedin;            // <-- NEU
-    public String instagram;           // <-- NEU
+    // Portfolio and social links
+    public String portfolioVisibility;
+    public String portfolioUrl;
+    public String twitter;
+    public String linkedin;
+    public String instagram;
 }

@@ -44,7 +44,7 @@ Disabled. Stateless APIs that authenticate via `Authorization` headers (not cook
 
 ### frame options
 
-`X-Frame-Options: SAMEORIGIN`. Required by the iframe shell pattern used in the `design3` frontend.
+`X-Frame-Options: SAMEORIGIN`. Required by the iframe shell pattern used in the `landing` frontend.
 
 ### CORS — central configuration
 
@@ -86,7 +86,7 @@ Per-controller `@CrossOrigin` annotations have been removed in this audit. Don't
 
 ## `WebConfig`
 
-Maps every URL not picked up by a `@RestController` to a file under `app.frontend.path` (default `../frontend/design3/`). This is what makes `http://localhost:8080/` serve `index.html`, `http://localhost:8080/theme.css` serve `theme.css`, etc. — the API and the SPA run from one Spring process during development.
+Maps every URL not picked up by a `@RestController` to a file under `app.frontend.path` (default `../frontend/landing/`). This is what makes `http://localhost:8080/` serve `index.html`, `http://localhost:8080/theme.css` serve `theme.css`, etc. — the API and the SPA run from one Spring process during development.
 
 Change the path via `application.properties`, not by editing this class.
 

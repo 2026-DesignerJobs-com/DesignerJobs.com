@@ -1,4 +1,4 @@
-# design3
+# landing
 
 Pure Bootstrap frontend for DesignerJobs.com.
 Bootstrap 5.3 utilities only · Space Mono + Fraunces · vanilla JS · no custom CSS classes
@@ -10,7 +10,7 @@ Simplified version of the original design. Pure bootstrap.
 ```sh
 cd frontend
 python3 -m http.server 8080
-# Visit http://localhost:8080/design3/
+# Visit http://localhost:8080/landing/
 ```
 
 ## How it works
@@ -46,7 +46,7 @@ Navigation uses an **iframe shell**: `index.html` renders the navbar and footer 
 ## Files
 
 ```
-design3/
+landing/
 ├── index.html              ← shell (entry point); auth-aware navbar
 ├── shell.html              ← redirect to index.html
 ├── homepage.html           ← homepage content; dynamic recent-job listing

@@ -1,7 +1,7 @@
 package at.ac.fhcampuswien.pexels;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,13 +12,18 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
-@CrossOrigin(origins = "*")
 @RestController
 public class PexelsController {
-    private static final String PEXELS_API_KEY = "cGxLEI8BRyoz7roYTh10mdrwBxCnXT8ozUf9MQcD6EhF9SsSF5oh3uCD";
 
-    private final HttpClient httpClient = HttpClient.newHttpClient();
+    // Supplied via the PEXELS_API_KEY env var (app.pexels.api-key). Never hardcode the key (B27).
+    @Value("${app.pexels.api-key:}")
+    private String pexelsApiKey;
+
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(5))
+            .build();
 
     @GetMapping("/api/design-inspiration")
     public ResponseEntity<String> getDesignInspiration(
@@ -33,7 +38,8 @@ public class PexelsController {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
-                    .header("Authorization", PEXELS_API_KEY)
+                    .timeout(Duration.ofSeconds(10))
+                    .header("Authorization", pexelsApiKey)
                     .build();
 
             HttpResponse<String> response = httpClient.send(

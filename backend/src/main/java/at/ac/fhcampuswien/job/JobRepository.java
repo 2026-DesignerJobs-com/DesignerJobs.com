@@ -252,7 +252,7 @@ public class JobRepository {
                 work_mode = ?,
                 deadline = ?,
                 tags = ?,
-                created_at = ?,
+                created_at = ?
                 WHERE id = ?
         """;
 

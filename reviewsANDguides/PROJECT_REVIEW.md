@@ -10,6 +10,8 @@
 
 > **Update 2026-06-13:** High-effort review of the last-24h pushes to `main` + `kat-second-frontend` (full report: `reviewsANDguides/review-13.06.26.md`). **Two criticals on `main`:** **B26** — `JobRepository.update` has a trailing comma in the `UPDATE jobs … created_at = ?,` SQL → every `PUT /jobs/{id}` 500s; and **H7** — `ChatServiceTest` still references the deleted `ExternalChatApiClient`, so the test suite **doesn't compile** (`mvn test`/`package`/CI broken), which masked B26. New from TachyonCc's Pexels integration: **B27** — hardcoded Pexels API key + re-added `@CrossOrigin(origins="*")` + no timeout + public `/api/**`; and **F16** — `profile.html` renders Pexels fields via unescaped `innerHTML`. Confirmed **still open on `main`**: **B25** (world-clock NPE on null), **B24** (rate-clobber), **B23 gap** (soft-deleted users still fetchable) — all three already fixed on the `bugHunt` branch.
 
+> **✅ Resolved 2026-06-13 — PR #23 merged into `main`.** `bugHunt` (16 fixes) was merged into `main` along with **B26** (SQL comma) and **B27** (Pexels key → `PEXELS_API_KEY` env var, `@CrossOrigin` dropped, timeouts added). `mvn test` on `main` is now **green (116 tests, 0 failures)**. **Fixed on `main`:** B15, B17, B19, B20, B23, B24, B25, B26, B27, H6, H7, F2, F4 (partial), F8, plus POST `/jobs` role/id checks, the apply-race 409, and `Locale.ROOT` normalization. **Still open:** **F16** (`profile.html` Pexels `innerHTML`), the `kat-second-frontend` admin dashboard (§9d), **B16**, and the discipline→category half of **F4**. ⚠️ **The leaked Pexels key must still be rotated** — it remains in git history.
+
 ---
 
 ## 0. How to use this document
@@ -443,19 +445,19 @@ The live frontend is `design3/`. Minor, but confusing for newcomers. Trust `fron
 ### ✅ B22 — ~~`DELETE /jobs/{id}` lets **any designer** delete **any job**~~ — FIXED 2026-06-11
 The delete endpoint (`42fb250`) authorized `isOwnerClient || isDesigner` — every logged-in designer could delete every job. Fixed exactly as proposed: the `isDesigner` branch was dropped, only `job.clientId == auth.getName()` may delete (Javadoc updated, non-owner 403 covered in `JobControllerTest`).
 
-### 🟡 B23 — ~~`DELETE /auth/me` hard-deletes the user, orphaning owned data~~ — FIXED 2026-06-12 (gap remains)
+### ✅ B23 — ~~`DELETE /auth/me` hard-deletes the user, orphaning owned data~~ — FIXED (soft-delete 2026-06-12; read-filter gap closed 2026-06-13, PR #23)
 ~~The self-service delete ran `DELETE FROM users WHERE id=?` with no cleanup, leaving `jobs.client_id` / `applications.designer_id` / chat references dangling.~~ Fixed in `ee6fd9e` (Lika): `deleteById` now **soft-deletes by anonymizing in place** — `UPDATE users SET role='DELETED', full_name='Deleted Account', email='deleted_<id>@…', password_hash='NO_ACCESS', …`. The row + id survive, so nothing dangles; login is blocked and the real email is freed. **Remaining gap:** read queries don't exclude soft-deleted rows — `findById`/`findByEmail` are still `SELECT … WHERE id/email=?` with no `AND role <> 'DELETED'`, so a deleted account is still fetchable (`GET /auth/me` returns it; a still-valid JWT could `PUT /auth/me` and repopulate it; future `/designers` listing would show it). *Fix: add `AND role <> 'DELETED'` to the read queries.*
 
-### 🟡 B24 — `PUT /auth/me` binds an untyped map with no validation — PARTIALLY FIXED 2026-06-12
+### ✅ B24 — ~~`PUT /auth/me` binds an untyped map with no validation~~ — FIXED 2026-06-13 (PR #23: boxed `Integer` rates + `@Size`/`@Valid` length validation)
 ~~`AuthController.updateProfile` read a `Map<String,Object>` with unchecked `(String)`/`(Number)` casts.~~ `ee6fd9e` (Lika) replaced it with a typed `ProfileUpdateRequest` DTO, so a wrong JSON type now yields a Jackson **400** instead of a `ClassCastException` 500. **Still open:** (a) **no length validation** — `spring-boot-starter-validation` isn't on the classpath and there's no `@Size`/`@Valid`, so an over-long `bio`/`portfolioUrl` past the `VARCHAR` caps still throws H2 "value too long" → 500; (b) **new regression** — the rate fields are primitive `int` in the DTO and assigned unconditionally, so a `PUT` that omits `hourlyMin`/`hourlyMax`/`projectMin` overwrites the stored values with `0` (the string fields are guarded with `!= null`; ints can't be). *Fix: add validation + use boxed `Integer` with a null check for the rates.*
 
-### 🟠 B25 — External time API: graceful-null without a timeout or a null-check — new 2026-06-12
+### ✅ B25 — ~~External time API: graceful-null without a timeout or a null-check~~ — FIXED 2026-06-13 (PR #23: connect/request timeouts + `WorldClockService` null-guard)
 `ee6fd9e`/`aa28246`/`e072ab6` (Lika) changed `ExternalTimeApiClient` to **return `null`** (instead of throwing) on a non-2xx / IOException, to "prevent server crashes." Two problems remain: (a) **still no connect/request timeout**, so a hung `timeapi.io` still pins a Tomcat worker indefinitely (the original **B15**); and (b) **`WorldClockService.loadCityTime` never null-checks** the client's result — it calls `apiResponse.path("date")` on the returned value, so a `null` now throws a **NullPointerException → 500**, i.e. the crash wasn't actually prevented, just moved. *Fix: set `.connectTimeout`/`.timeout`, and have the service skip/degrade per city when the client returns `null`.* *(Note: the external **chat** client + `USE_EXTERNAL_CHAT_API` were removed the same day, which resolves the latent chat-ordering finding.)*
 
-### 🔴 B26 — `PUT /jobs/{id}` is dead: malformed UPDATE SQL — new 2026-06-13
+### ✅ B26 — ~~`PUT /jobs/{id}` is dead: malformed UPDATE SQL~~ — FIXED 2026-06-13 (PR #23, `ab3d18b`)
 `JobRepository.update`'s SQL ends the SET list with `created_at = ?,` and then `WHERE id = ?` — a **trailing comma before `WHERE`**, which is invalid SQL. Every `PUT /jobs/{id}` throws an H2 syntax `SQLException` → `RuntimeException` → **500**; the whole job-edit endpoint is dead. It shipped because the existing `JobRepositoryTest.update_changesFields` (which would catch it) never runs — the test module doesn't compile (see **H7**). Introduced alongside the view-count change. *Fix: drop the trailing comma (and reconsider rewriting `created_at` on every update at all).*
 
-### 🔴 B27 — Pexels integration: committed API key, wildcard CORS, no timeout, public — new 2026-06-13
+### 🟡 B27 — Pexels integration: committed API key, wildcard CORS, no timeout, public — FIXED 2026-06-13 (PR #23, `c0ca822`: key→`PEXELS_API_KEY` env, `@CrossOrigin` dropped, timeouts) — ⚠️ leaked key still needs rotating (it's in git history)
 `pexels/PexelsController.java` (TachyonCc's "design inspiration" proxy) has four issues: (a) a **live Pexels API key hardcoded** in source and committed to the repo; (b) `@CrossOrigin(origins="*")` — a per-controller **wildcard CORS** source against the centralized `SecurityConfig` rule (same regression class as the AuthController one); (c) `HttpClient.newHttpClient()` with **no request timeout** — a hung `api.pexels.com` pins a worker thread; (d) `/api/**` is **`permitAll`**, so the proxy is open and the key is abusable. *Fix: move the key to an env var and rotate it; drop the `@CrossOrigin`; add connect/request timeouts; scope the matcher.*
 
 ---
@@ -491,7 +493,7 @@ In `AuthControllerTest`, the "password is hashed, not raw" check is `assertThat(
 
 > Note: the one **production** change made for testability — `Database.getConnection()` reading `db.url`/`db.user`/`db.password` system properties — is correct and preserves the original file-DB defaults exactly. No app-behavior regression.
 
-### 🔴 H7 — Test suite doesn't compile: `ChatServiceTest` references the deleted `ExternalChatApiClient` — new 2026-06-13
+### ✅ H7 — ~~Test suite doesn't compile: `ChatServiceTest` references the deleted `ExternalChatApiClient`~~ — FIXED 2026-06-13 (PR #23)
 After the chat refactor deleted `ExternalChatApiClient`, `ChatServiceTest` still declares `@Mock ExternalChatApiClient externalChatApiClient;` and `verify(externalChatApiClient, …).listConversations(…)`, so `src/test` references a type that no longer exists. **The whole test module fails to compile**, so `mvn test` / `mvn package` / CI all fail — and the broken build hid **B26** (the malformed `PUT /jobs/{id}` SQL that `JobRepositoryTest` covers). *Fix: drop the stale mock + verify, then re-run the suite to surface B26.*
 
 ---

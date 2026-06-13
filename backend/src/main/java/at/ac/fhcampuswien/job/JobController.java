@@ -147,6 +147,16 @@ public class JobController {
 
         return ResponseEntity.ok(updatedJob);
     }
+    @PatchMapping("/{id}/view-count")
+    public ResponseEntity<?> incrementViewCount(@PathVariable String id) {
+        Job job = jobRepository.incrementViewCount(id);
+
+        if (job == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(job);
+    }
 
     /**
      * DELETE /jobs/{id}

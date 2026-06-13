@@ -104,7 +104,12 @@
         }
 
         try {
-            const response = await fetch("http://localhost:8080/jobs/" + encodeURIComponent(currentJobId));
+            const response = await fetch(
+                "http://localhost:8080/jobs/" + encodeURIComponent(currentJobId) + "/view-count",
+                {
+                    method: "PATCH"
+                }
+            );
 
             if (!response.ok) {
                 throw new Error("Job could not be loaded.");
@@ -121,6 +126,7 @@
             const designType = escapeHtml(job.designType || job.design_type || "-");
             const workMode = escapeHtml(job.workMode || job.work_mode || "-");
             const deadline = escapeHtml(job.deadline || "-");
+            const viewCount = job.viewCount || job.view_count || 0;
             const clientId = job.clientId || job.client_id || job.ownerId || job.owner_id || "";
 
             status.textContent = "Ready";
@@ -129,10 +135,17 @@
         <article class="card bg-primary text-white border-0 rounded-4">
           <div class="card-body p-4 p-lg-5">
 
-            <h3 class="font-monospace text-uppercase fw-bold text-white mb-4"
-                style="font-size:1.6rem; letter-spacing:.06em">
-              ${title}
-            </h3>
+            <div class="d-flex justify-content-between gap-3 align-items-start mb-4">
+              <h3 class="font-monospace text-uppercase fw-bold text-white mb-0"
+                  style="font-size:1.6rem; letter-spacing:.06em">
+                ${title}
+              </h3>
+
+              <span class="badge rounded-pill bg-light text-primary font-monospace text-uppercase px-3 py-2"
+                    style="font-size:.7rem; letter-spacing:.14em; white-space:nowrap">
+                ${viewCount} Views
+              </span>
+            </div>
 
             <p class="opacity-90 mb-4" style="font-size:1.05rem; line-height:1.7">
               ${description}

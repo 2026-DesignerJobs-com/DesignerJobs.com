@@ -19,14 +19,20 @@ public class DatabaseInitializer {
         work_mode VARCHAR(50),
         deadline VARCHAR(50),
         tags TEXT,
-        created_at VARCHAR(50)
+        created_at VARCHAR(50),
+        view_count INT DEFAULT 0
     );
+        """;
+
+        String addViewCountColumnSql = """
+            ALTER TABLE jobs ADD COLUMN IF NOT EXISTS view_count INT DEFAULT 0;
         """;
 
         try (Connection connection = Database.getConnection();
              Statement statement = connection.createStatement()) {
 
             statement.execute(sql);
+            statement.execute(addViewCountColumnSql);
 
         } catch (Exception e) {
             e.printStackTrace();

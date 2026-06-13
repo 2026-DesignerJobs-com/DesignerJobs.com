@@ -30,7 +30,8 @@ public class JobRepository {
                 work_mode VARCHAR(255),
                 deadline VARCHAR(255),
                 tags VARCHAR(1000),
-                created_at VARCHAR(50) NOT NULL
+                created_at VARCHAR(50) NOT NULL,
+                view_count INT DEFAULT 0
             )
         """;
 
@@ -47,6 +48,7 @@ public class JobRepository {
             statement.executeUpdate("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS work_mode VARCHAR(255)");
             statement.executeUpdate("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS deadline VARCHAR(255)");
             statement.executeUpdate("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS tags VARCHAR(1000)");
+            statement.executeUpdate("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS view_count INT DEFAULT 0");
 
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create or update jobs table", e);
@@ -188,7 +190,7 @@ public class JobRepository {
               AND (? IS NULL OR LOWER(budget) = LOWER(?))
               AND (? IS NULL OR LOWER(work_mode) = LOWER(?))
               AND (? IS NULL OR LOWER(tags) LIKE LOWER(?))
-            ORDER BY created_at DESC
+              ORDER BY created_at DESC
         """;
 
         List<Job> jobs = new ArrayList<>();
@@ -250,8 +252,8 @@ public class JobRepository {
                 work_mode = ?,
                 deadline = ?,
                 tags = ?,
-                created_at = ?
-            WHERE id = ?
+                created_at = ?,
+                WHERE id = ?
         """;
 
         try (Connection connection = Database.getConnection();
@@ -282,7 +284,30 @@ public class JobRepository {
             throw new RuntimeException("Failed to update job", e);
         }
     }
+    public Job incrementViewCount(String id) {
+        String sql = """
+        UPDATE jobs
+        SET view_count = COALESCE(view_count, 0) + 1
+        WHERE id = ?
+    """;
 
+        try (Connection connection = Database.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, id);
+
+            int affectedRows = statement.executeUpdate();
+
+            if (affectedRows > 0) {
+                return findById(id);
+            }
+
+            return null;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to increment job view count", e);
+        }
+    }
     public boolean deleteById(String id) {
         String sql = """
             DELETE FROM jobs
@@ -318,6 +343,7 @@ public class JobRepository {
         job.deadline = resultSet.getString("deadline");
         job.tags = resultSet.getString("tags");
         job.createdAt = resultSet.getString("created_at");
+        job.viewCount = resultSet.getInt("view_count");
 
         return job;
     }

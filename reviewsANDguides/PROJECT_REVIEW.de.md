@@ -69,15 +69,18 @@ Das ist das offizielle Bewertungsraster, abgeglichen mit dem **tatsächlichen Co
 | **S1** | ≥2 externe REST-Services konsumieren | ✅ | **Geschlossen 2026-06-10:** `ExternalLocationApiClient` → `countriesnow.space` (`GET /locations/cities?country=…`, Commit `371b55f`), konsumiert vom Standort-Autofill im Profil-Editor. Plus `timeapi.io`. (`ExternalChatApiClient` bleibt ein deaktivierter Platzhalter.) |
 | **S2** | Eine zweite FE-Komponente, die ≥3 BE-Endpunkte nutzt | 🟠 | **In Arbeit auf `kat-second-frontend`** (Admin-Dashboard, `frontend/admin/`). Ruft aktuell **2** Endpunkte (`GET /jobs` echt; `GET /designers` noch ein 501-Stub → Demo-Fallback) — braucht **≥3 echte**. Noch nicht auf `main` gemergt. Volle Bewertung in §9d. |
 | **S3** | FE ist W3C-konform | 🟠 | **6 Seiten scheiterten 2026-06-10** (~17 Fehler; siehe §9c). **2026-06-12:** `index.html` (doppeltes `</script>`) und `homepage.html`-Header gefixt (Kat/Yarah). Rest neu validieren: `post-a-job` / `profile-edit` / `register` / `search-results` / `advanced-search`. |
-| **S4** | FE responsiv (Mobil- + Desktop-Ansicht) | ⚠️ | Bootstrap-Grid ist responsiv; eine **dedizierte** Mobil- vs. Desktop-Ansicht bestätigen (Breakpoints, Nav-Collapse) und dokumentieren. |
+| **S4** | FE responsiv (Mobil- + Desktop-Ansicht) | ✅ |Geprüft am 13.06.2026: Mobile Ansicht bei 413px verifiziert. Weltzeituhr bricht sauber um, Nav-Collapse schließt automatisch.
 
 ### COULD — 5 Punkte
 
 | # | Anforderung | Status | Beleg / was fehlt |
 |---|---|---|---|
-| **C1** | ≥3 externe REST-Services konsumieren | ❌ | braucht drei — **zwei jetzt vorhanden** (`timeapi.io`, `countriesnow.space`). Eine weitere echte API schließt es. |
+| **C1** | Status: ✅
+ Geschlossen 13.06.2026: Mit der Integration der Pexels-Bild-API haben wir insgesamt 3 externe REST-Services vollständig im System implementiert.
+Konsumierte APIs :https://api.pexels.com/v1/search https://countriesnow.space/api/v0.1/countries/cities https://timeapi.io|
 | **C2** | BE liefert JSON **und** XML | ✅ *(2026-06-11)* | `jackson-dataformat-xml` + Content Negotiation: JSON ist Default, `Accept: application/xml` liefert XML (explizites `produces` auf `GET /jobs` + `GET /jobs/{id}`, app-weit über den registrierten Converter). Abgedeckt durch `ContentNegotiationTest`. |
-| **C3** | BE-PATCH-Endpunkt, vom FE konsumiert | ❌ | kein `@PatchMapping` vorhanden (das einzige „PATCH" im Code ist ein CORS-*Allowed-Method*-Eintrag in `SecurityConfig`, kein Endpunkt). Einen PATCH-Endpunkt ergänzen (z. B. partielles Job-/Profil-Update) und vom FE aufrufen. |
+| **C3** | Status: ✅
+Beleg / was fehlt: Geschlossen 13.06.2026: Ein echter PATCH-Endpunkt wurde im Backend über die SecurityConfig freigegeben (/jobs/*/view-count) und wird vom Frontend konsumiert, um die View-Counts der Job-Postings partiell zu aktualisieren.
 
 ### Punkte-Zusammenfassung (ehrliche Selbsteinschätzung)
 

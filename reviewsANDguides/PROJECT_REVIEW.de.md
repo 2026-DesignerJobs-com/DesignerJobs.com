@@ -75,11 +75,10 @@ Das ist das offizielle Bewertungsraster, abgeglichen mit dem **tatsächlichen Co
 
 | # | Anforderung | Status | Beleg / was fehlt |
 |---|---|---|---|
-| **C1** | Status: ✅
- Geschlossen 13.06.2026: Mit der Integration der Pexels-Bild-API haben wir insgesamt 3 externe REST-Services vollständig im System implementiert.
+| **C1** | ✅ | Geschlossen 13.06.2026: Mit der Integration der Pexels-Bild-API haben wir insgesamt 3 externe REST-Services vollständig im System implementiert. |
 Konsumierte APIs :https://api.pexels.com/v1/search https://countriesnow.space/api/v0.1/countries/cities https://timeapi.io|
 | **C2** | BE liefert JSON **und** XML | ✅ *(2026-06-11)* | `jackson-dataformat-xml` + Content Negotiation: JSON ist Default, `Accept: application/xml` liefert XML (explizites `produces` auf `GET /jobs` + `GET /jobs/{id}`, app-weit über den registrierten Converter). Abgedeckt durch `ContentNegotiationTest`. |
-| **C3** | Status: ✅
+| **C3** | Status: ✅ |
 Beleg / was fehlt: Geschlossen 13.06.2026: Ein echter PATCH-Endpunkt wurde im Backend über die SecurityConfig freigegeben (/jobs/*/view-count) und wird vom Frontend konsumiert, um die View-Counts der Job-Postings partiell zu aktualisieren.
 
 ### Punkte-Zusammenfassung (ehrliche Selbsteinschätzung)

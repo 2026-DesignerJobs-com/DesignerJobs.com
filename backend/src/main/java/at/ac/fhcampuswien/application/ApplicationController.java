@@ -57,10 +57,18 @@ public class ApplicationController {
             ));
         }
 
-        JobApplication savedApplication =
-                jobApplicationRepository.create(jobId, designerId, application.coverLetter);
+        try {
+            JobApplication savedApplication =
+                    jobApplicationRepository.create(jobId, designerId, application.coverLetter);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedApplication);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedApplication);
+        } catch (DuplicateApplicationException e) {
+            // The up-front check above races with concurrent applies; the UNIQUE
+            // constraint is the backstop, mapped to 409 here.
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                    "error", "you have already applied to this job"
+            ));
+        }
     }
 
     // GET  /jobs/{jobId}/applications       → client lists received applications
@@ -169,7 +177,13 @@ public class ApplicationController {
         }
 
         JobApplication updatedApplication =
-                jobApplicationRepository.updateStatus(id, newStatus);
+                jobApplicationRepository.updateStatusFrom(id, "PENDING", newStatus);
+
+        if (updatedApplication == null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                    "error", "application is no longer PENDING"
+            ));
+        }
 
         return ResponseEntity.ok(updatedApplication);
     }
@@ -207,7 +221,13 @@ public class ApplicationController {
         }
 
         JobApplication hiredApplication =
-                jobApplicationRepository.updateStatus(id, "HIRED");
+                jobApplicationRepository.updateStatusFrom(id, "ACCEPTED", "HIRED");
+
+        if (hiredApplication == null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                    "error", "application is no longer ACCEPTED"
+            ));
+        }
 
         // TODO: trigger contract creation via ContractService once contract/ is implemented.
 

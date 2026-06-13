@@ -8,10 +8,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,6 +27,10 @@ class JobControllerTest {
     @Mock Authentication auth;
 
     @InjectMocks JobController controller;
+
+    private void authorizeAs(String authority) {
+        doReturn(List.of(new SimpleGrantedAuthority(authority))).when(auth).getAuthorities();
+    }
 
     @Test
     void create_rejectsUnauthenticated_with401() {
@@ -49,6 +57,7 @@ class JobControllerTest {
     @Test
     void create_setsClientIdFromAuth_notFromBody() {
         when(auth.getName()).thenReturn("client-1");
+        authorizeAs("ROLE_CLIENT");
         when(jobRepository.create(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Job job = new Job();
@@ -59,6 +68,20 @@ class JobControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(((Job) response.getBody()).clientId).isEqualTo("client-1");
+    }
+
+    @Test
+    void create_rejectsDesigner_with403() {
+        when(auth.getName()).thenReturn("designer-1");
+        authorizeAs("ROLE_DESIGNER");
+
+        Job job = new Job();
+        job.title = "Logo";
+
+        ResponseEntity<?> response = controller.create(job, auth);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        verify(jobRepository, never()).create(any());
     }
 
     @Test

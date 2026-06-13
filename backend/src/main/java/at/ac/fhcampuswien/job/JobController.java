@@ -51,7 +51,17 @@ public class JobController {
             ));
         }
 
+        if (!isClient(auth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "error", "only clients can post jobs"
+            ));
+        }
+
         job.clientId = auth.getName();
+        // Never trust a client-supplied id/createdAt on create — they'd let a caller force a
+        // PRIMARY KEY collision (500) or forge the sort order. Let the repository generate them.
+        job.id = null;
+        job.createdAt = null;
 
         Job savedJob = jobRepository.create(job);
 
@@ -199,5 +209,13 @@ public class JobController {
         return ResponseEntity.ok(Map.of(
                 "message", "job deleted successfully"
         ));
+    }
+
+    private boolean isClient(Authentication auth) {
+        return auth.getAuthorities().stream()
+                .anyMatch(authority ->
+                        "CLIENT".equals(authority.getAuthority())
+                                || "ROLE_CLIENT".equals(authority.getAuthority())
+                );
     }
 }

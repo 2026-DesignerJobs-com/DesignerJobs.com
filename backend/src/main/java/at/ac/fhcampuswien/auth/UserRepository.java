@@ -114,7 +114,8 @@ public class UserRepository {
     }
 
     public UserModel findByEmail(String email) {
-        String sql = "SELECT * FROM users WHERE email = ?";
+        // Exclude soft-deleted (anonymized) accounts so they can't log in / be fetched (B23).
+        String sql = "SELECT * FROM users WHERE email = ? AND role <> 'DELETED'";
         try (Connection connection = Database.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, email);
@@ -130,7 +131,8 @@ public class UserRepository {
     }
 
     public UserModel findById(String id) {
-        String sql = "SELECT * FROM users WHERE id = ?";
+        // Exclude soft-deleted (anonymized) accounts (B23).
+        String sql = "SELECT * FROM users WHERE id = ? AND role <> 'DELETED'";
         try (Connection connection = Database.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, id);

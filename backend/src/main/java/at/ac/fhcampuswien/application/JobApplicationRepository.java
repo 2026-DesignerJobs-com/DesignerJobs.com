@@ -106,6 +106,10 @@ public class JobApplicationRepository {
 
             return application;
 
+        } catch (java.sql.SQLIntegrityConstraintViolationException e) {
+            // Race: a concurrent apply for the same (job, designer) won the UNIQUE
+            // constraint — surface a clean duplicate signal instead of a 500.
+            throw new DuplicateApplicationException();
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create job application", e);
         }
@@ -176,6 +180,35 @@ public class JobApplicationRepository {
 
             statement.setString(1, status);
             statement.setString(2, id);
+
+            int updatedRows = statement.executeUpdate();
+
+            if (updatedRows == 0) {
+                return null;
+            }
+
+            return findById(id);
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to update application status", e);
+        }
+    }
+
+    // Atomic conditional transition: flips the status only if it still equals expectedStatus.
+    // Returns the updated row, or null if the precondition no longer holds (concurrent change) — B19.
+    public JobApplication updateStatusFrom(String id, String expectedStatus, String newStatus) {
+        String sql = """
+            UPDATE applications
+            SET status = ?
+            WHERE id = ? AND status = ?
+        """;
+
+        try (Connection connection = Database.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, newStatus);
+            statement.setString(2, id);
+            statement.setString(3, expectedStatus);
 
             int updatedRows = statement.executeUpdate();
 

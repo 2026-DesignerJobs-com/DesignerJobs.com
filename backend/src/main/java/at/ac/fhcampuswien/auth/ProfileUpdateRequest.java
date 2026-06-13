@@ -1,20 +1,24 @@
 package at.ac.fhcampuswien.auth;
 
-public class ProfileUpdateRequest {
-    public String fullName;
-    public String designType;
-    public String bio;
-    public String country;
-    public String city;
-    public String availability;
-    public String skills;
-    public String portfolioVisibility;
-    public String portfolioUrl;
-    public String twitter;
-    public String linkedin;
-    public String instagram;
+import jakarta.validation.constraints.Size;
 
-    public int hourlyMin;
-    public int hourlyMax;
-    public int projectMin;
+// @Size caps mirror the users-table VARCHAR limits, so over-long input is a 400, not an H2 500 (B24).
+public class ProfileUpdateRequest {
+    @Size(max = 255) public String fullName;
+    @Size(max = 255) public String designType;
+    @Size(max = 2000) public String bio;
+    @Size(max = 255) public String country;
+    @Size(max = 255) public String city;
+    @Size(max = 50) public String availability;
+    @Size(max = 1000) public String skills;
+    @Size(max = 50) public String portfolioVisibility;
+    @Size(max = 500) public String portfolioUrl;
+    @Size(max = 255) public String twitter;
+    @Size(max = 500) public String linkedin;
+    @Size(max = 255) public String instagram;
+
+    // Boxed so an omitted field is null (not 0) and a partial update doesn't clobber the stored rate.
+    public Integer hourlyMin;
+    public Integer hourlyMax;
+    public Integer projectMin;
 }

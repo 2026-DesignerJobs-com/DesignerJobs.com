@@ -7,8 +7,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -40,14 +42,14 @@ public class AuthController {
             ));
         }
 
-        String normalizedRole = req.role.trim().toUpperCase();
+        String normalizedRole = req.role.trim().toUpperCase(Locale.ROOT);
         if (!normalizedRole.equals("CLIENT") && !normalizedRole.equals("DESIGNER")) {
             return ResponseEntity.badRequest().body(Map.of(
                     "error", "role must be CLIENT or DESIGNER"
             ));
         }
 
-        String normalizedEmail = req.email.trim().toLowerCase();
+        String normalizedEmail = req.email.trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmail(normalizedEmail)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
                     "error", "email already exists"
@@ -89,7 +91,7 @@ public class AuthController {
             ));
         }
 
-        UserModel user = userRepository.findByEmail(req.email.trim().toLowerCase());
+        UserModel user = userRepository.findByEmail(req.email.trim().toLowerCase(Locale.ROOT));
         if (user == null || !passwordEncoder.matches(req.password, user.passwordHash)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
                     "error", "invalid email or password"
@@ -150,7 +152,7 @@ public class AuthController {
     }
 
     @PutMapping("/me")
-    public ResponseEntity<?> updateProfile(Authentication auth, @RequestBody ProfileUpdateRequest body) {
+    public ResponseEntity<?> updateProfile(Authentication auth, @Valid @RequestBody ProfileUpdateRequest body) {
         if (auth == null || auth.getName() == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "not authenticated"));
         }
@@ -174,9 +176,9 @@ public class AuthController {
         if (body.linkedin != null) user.linkedin = body.linkedin.trim();
         if (body.instagram != null) user.instagram = body.instagram.trim();
 
-        user.hourlyMin = body.hourlyMin;
-        user.hourlyMax = body.hourlyMax;
-        user.projectMin = body.projectMin;
+        if (body.hourlyMin != null) user.hourlyMin = body.hourlyMin;
+        if (body.hourlyMax != null) user.hourlyMax = body.hourlyMax;
+        if (body.projectMin != null) user.projectMin = body.projectMin;
 
         userRepository.update(user);
 

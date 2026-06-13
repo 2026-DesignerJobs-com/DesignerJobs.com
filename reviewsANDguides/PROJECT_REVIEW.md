@@ -8,6 +8,8 @@
 
 > **Update 2026-06-12:** Team day. **Lika** (`ee6fd9e` + follow-ups on `main`): removed the `@CrossOrigin` regression from `AuthController` (back to central CORS); **B23** user soft-delete (anonymize-in-place — no more orphaned ids); **B24** typed `ProfileUpdateRequest` DTO (wrong type → 400, not 500); and **removed the external chat-API placeholder** (`ExternalChatApiClient` + `USE_EXTERNAL_CHAT_API` gone → the latent chat-ordering finding is resolved). The time API now returns `null` instead of throwing — **but there is still no HTTP timeout (B15 stands), and `WorldClockService` doesn't null-check the result → NPE/500 on upstream failure** (new follow-up). **Kat/Yarah**: W3C fixes to `index.html` (duplicate `</script>`) + homepage header (S3 progress). DB file untracked + `*.db` gitignored. **Scope note:** this review now also covers the **`kat-second-frontend`** branch (the S2 admin dashboard) — see §9d. Remaining gaps on B23/B24 are tracked in §9.
 
+> **Update 2026-06-13:** High-effort review of the last-24h pushes to `main` + `kat-second-frontend` (full report: `reviewsANDguides/review-13.06.26.md`). **Two criticals on `main`:** **B26** — `JobRepository.update` has a trailing comma in the `UPDATE jobs … created_at = ?,` SQL → every `PUT /jobs/{id}` 500s; and **H7** — `ChatServiceTest` still references the deleted `ExternalChatApiClient`, so the test suite **doesn't compile** (`mvn test`/`package`/CI broken), which masked B26. New from TachyonCc's Pexels integration: **B27** — hardcoded Pexels API key + re-added `@CrossOrigin(origins="*")` + no timeout + public `/api/**`; and **F16** — `profile.html` renders Pexels fields via unescaped `innerHTML`. Confirmed **still open on `main`**: **B25** (world-clock NPE on null), **B24** (rate-clobber), **B23 gap** (soft-deleted users still fetchable) — all three already fixed on the `bugHunt` branch.
+
 ---
 
 ## 0. How to use this document
@@ -357,7 +359,7 @@ From `SecurityConfig.filterChain`, in order:
 
 ## 9. Bugs & correctness issues (review these first)
 
-Ordered by severity. Found by reading every backend source file (controllers, services, repositories) line-by-line and tracing call sites against the actual code (multiple `xhigh` review passes — backend, frontend, and test harness). **These are the concrete things to fix in the 6 days.** Numbering: **B1–B13** first pass, **B14–B21** the deep backend review (§9), **B22** new 2026-06-11, **B23–B25** new 2026-06-12 (B23/B24 profile commits, B25 time-API), harness **H1–H6** in §9b, frontend **F1–F15** in §9c, second-FE/S2 eval in §9d. Status markers: ✅ fixed · 🟠/🟡 partially fixed or downgraded · unmarked = still open.
+Ordered by severity. Found by reading every backend source file (controllers, services, repositories) line-by-line and tracing call sites against the actual code (multiple `xhigh` review passes — backend, frontend, and test harness). **These are the concrete things to fix in the 6 days.** Numbering: **B1–B13** first pass, **B14–B21** the deep backend review (§9), **B22** new 2026-06-11, **B23–B25** new 2026-06-12 (B23/B24 profile commits, B25 time-API), **B26–B27** new 2026-06-13 (job-update SQL, Pexels), harness **H1–H7** in §9b, frontend **F1–F16** in §9c, second-FE/S2 eval in §9d. Status markers: ✅ fixed · 🟠/🟡 partially fixed or downgraded · unmarked = still open.
 
 ### ✅ B1 — ~~Login is case-sensitive on email~~ — FIXED 2026-06-11 (`219e278`)
 `login` now normalizes the email exactly like registration (`trim().toLowerCase()`) before `findByEmail`. Regression test `KnownBugsTest.b1` is green.
@@ -450,6 +452,12 @@ The delete endpoint (`42fb250`) authorized `isOwnerClient || isDesigner` — eve
 ### 🟠 B25 — External time API: graceful-null without a timeout or a null-check — new 2026-06-12
 `ee6fd9e`/`aa28246`/`e072ab6` (Lika) changed `ExternalTimeApiClient` to **return `null`** (instead of throwing) on a non-2xx / IOException, to "prevent server crashes." Two problems remain: (a) **still no connect/request timeout**, so a hung `timeapi.io` still pins a Tomcat worker indefinitely (the original **B15**); and (b) **`WorldClockService.loadCityTime` never null-checks** the client's result — it calls `apiResponse.path("date")` on the returned value, so a `null` now throws a **NullPointerException → 500**, i.e. the crash wasn't actually prevented, just moved. *Fix: set `.connectTimeout`/`.timeout`, and have the service skip/degrade per city when the client returns `null`.* *(Note: the external **chat** client + `USE_EXTERNAL_CHAT_API` were removed the same day, which resolves the latent chat-ordering finding.)*
 
+### 🔴 B26 — `PUT /jobs/{id}` is dead: malformed UPDATE SQL — new 2026-06-13
+`JobRepository.update`'s SQL ends the SET list with `created_at = ?,` and then `WHERE id = ?` — a **trailing comma before `WHERE`**, which is invalid SQL. Every `PUT /jobs/{id}` throws an H2 syntax `SQLException` → `RuntimeException` → **500**; the whole job-edit endpoint is dead. It shipped because the existing `JobRepositoryTest.update_changesFields` (which would catch it) never runs — the test module doesn't compile (see **H7**). Introduced alongside the view-count change. *Fix: drop the trailing comma (and reconsider rewriting `created_at` on every update at all).*
+
+### 🔴 B27 — Pexels integration: committed API key, wildcard CORS, no timeout, public — new 2026-06-13
+`pexels/PexelsController.java` (TachyonCc's "design inspiration" proxy) has four issues: (a) a **live Pexels API key hardcoded** in source and committed to the repo; (b) `@CrossOrigin(origins="*")` — a per-controller **wildcard CORS** source against the centralized `SecurityConfig` rule (same regression class as the AuthController one); (c) `HttpClient.newHttpClient()` with **no request timeout** — a hung `api.pexels.com` pins a worker thread; (d) `/api/**` is **`permitAll`**, so the proxy is open and the key is abusable. *Fix: move the key to an env var and rotate it; drop the `@CrossOrigin`; add connect/request timeouts; scope the matcher.*
+
 ---
 
 ## 9b. Test & build harness findings (from code review)
@@ -482,6 +490,9 @@ In `AuthControllerTest`, the "password is hashed, not raw" check is `assertThat(
 **Fix:** clear/restore the property in `@AfterEach`.
 
 > Note: the one **production** change made for testability — `Database.getConnection()` reading `db.url`/`db.user`/`db.password` system properties — is correct and preserves the original file-DB defaults exactly. No app-behavior regression.
+
+### 🔴 H7 — Test suite doesn't compile: `ChatServiceTest` references the deleted `ExternalChatApiClient` — new 2026-06-13
+After the chat refactor deleted `ExternalChatApiClient`, `ChatServiceTest` still declares `@Mock ExternalChatApiClient externalChatApiClient;` and `verify(externalChatApiClient, …).listConversations(…)`, so `src/test` references a type that no longer exists. **The whole test module fails to compile**, so `mvn test` / `mvn package` / CI all fail — and the broken build hid **B26** (the malformed `PUT /jobs/{id}` SQL that `JobRepositoryTest` covers). *Fix: drop the stale mock + verify, then re-run the suite to surface B26.*
 
 ---
 
@@ -537,6 +548,9 @@ The sidebar filter tiles have no `name`/form/handlers (clicking does nothing), a
 
 ### 🟠 F15 — `search-results.html` ships 7 static placeholder cards linking to `job-random.html` (report F16)
 Hardcoded mock cards (`search-results.html:269-471`) are visible before `DOMContentLoaded` — or permanently if `search-results.js` throws before `resultsContainer.innerHTML=""` (`:31`) — and their "View Job" buttons point at `job-random.html`, not real detail pages. *Fix: delete the static cards; the JS already renders results + empty state.*
+
+### 🟡 F16 — `profile.html` renders Pexels "design inspiration" via unescaped `innerHTML` — new 2026-06-13
+`loadDesignInspiration` (`profile.html:264`) builds the card grid with `container.innerHTML = photos.map(photo => \`…${photo.alt}…${photo.photographer}… href="${photo.url}"…\`)` — the Pexels `alt`, `photographer`, and `url` go in unescaped, while the rest of this file uses `escapeHtml`. Low risk (Pexels is trusted), but a field with a quote/angle-bracket breaks the markup / escapes the attribute, and `href` is unsanitized. *Fix: `escapeHtml` the text fields and validate `photo.url` starts with `http`.*
 
 ### S3 — W3C validation results (validator.w3.org/nu, all 15 pages)
 

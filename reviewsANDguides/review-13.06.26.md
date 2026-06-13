@@ -6,6 +6,8 @@ Scope: all pushes in the last 24h to **`origin/main`** (range `a4a2261^…`) and
 pushed code. New since the 2026-06-12 review: TachyonCc's **Pexels "design inspiration"
 API** + a **job view-count** feature; Lika's chat/time-API refactors; Kat's dashboard.
 
+> **✅ Update — resolved via PR #23 (merged into `main` 2026-06-13).** `bugHunt`'s 16 fixes were merged into `main` together with new fixes for **B26** (the SQL comma) and **B27** (Pexels key → `PEXELS_API_KEY` env var, `@CrossOrigin` dropped, timeouts added). `mvn test` on `main` is **green (116 tests, 0 failures)**. Of the 10 findings below, **8 are now fixed on `main`** — only **#9** (`kat-second-frontend` dashboard) and **#10** (`profile.html` Pexels `innerHTML`) remain open. ⚠️ The leaked Pexels key is gone from current source but **still in git history — rotate it.**
+
 ## The two criticals are linked
 
 `JobRepositoryTest.update_changesFields` would have caught the malformed `UPDATE` SQL
@@ -80,10 +82,21 @@ regression shipped. Fix the test first; it immediately surfaces the SQL bug.
 ]
 ```
 
-## Already fixed on `bugHunt`
+## Resolution — PR #23 merged into `main` (2026-06-13)
 
-Findings **3 (B25), 7 (B24), 8 (B23 gap)** are already fixed on the `bugHunt` branch
-(null-guard, boxed-Integer rates, `role <> 'DELETED'` read filter), along with the
-`ChatServiceTest` compile break (a different partial state there). Merging `bugHunt`
-into `main` clears those four; the **JobRepository SQL** and the **Pexels key/CORS/timeout**
-findings are new and not yet addressed anywhere.
+| finding | status on `main` |
+|---|---|
+| 1 — JobRepository UPDATE SQL (B26) | ✅ fixed (`ab3d18b`) |
+| 2 — ChatServiceTest compile break (H7) | ✅ fixed (merge) |
+| 3 — WorldClockService NPE (B25) | ✅ fixed (timeout + null-guard) |
+| 4 — Pexels hardcoded key (B27) | ✅ moved to `PEXELS_API_KEY` env — ⚠️ **rotate the leaked key (still in git history)** |
+| 5 — Pexels `@CrossOrigin("*")` (B27) | ✅ removed |
+| 6 — Pexels / time-API no timeout (B27/B25) | ✅ timeouts added |
+| 7 — PUT /auth/me rate clobber (B24) | ✅ boxed `Integer` + `@Size`/`@Valid` |
+| 8 — soft-delete read filter (B23) | ✅ `findById`/`findByEmail` exclude `role='DELETED'` |
+| 9 — admin dashboard (kat-second-frontend) | ❌ still open (branch not merged) |
+| 10 — profile.html Pexels `innerHTML` (F16) | ❌ still open |
+
+`mvn test` on merged `main` is green (116 tests). The remaining open items are #9 (the
+`kat-second-frontend` dashboard, evaluated in `PROJECT_REVIEW.md` §9d) and #10 (escape the
+Pexels fields in `profile.html`). Plus the operational follow-up: **rotate the Pexels API key.**

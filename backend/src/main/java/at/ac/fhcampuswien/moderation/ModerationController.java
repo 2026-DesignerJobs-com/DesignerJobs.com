@@ -38,24 +38,23 @@ public class ModerationController {
     }
 
     // 2. Job-Ausschreibung melden
-@PostMapping("/jobs/{id}/report")
-public ResponseEntity<?> reportJob(@PathVariable String id, @RequestBody Report report) {
-    report.targetType = "JOB";
-    report.targetId = id;
+    @PostMapping("/jobs/{id}/report")
+    public ResponseEntity<?> reportJob(@PathVariable String id, @RequestBody Report report) {
+        report.targetType = "JOB";
+        report.targetId = id;
 
-    // Wenn das Frontend eine reporterId mitgeschickt hat (z.B. die UUID), behalten wir sie!
-    // Nur wenn sie null oder leer ist, setzen wir "anonymous"
-    if (report.reporterId == null || report.reporterId.isBlank()) {
-        report.reporterId = "anonymous";
+        if (report.reporterId == null || report.reporterId.isBlank()) {
+            report.reporterId = "anonymous";
+        }
+
+        if (report.reason == null || report.reason.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Reason is required"));
+        }
+
+        reportRepository.save(report);
+        return ResponseEntity.ok(Map.of("message", "Job reported successfully", "id", report.id));
     }
 
-    if (report.reason == null || report.reason.isBlank()) {
-        return ResponseEntity.badRequest().body(Map.of("error", "Reason is required"));
-    }
-
-    reportRepository.save(report);
-    return ResponseEntity.ok(Map.of("message", "Job reported successfully", "id", report.id));
-}
     // 3. Benutzer/Profil melden
     @PostMapping("/users/{id}/report")
     public ResponseEntity<?> reportUser(@PathVariable String id, @RequestBody Report report) {
@@ -81,7 +80,7 @@ public ResponseEntity<?> reportJob(@PathVariable String id, @RequestBody Report 
         return ResponseEntity.ok(reports);
     }
 
-    // 5. Admin-Funktion: Status ändern (Verknüpft mit deiner toggleReportStatus JS-Funktion)
+    // 5. Admin-Funktion: Status ändern
     @PutMapping("/reports/{id}")
     public ResponseEntity<?> resolveReport(@PathVariable String id, @RequestBody Map<String, String> body) {
         String newStatus = body.get("status");

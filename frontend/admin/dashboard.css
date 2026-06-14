@@ -1,0 +1,34 @@
+   /* UI-Schriftart (Space Mono) für Navigation und Buttons erzwingen, wie im Theme gedacht */
+    .nav-link, .btn, .card-subtitle, .table th, .font-ui {
+        font-family: var(--font-ui), monospace;
+    }
+
+    /* Sidebar Desktop-Fixierung */
+    @media (min-width: 768px) {
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            height: 100vh;
+            width: 260px;
+        }
+        main {
+            margin-left: 260px;
+        }
+    }
+    .nav-pills .nav-link.active {
+    background-color: var(--bs-primary) !important;
+    color: #ffffff !important;
+    }
+
+    /* Sanfter Hover-Effekt für die hellen Sidebar-Links */
+    .sidebar .nav-link:not(.active) {
+        color: var(--bs-body-color) !important;
+        opacity: 0.75;
+    }
+    .sidebar .nav-link:not(.active):hover {
+        opacity: 1;
+        background-color: var(--bs-tertiary-bg);
+    }

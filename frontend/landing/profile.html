@@ -114,6 +114,13 @@
                 Logout
               </button>
 
+              <button id="profile-report-button"
+                      type="button"
+                      class="btn btn-light btn-outline-danger rounded-pill fw-bold text-uppercase px-4"
+                      style="letter-spacing:.16em; display: none;">
+                User melden
+              </button>
+
             </div>
           </div>
 
@@ -351,10 +358,18 @@
 
   async function loadProfile() {
     try {
-      const response = await Auth.authFetch("http://localhost:8080/auth/me");
+      const urlParams = new URLSearchParams(window.location.search);
+      const targetUserId = urlParams.get("userId");
 
+      // 2. Endpunkt dynamisch bestimmen:
+      // Wenn eine userId in der URL steht, laden wir diesen User.
+      // Wenn nicht, laden wir das eigene Profil (/auth/me).
+      const fetchUrl = targetUserId ? `/users/${targetUserId}` : "/auth/me";
+
+      // 3. Daten vom Server abrufen
+      const response = await Auth.authFetch(fetchUrl);
       if (!response.ok) {
-        throw new Error("Profile could not be loaded.");
+        throw new Error(`Failed to fetch profile: ${response.status}`);
       }
 
       const user = await response.json();
@@ -368,6 +383,14 @@
 
       document.getElementById("profile-email").textContent = user.email || "No email";
       document.getElementById("profile-created-at").textContent = formatDate(user.createdAt);
+
+      if (targetUserId && targetUserId !== localStorage.getItem("designer_jobs_userId")) {
+        // Es ist ein fremdes Profil -> Button anzeigen
+        document.getElementById("profile-report-button").style.display = "block";
+      } else {
+        // Eigenes Profil -> Button verstecken
+        document.getElementById("profile-report-button").style.display = "none";
+      }
 
       document.getElementById("profile-description").textContent =
               role === "DESIGNER"
@@ -414,6 +437,60 @@
     });
   }
 
+  // ==========================================
+  // USER MELDEN LOGIK
+  // ==========================================
+  const profileReportButton = document.getElementById("profile-report-button");
+
+  if (profileReportButton) {
+    profileReportButton.addEventListener("click", async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const targetUserId = urlParams.get("userId");
+
+      if (!targetUserId) {
+        alert("Fehler: Keine User-ID zum Melden gefunden.");
+        return;
+      }
+
+      // Grund für die Meldung vom Admin/User abfragen
+      const reason = prompt("Bitte gib den Grund für die Meldung dieses Nutzers ein:");
+
+      // Abbrechen gedrückt oder leerer String
+      if (reason === null) return;
+      if (reason.trim() === "") {
+        alert("Ein Grund ist zwingend erforderlich!");
+        return;
+      }
+
+      // Aktuelle User-ID (der Reporter) aus dem localStorage auslesen
+      const currentUserId = localStorage.getItem("designer_jobs_userId") || "anonymous";
+
+      try {
+        const response = await fetch(`/moderation/users/${targetUserId}/report`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // Falls dein Endpoint Auth-Tokens verlangt, füge es hier hinzu:
+            "Authorization": "Bearer " + localStorage.getItem("designer_jobs_token")
+          },
+          body: JSON.stringify({
+            reporterId: currentUserId,
+            reason: reason
+          })
+        });
+
+        if (response.ok) {
+          alert("Der Nutzer wurde erfolgreich gemeldet. Die Administration prüft den Fall.");
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          alert(`Fehler beim Melden: ${errorData.error || "Unbekannter Fehler"}`);
+        }
+      } catch (error) {
+        console.error("Netzwerkfehler beim Melden:", error);
+        alert("Server aktuell nicht erreichbar.");
+      }
+    });
+  }
   loadProfile();
 </script>
 

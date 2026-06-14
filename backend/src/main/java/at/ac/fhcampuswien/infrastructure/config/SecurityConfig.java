@@ -62,6 +62,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/jobs", "/jobs/*").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/jobs/*/view-count").permitAll()
                         .requestMatchers(HttpMethod.GET, "/designers/**").permitAll()
+                        .requestMatchers("/users", "/users/**").permitAll()
+                        .requestMatchers("/admin/**").permitAll()
                         .requestMatchers("/", "/index.html", "/*.html", "/*.css", "/*.js",
                                 "/images/**", "/css/**", "/js/**", "/assets/**", "/favicon.ico").permitAll()
                         .anyRequest().authenticated()

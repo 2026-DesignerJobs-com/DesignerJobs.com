@@ -1,9 +1,10 @@
-package at.ac.fhcampuswien.infrastructure.config;
+package at.ac.fhcampuswien.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -13,6 +14,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+
+        registry.addResourceHandler("/admin/**")
+                .addResourceLocations("file:" + frontendPath + "../admin/");
+
         registry.addResourceHandler("/**")
                 .addResourceLocations("file:" + frontendPath);
     }

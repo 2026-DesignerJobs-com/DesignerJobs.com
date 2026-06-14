@@ -27,6 +27,7 @@ Base path: `/jobs`. `GET /jobs` and `GET /jobs/{id}` are public — deliberately
 | `GET`    | `/jobs/{id}`      | public        | fetch one; `404` if missing. JSON/XML negotiated like `GET /jobs` |
 | `PUT`    | `/jobs/{id}`      | owner only    | update; `404` if missing, `403` for non-owners; `id`, `clientId` and `createdAt` are preserved server-side regardless of body |
 | `DELETE` | `/jobs/{id}`      | owner only    | delete; `404` if missing, `403` for non-owners, otherwise `200` + confirmation JSON |
+| `PATCH`  | `/jobs/{id}/view-count` | public  | increment the job's `view_count` by one (anonymous visitors count); `404` if missing |
 
 ### content negotiation (C2)
 
@@ -68,6 +69,7 @@ Results are ordered by `created_at DESC` (newest first).
 | `deadline`    | optional | ISO date string, e.g. `2026-06-15`                                 |
 | `tags`        | optional | comma-separated string — substring-matched by search               |
 | `createdAt`   | server   | `Instant.now().toString()`, assigned in `JobController#store`      |
+| `viewCount`   | server   | `view_count` column, starts at `0`, bumped by `PATCH /jobs/{id}/view-count` |
 
 No validation framework is in use — empty / malformed values pass straight through.
 
@@ -88,9 +90,12 @@ CREATE TABLE IF NOT EXISTS jobs (
     work_mode    VARCHAR(50),
     deadline     VARCHAR(50),
     tags         TEXT,
-    created_at   VARCHAR(50)
+    created_at   VARCHAR(50),
+    view_count   INT DEFAULT 0
 );
 ```
+
+The `view_count` column was added after the original schema — `DatabaseInitializer` also runs an `ALTER TABLE jobs ADD COLUMN IF NOT EXISTS view_count INT DEFAULT 0` so existing DB files pick it up without a reset.
 
 `jobs` lives in the same H2 file (`./data/projectdb.mv.db`) as `users`. Reset the DB by deleting that file and restarting — the table is recreated at boot.
 

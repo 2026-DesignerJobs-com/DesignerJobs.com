@@ -4,7 +4,9 @@ This project uses an H2 database to store and manage job posts.
 
 H2 is a lightweight Java database. In this project, it is used as a file-based database, which means the data is saved locally and remains available after restarting the backend.
 
-The database is used for storing jobs, loading jobs, searching jobs, updating jobs, deleting jobs, and getting a random job.
+The same H2 file now backs every feature — not just jobs. This package owns the shared connection and bootstraps the `jobs` table; the other tables (`users`, `portfolios`, `applications`, `conversations`, `messages`, `reports`) are created by their own repositories' constructors. This document focuses on the job side, where the pattern originated.
+
+The job side of the database covers: storing jobs, loading jobs, searching jobs, updating jobs, deleting jobs, and incrementing a per-job view counter. (There is **no** random-job endpoint — random selection is done client-side; see `job/README.md`.)
 
 ---
 
@@ -45,10 +47,10 @@ It contains the database URL, username, and password.
 The database URL used in this project is:
 
 ```java
-jdbc:h2:file:./data/designerjobs
+jdbc:h2:file:./data/projectdb
 ```
 
-This means the database is stored locally inside the `data` folder.
+This means the database is stored locally inside the `data` folder (`data/projectdb.mv.db`), with user `sa` and no password. The URL, user, and password are overridable via the `db.url` / `db.user` / `db.password` system properties — the test suite uses this to point the same repositories at an in-memory H2.
 
 The most important method is:
 
@@ -86,6 +88,7 @@ The `jobs` table stores the following job data:
 - `deadline`
 - `tags`
 - `created_at`
+- `view_count` (added via `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`, defaults to `0`)
 
 The initializer should be called once when the backend starts:
 
@@ -311,14 +314,6 @@ Example for loading all jobs:
 ```js
 fetch("http://localhost:8080/jobs")
     .then(response => response.json())
-    .then jobs => console.log(jobs));
-```
-
-Correct version:
-
-```js
-fetch("http://localhost:8080/jobs")
-    .then(response => response.json())
     .then(jobs => console.log(jobs));
 ```
 
@@ -356,6 +351,4 @@ The H2 database stores all job posts locally.
 `JobRepository.java` handles all SQL database operations.  
 `JobController.java` exposes the database functionality through HTTP endpoints.
 
-This structure keeps the project organized by separating the database logic from the controller logic.
-
-x
+This structure keeps the project organized by separating the database logic from the controller logic. The same pattern (repository owns the SQL; controller owns HTTP) is reused by the other feature packages, each against its own table in the same H2 file.

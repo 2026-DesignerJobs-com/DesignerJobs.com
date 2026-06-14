@@ -24,17 +24,23 @@ No bundler, no transpiler, no `node_modules`.
 ```
 frontend/landing/
 ├── index.html          ← Shell — navbar + iframe + footer (entry point)
-├── shell.html          ← Redirect to index.html
 ├── homepage.html       ← Homepage content (search banner + recent jobs)
 ├── jobs.html           ← Full job listings page
-├── job-random.html     ← Single job detail page
+├── job-detail.html     ← Single job detail page
+├── job-random.html     ← Random job picked client-side from GET /jobs
+├── advanced-search.html← Advanced search form
+├── search-results.html ← Search results listing
+├── post-a-job.html     ← Post-a-job form (POST /jobs)
+├── chat.html           ← In-platform chat
 ├── profile.html        ← Designer public profile
 ├── profile-edit.html   ← Edit profile form
-├── register.html       ← Registration / login page
+├── register.html       ← Registration page
+├── login.html          ← Login page
 ├── about.html          ← About us + team + impressum section
 ├── impressum.html      ← Legal information page
 ├── theme.css           ← Bootstrap CSS variable overrides only
 ├── app.js              ← Theme toggle, search submit
+├── auth.js             ← localStorage token/userId/role helpers
 └── docu.md             ← This file
 ```
 

@@ -10,6 +10,7 @@ Spring `@Configuration` beans that shape how the application behaves at the fram
 |---|---|
 | `SecurityConfig.java` | Filter chain, authorisation rules, OAuth2 Resource Server configuration, CORS source, password encoder bean |
 | `WebConfig.java` | Maps `/**` to the frontend static directory configured by `app.frontend.path` |
+| `RequestLoggingConfig.java` | Registers a request-logging filter (dev aid) |
 
 ---
 
@@ -27,12 +28,16 @@ Spring `@Configuration` beans that shape how the application behaves at the fram
 | matcher | rule |
 |---|---|
 | `/auth/**` | public — register, login, logout, me (note: `me` itself returns 401 if anonymous, even though the URL is public) |
-| `GET /jobs/**` | public — browsing jobs requires no account |
+| `/world-clock` | public — external time proxy (`integration/worldclock`) |
+| `/locations/**` | public — country/city lookup (`integration/location`) |
+| `/api/**` | public — Pexels image proxy + `/api/test` (`integration/pexels`) |
+| `GET /jobs`, `GET /jobs/{id}` | public — browsing jobs requires no account (deliberately **not** `GET /jobs/**`, so `GET /jobs/{id}/applications` stays authenticated) |
+| `PATCH /jobs/{id}/view-count` | public — anonymous visitors increment the view counter |
 | `GET /designers/**` | public — browsing designer profiles requires no account |
 | `/`, `*.html`, `*.css`, `*.js`, `images/**`, `css/**`, `js/**`, `assets/**`, `favicon.ico` | public — the frontend assets served by `WebConfig` |
 | anything else | authenticated — needs a valid JWT |
 
-Anything `POST/PUT/DELETE` against `/jobs` or `/designers` is **authenticated** — only `GET` is public on those paths.
+Public job reads are scoped to `GET /jobs` and `GET /jobs/{id}` (plus the `PATCH .../view-count` exception); every other `/jobs` verb and any nested sub-resource is authenticated. `POST/PUT/DELETE` against `/designers` is authenticated — only `GET` is public there.
 
 ### session policy
 

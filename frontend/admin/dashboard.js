@@ -1,12 +1,87 @@
-// 1. Die globale Map für die Benutzer-Zuordnung
+// 1. Die globalen Maps für die Zuordnung von IDs zu lesbaren Namen
 const userMap = {};
+const jobMap = {}; // NEU: Map für die Job-Titel
 
 // 2. Startpunkt beim Laden der Seite
 document.addEventListener('DOMContentLoaded', async () => {
-    // Dieser Ansatz wartet ERST komplett auf die User und startet DANN die Jobs
+    // Dieser Ansatz wartet ERST komplett auf die User und Jobs,
+    // damit die Maps befüllt sind, wenn die Reports geladen werden.
     await loadUsersFromServer();
     await loadJobsFromServer();
     await loadReportsFromServer();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const navLinks = document.querySelectorAll('#sidebar-menu .nav-link');
+
+    // 1. AKTIV SETZEN BEI KLICK
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            navLinks.forEach(item => item.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    // Sektionen aus dem DOM sammeln
+    const sections = [];
+    navLinks.forEach(link => {
+        const targetId = link.getAttribute('href');
+        if (targetId && targetId.startsWith('#')) {
+            const sectionElement = document.querySelector(targetId);
+            if (sectionElement) {
+                sections.push({ id: targetId, element: sectionElement });
+            }
+        }
+    });
+
+    // Hilfsfunktion zum Umschalten der Klassen
+    function setActiveLink(targetHref) {
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === targetHref) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    }
+
+    // Scroll-Logik mit zwei harten "Anschlag-Stopps" für oben und unten
+    window.addEventListener('scroll', () => {
+        const scrollPosition = window.scrollY;
+
+        // LÖSUNG FÜR GANZ OBEN: Wenn weniger als 60px vom oberen Rand entfernt -> Übersicht aktiv
+        if (scrollPosition < 60) {
+            setActiveLink('#overview');
+            return;
+        }
+
+        // LÖSUNG FÜR GANZ UNTEN: Wenn der unterste Rand des Viewports erreicht ist -> Meldungen aktiv
+        // Wir ziehen einen kleinen Toleranzpuffer von 5 Pixeln ab, falls der Browser rundet
+        const isAtBottom = (window.innerHeight + scrollPosition) >= (document.documentElement.scrollHeight - 5);
+        if (isAtBottom) {
+            setActiveLink('#reports');
+            return;
+        }
+
+        // NORMALER SCROLLSPY: Wenn man sich im Mittelfeld bewegt, berechnen wir die nächste Sektion
+        let currentActiveSectionId = '#overview';
+        let minDistance = Infinity;
+
+        sections.forEach(section => {
+            const rect = section.element.getBoundingClientRect();
+
+            // Reagiert, sobald die Sektion ins obere Drittel des Bildschirms geschoben wird
+            if (rect.top <= 250) {
+                const distance = Math.abs(rect.top - 100);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    currentActiveSectionId = section.id;
+                }
+            }
+        });
+
+        setActiveLink(currentActiveSectionId);
+    });
 });
 
 // ==========================================
@@ -37,8 +112,7 @@ async function loadUsersFromServer() {
         // --- MAP BEFÜLLEN  ---
         users.forEach(user => {
             if (user.id) {
-                // Wenn fullName leer ist, sonst 'User ohne Name'
-                // Wir mappen die ID direkt auf den Namen
+                // Wir mappen die ID direkt auf den vollen Namen (Fallback auf E-Mail oder ID)
                 userMap[user.id] = user.fullName || user.email || `User #${user.id.substring(0, 5)}`;
             }
         });
@@ -47,7 +121,7 @@ async function loadUsersFromServer() {
         tableBody.innerHTML = '';
 
         if (users.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan=\"5\" class=\"text-center text-muted py-4\">Keine User vorhanden.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Keine User vorhanden.</td></tr>`;
             return;
         }
 
@@ -106,6 +180,13 @@ async function loadJobsFromServer() {
             jobCounter.textContent = jobs.length;
         }
 
+        // --- MAP BEFÜLLEN ---
+        jobs.forEach(job => {
+            if (job.id) {
+                jobMap[job.id] = job.title || `Job #${job.id.substring(0, 5)}`;
+            }
+        });
+
         // Tabelle leeren
         tableBody.innerHTML = '';
 
@@ -122,16 +203,26 @@ async function loadJobsFromServer() {
         jobs.forEach(job => {
             const row = document.createElement('tr');
 
-            // Holt den Namen aus der Map. Wenn nichts gefunden wird, zeigt er die Roh-ID an
-            const clientName = userMap[job.clientId] || `ID: ${job.clientId}`;
+            // --- NEU: ANONYME ODER UNBEKANNTE CLIENTS ABFANGEN ---
+            let clientName = `Unbekannter Ersteller`;
+            if (job.clientId) {
+                if (job.clientId.toLowerCase().startsWith('anonym')) {
+                    clientName = "Anonymer Ersteller";
+                } else {
+                    // Sucht in der userMap, die durch loadUsersFromServer() befüllt wurde
+                    clientName = userMap[job.clientId] || `ID: ${job.clientId.substring(0, 8)}`;
+                }
+            }
 
             row.innerHTML = `
                 <td class="font-monospace text-muted">#${job.id || 'N/A'}</td>
                 <td class="fw-semibold">${escapeHtml(job.title)}</td>
-                <td class="text-primary fw-medium">${escapeHtml(clientName)}</td>
+                <td>
+                    <span class="fw-medium text-primary">${escapeHtml(clientName)}</span>
+                </td>
                 <td><span class="badge bg-light text-success border px-2 py-1">Live</span></td>
                 <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick="showJob('${job.id}')">
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="showJob('${job.id}')">
                         <i class="bi bi-eye"></i>
                     </button>
                     <button class="btn btn-sm btn-light border text-danger" onclick="deleteJob('${job.id}')">
@@ -154,21 +245,36 @@ async function loadJobsFromServer() {
 }
 
 // ==========================================
-// REPORTS LADEN & TABELLE BEFÜLLEN
+// REPORTS AUS DER DATENBANK LADEN & TAVELLEE FÜLLEN
 // ==========================================
 async function loadReportsFromServer() {
     const tableBody = document.getElementById('report-table-body');
     if (!tableBody) return;
 
     try {
-        // Nutzt deinen ModerationController Endpunkt: GET /moderation/reports
-        const response = await fetch('/moderation/reports', {
+        const token = localStorage.getItem("designer_jobs_token");
+
+        // Headers dynamisch und sauber vorbereiten (Verhindert 401-Fehler bei null-Tokens)
+        const headers = { 'Accept': 'application/json' };
+        if (token && token !== "null" && token !== "undefined") {
+            headers['Authorization'] = 'Bearer ' + token;
+        }
+
+        const response = await fetch('http://localhost:8080/moderation/reports', {
             method: 'GET',
-            headers: { 'Accept': 'application/json' }
+            headers: headers
         });
 
         if (!response.ok) throw new Error(`Server-Fehler: ${response.status}`);
         const reports = await response.json();
+
+        const openReportsCount = reports.filter(report => report.status === 'OPEN').length;
+
+        // Sucht das Element, dem wir gerade eben im HTML die ID gegeben haben
+        const reportsCounter = document.getElementById('stats-reports-count');
+        if (reportsCounter) {
+            reportsCounter.textContent = openReportsCount;
+        }
 
         tableBody.innerHTML = '';
 
@@ -180,23 +286,53 @@ async function loadReportsFromServer() {
         reports.forEach(report => {
             const row = document.createElement('tr');
 
-            // Namen des Reporters auflösen, falls in userMap vorhanden
-            const reporterName = userMap[report.reporterId] || `ID: ${report.reporterId.substring(0,8)}`;
+            // 1. Reporter-Name aus der userMap ermitteln
+            let reporterName = "Anonym gemeldet";
 
-            // Badge-Farbe basierend auf dem Report-Status wählen
+            // Nur wenn eine valide ID existiert UND diese ID nicht das System-Fallback für anonyme User ist
+            if (report.reporterId &&
+                report.reporterId !== "anonymous" &&
+                report.reporterId !== "anonymous_user") {
+
+                // Sucht die echte UUID im geladenen Telefonbuch (userMap)
+                reporterName = userMap[report.reporterId] || `Ehemaliger Benutzer (${report.reporterId.substring(0, 5)})`;
+            }
+
+            // 2. Ziel-Name ermitteln & DEZENTEN LINK GENERIEREN (Altes Schriftdesign)
+            let targetDisplayName = `Unbekanntes Objekt`;
+
+            if (report.targetType === 'USER') {
+                const name = userMap[report.targetId] || `User (ID: ${report.targetId.substring(0,8)})`;
+                // Link zum Profil im alten Textdesign (Farbe passt sich der normalen Tabelle an)
+                targetDisplayName = `<a href="/profile.html?userId=${report.targetId}" target="_blank" class="text-reset text-decoration-none" style="cursor: pointer;" title="Profil ansehen">
+                                        <i class="bi bi-person me-1"></i><strong>${escapeHtml(name)}</strong>
+                                     </a>`;
+            } else if (report.targetType === 'JOB') {
+                const title = jobMap[report.targetId] || `Job (ID: ${report.targetId.substring(0,8)})`;
+                // Link zum Job im alten Textdesign
+                targetDisplayName = `<a href="/job-detail.html?id=${report.targetId}" target="_blank" class="text-reset text-decoration-none" style="cursor: pointer;" title="Job-Details ansehen">
+                                        <i class="bi bi-briefcase me-1"></i><strong>${escapeHtml(title)}</strong>
+                                     </a>`;
+            } else if (report.targetType === 'MESSAGE') {
+                targetDisplayName = `<span><i class="bi bi-chat-left-text me-1"></i>${escapeHtml(report.targetId.substring(0,8))}</span>`;
+            }
+
+            // Status Badges
             let statusBadge = '';
             if (report.status === 'OPEN') statusBadge = '<span class="badge bg-danger">Offen</span>';
             else if (report.status === 'RESOLVED') statusBadge = '<span class="badge bg-success">Gelöst</span>';
             else statusBadge = '<span class="badge bg-secondary">Abgewiesen</span>';
 
-            // Schöner formulierter Typ-Badge
             let typeBadge = `<span class="badge bg-light text-dark border">${report.targetType}</span>`;
 
             row.innerHTML = `
-                <td class="text-muted" style="font-size: 0.9rem;">${escapeHtml(report.createdAt || 'Unbekannt')}</td>
-                <td class="fw-medium">${escapeHtml(reporterName)}</td>
+                <td class="text-muted" style="font-size: 0.9rem;">${report.createdAt || 'Unbekannt'}</td>
+                <td class="fw-semibold text-primary">${escapeHtml(reporterName)}</td>
                 <td>${typeBadge}</td>
-                <td class="font-monospace text-muted" style="font-size: 0.85rem;">#${escapeHtml(report.targetId)}</td>
+                <td>
+                    <span class="fw-medium">${targetDisplayName}</span><br>
+                    <small class="font-monospace text-muted" style="font-size: 0.75rem;">#${report.targetId}</small>
+                </td>
                 <td class="text-wrap" style="max-width: 250px;">${escapeHtml(report.reason)}</td>
                 <td>${statusBadge}</td>
                 <td>
@@ -213,34 +349,35 @@ async function loadReportsFromServer() {
     }
 }
 
-// 5. REPORT STATUS ROTIEREN
+// ==========================================
+// REPORT STATUS ROTIEREN
+// ==========================================
 async function toggleReportStatus(reportId, currentStatus) {
-    // Wenn die Meldung nicht mehr OPEN ist, darf nichts mehr geändert werden
     if (currentStatus !== 'OPEN') {
         alert('Diese Meldung wurde bereits final bearbeitet.');
         return;
     }
 
-    // Admin entscheidet über die offene Meldung
     const chooseResolved = confirm(
         `Meldung bearbeiten:\n\n` +
         `• Klicke [OK] für RESOLVED (Gelöst)\n` +
         `• Klicke [Abbrechen] für DISMISSED (Abgewiesen)`
     );
 
-    // Zuweisung basierend auf der Entscheidung
     const nextStatus = chooseResolved ? 'RESOLVED' : 'DISMISSED';
+    const token = localStorage.getItem("designer_jobs_token");
 
     try {
-        // Nutzt deinen Endpunkt: PUT /moderation/reports/{id}
-        const response = await fetch(`/moderation/reports/${reportId}`, {
+        const response = await fetch(`http://localhost:8080/moderation/reports/${reportId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
             body: JSON.stringify({ status: nextStatus })
         });
 
         if (response.ok) {
-            // Tabelle sofort aktualisieren
             await loadReportsFromServer();
         } else {
             const data = await response.json().catch(() => ({}));
@@ -256,10 +393,10 @@ async function toggleReportStatus(reportId, currentStatus) {
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;")
-              .replace(/"/g, "&quot;")
-              .replace(/'/g, "&#039;");
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 // ==========================================
@@ -284,7 +421,6 @@ async function banUser(id) {
 
         if (response.ok) {
             alert('User erfolgreich gelöscht!');
-            // Tabellen aktualisieren
             await loadUsersFromServer();
             await loadJobsFromServer();
         } else {
@@ -298,7 +434,6 @@ async function banUser(id) {
 
 // 2. USER EDITIEREN
 function editUser(id) {
-    // Leitet zur Profil-Bearbeitungsseite weiter und übergibt die ID des Users
     window.location.href = `/profile-edit.html?userId=${id}`;
 }
 
@@ -310,7 +445,7 @@ function showJob(id) {
 // 4. JOB LÖSCHEN
 async function deleteJob(id) {
     if (!confirm(`Möchtest du den Job #${id} wirklich unwiderruflich löschen?`)) {
-        return; // Abbrechen, falls der Admin verklickt hat
+        return;
     }
 
     try {
@@ -318,7 +453,6 @@ async function deleteJob(id) {
             method: 'DELETE',
             headers: {
                 'Accept': 'application/json'
-                // Falls später JWT/Tokens nutzt,hier Authorization-Header hin
             }
         });
 
@@ -326,7 +460,6 @@ async function deleteJob(id) {
 
         if (response.ok) {
             alert('Job erfolgreich gelöscht!');
-            // Tabelle sofort neu laden, damit der gelöschte Job verschwindet
             await loadJobsFromServer();
         } else {
             alert(`Fehler beim Löschen: ${data.error || 'Unbekannter Fehler'}`);

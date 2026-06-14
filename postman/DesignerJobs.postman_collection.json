@@ -18,7 +18,7 @@
   ],
   "item": [
     {
-      "name": "1. Auth (happy path \u00b7 GREEN)",
+      "name": "1. Auth (happy path · GREEN)",
       "item": [
         {
           "name": "POST /auth/register client -> 201",
@@ -293,7 +293,7 @@
       ]
     },
     {
-      "name": "2. Jobs (happy path \u00b7 GREEN)",
+      "name": "2. Jobs (happy path · GREEN)",
       "item": [
         {
           "name": "POST /jobs (client) -> 201, clientId server-set",
@@ -474,7 +474,7 @@
       ]
     },
     {
-      "name": "3. Applications (happy path \u00b7 GREEN)",
+      "name": "3. Applications (happy path · GREEN)",
       "item": [
         {
           "name": "POST /jobs/{{jobId}}/apply (designer) -> 201 PENDING",
@@ -677,7 +677,7 @@
       ]
     },
     {
-      "name": "4. Chat (happy path \u00b7 GREEN)",
+      "name": "4. Chat (happy path · GREEN)",
       "item": [
         {
           "name": "POST /conversations (client) -> 201",
@@ -878,7 +878,7 @@
       ]
     },
     {
-      "name": "5. RED - Known Bugs (TDD, expected to FAIL)",
+      "name": "5. Regression - formerly bugs B1-B7 (now GREEN, except B4)",
       "item": [
         {
           "name": "B1 setup: register Mixed-Case email -> 201",
@@ -918,7 +918,7 @@
           }
         },
         {
-          "name": "B1: login same casing -> 200 (RED)",
+          "name": "B1: login same casing -> 200 (GREEN - fixed)",
           "event": [
             {
               "listen": "test",
@@ -993,7 +993,7 @@
           }
         },
         {
-          "name": "B5: register DUP (other case) -> 409 (RED)",
+          "name": "B5: register DUP (other case) -> 409 (GREEN - fixed)",
           "event": [
             {
               "listen": "test",
@@ -1031,7 +1031,7 @@
           }
         },
         {
-          "name": "B2: stranger lists applicants -> 403 (RED)",
+          "name": "B2: stranger lists applicants -> 403 (GREEN - fixed)",
           "event": [
             {
               "listen": "test",
@@ -1066,7 +1066,7 @@
           }
         },
         {
-          "name": "B7: designer applies to same job again -> 4xx (RED)",
+          "name": "B7: designer applies to same job again -> 4xx (GREEN - fixed)",
           "event": [
             {
               "listen": "test",
@@ -1140,7 +1140,7 @@
           }
         },
         {
-          "name": "B3: PUT /jobs/{{jobId}} -> 200 (RED)",
+          "name": "B3: PUT /jobs/{{jobId}} -> 200 (GREEN - fixed)",
           "event": [
             {
               "listen": "test",
@@ -1182,7 +1182,7 @@
           }
         },
         {
-          "name": "B3: DELETE /jobs/{{jobId}} -> 2xx (RED)",
+          "name": "B3: DELETE /jobs/{{jobId}} -> 2xx (GREEN - fixed)",
           "event": [
             {
               "listen": "test",
@@ -1220,10 +1220,10 @@
       ]
     },
     {
-      "name": "6. RED - Stubs not implemented (expected to FAIL)",
+      "name": "6. Previously-stubbed packages (mostly implemented; contracts + portfolio still RED)",
       "item": [
         {
-          "name": "GET /designers -> 200 (RED)",
+          "name": "GET /designers -> 200 (GREEN - fixed)",
           "event": [
             {
               "listen": "test",
@@ -1250,7 +1250,7 @@
           }
         },
         {
-          "name": "GET /designers/{{designerId}} -> 200 (RED)",
+          "name": "GET /designers/{{designerId}} -> 200 (GREEN - fixed)",
           "event": [
             {
               "listen": "test",
@@ -1278,7 +1278,7 @@
           }
         },
         {
-          "name": "PUT /designers/{{designerId}} -> 200 (RED)",
+          "name": "PUT /designers/{{designerId}} -> 200 (GREEN - fixed)",
           "event": [
             {
               "listen": "test",
@@ -1429,7 +1429,7 @@
           }
         },
         {
-          "name": "GET /users/{{clientId}} -> 200 (RED)",
+          "name": "GET /users/{{clientId}} -> 200 (GREEN - fixed)",
           "event": [
             {
               "listen": "test",
@@ -1579,7 +1579,7 @@
           }
         },
         {
-          "name": "POST /moderation/jobs/{{jobId}}/report -> 2xx (RED)",
+          "name": "POST /moderation/jobs/{{jobId}}/report -> 2xx (GREEN - fixed)",
           "event": [
             {
               "listen": "test",
@@ -1669,7 +1669,7 @@
           }
         },
         {
-          "name": "GET /moderation/reports -> 200 (RED)",
+          "name": "GET /moderation/reports -> 200 (GREEN - fixed)",
           "event": [
             {
               "listen": "test",
@@ -1744,7 +1744,7 @@
           }
         },
         {
-          "name": "DELETE /users/{{clientId}} -> 2xx (RED)",
+          "name": "DELETE /users/{{clientId}} -> 2xx (GREEN - fixed)",
           "event": [
             {
               "listen": "test",

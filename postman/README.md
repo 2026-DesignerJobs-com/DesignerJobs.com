@@ -36,20 +36,32 @@ Or directly:
 npx newman run DesignerJobs.postman_collection.json -e DesignerJobs.local.postman_environment.json
 ```
 
-## What to expect (the red board)
+## What to expect (current board)
 
-46 requests in 6 folders:
+46 requests in 6 folders. As of the last sync, **49 of 58 assertions pass; 9 remain red** — the red ones are real outstanding issues, not stale assertions.
 
-| Folder | Expectation |
+| Folder | Status |
 |---|---|
 | `1. Auth` | **GREEN** — register/login/me, validation, token chaining |
 | `2. Jobs` | **GREEN** — create (clientId server-set), list, get, validation |
 | `3. Applications` | **GREEN** — apply → accept → hire happy path |
 | `4. Chat` | **GREEN** — open conversation, send/read messages, participant guard |
-| `5. RED – Known Bugs` | **RED** — one assertion per bug B1–B7 (PROJECT_REVIEW.md §9) |
-| `6. RED – Stubs` | **RED** — `/designers`, `/users`, `/contracts`, `/moderation` asserting the *implemented* behavior they should have (501 today) |
+| `5. Regression — formerly bugs B1–B7` | **GREEN except B4** — B1, B2, B3, B5, B7 are now fixed; **B4** (`GET /jobs/random`) is still **404** (endpoint never added) |
+| `6. Previously-stubbed packages` | **MIXED** — `/designers` (list/get/update), `/users` (get/list/delete) and `/moderation` (job report, list reports) are implemented and **green**; still **red** below |
 
-A red Newman run is the **correct** state right now. The goal is the same as the JUnit board: make folders 5–6 green by fixing the code, never by weakening the assertions.
+### The 9 still-red assertions
+
+| Endpoint | Today | Why red |
+|---|---|---|
+| `GET /jobs/random` (B4) | 404 | endpoint never implemented |
+| `GET/POST/DELETE /designers/{id}/portfolio` | **500** | implemented but throwing — genuine bug |
+| `POST /contracts`, `GET /contracts/{id}`, `PUT /contracts/{id}/sign` | **501** | `ContractController` is still a stub |
+| `POST /moderation/users/{id}/report` | **500** | throwing — genuine bug |
+| `PUT /moderation/reports/sample-id` | 404 | uses a placeholder id with no matching report |
+
+A red item is a TODO for the **code**, not the test: make it green by fixing the endpoint (or, for the last row, by chaining a real report id), never by weakening the assertion.
+
+> Coverage note: `/contracts`, the portfolio sub-resource, `PATCH /jobs/{id}/view-count`, `PUT`/`DELETE /auth/me`, `/world-clock`, `/locations/**` and the `/api/**` integration endpoints are not yet exercised here — add them as those areas stabilise.
 
 ## How it works (so every team member can explain it)
 

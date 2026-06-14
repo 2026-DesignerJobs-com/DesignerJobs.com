@@ -228,27 +228,8 @@ public class UserRepository {
     }
 
     public void deleteById(String id) {
-
-        String sql = """
-            UPDATE users
-            SET full_name = 'Deleted Account',
-                email = 'deleted_' || id || '@designerjobs.com', -- avoids email collisions between deleted accounts
-                password_hash = 'NO_ACCESS',
-                role = 'DELETED',
-                design_type = '',
-                bio = '',
-                skills = '',
-                country = '',
-                city = '',
-                hourly_min = 0,
-                hourly_max = 0,
-                project_min = 0,
-                portfolio_url = '',
-                twitter = '',
-                linkedin = '',
-                instagram = ''
-            WHERE id = ?
-        """;
+        // Ändert das UPDATE-Statement zu einem echten DELETE-Statement
+        String sql = "DELETE FROM users WHERE id = ?";
 
         try (Connection connection = Database.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -257,7 +238,7 @@ public class UserRepository {
             statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to soft-delete user by id", e);
+            throw new RuntimeException("Failed to delete user from database by id", e);
         }
     }
 

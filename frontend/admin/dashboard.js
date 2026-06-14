@@ -457,19 +457,21 @@ async function deleteJob(id) {
             method: 'DELETE',
             headers: {
                 'Accept': 'application/json'
-            }
+            },
+            credentials: 'same-origin'
         });
 
-        const data = await response.json();
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : {};
 
         if (response.ok) {
             alert('Job erfolgreich gelöscht!');
             await loadJobsFromServer();
         } else {
-            alert(`Fehler beim Löschen: ${data.error || 'Unbekannter Fehler'}`);
+            alert(`Fehler beim Löschen: ${data.error || 'Fehler-Status: ' + response.status}`);
         }
     } catch (error) {
         console.error('Netzwerkfehler beim Löschen des Jobs:', error);
-        alert('Server temporär nicht erreichbar.');
+        alert('Server temporär nicht erreichbar oder Zugriff verweigert.');
     }
 }

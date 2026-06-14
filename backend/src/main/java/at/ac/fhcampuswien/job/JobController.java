@@ -111,6 +111,7 @@ public class JobController {
 
         return ResponseEntity.ok(job);
     }
+
     /**
      * PUT /jobs/{id}
      * Updates a job.
@@ -157,6 +158,7 @@ public class JobController {
 
         return ResponseEntity.ok(updatedJob);
     }
+
     @PatchMapping("/{id}/view-count")
     public ResponseEntity<?> incrementViewCount(@PathVariable String id) {
         Job job = jobRepository.incrementViewCount(id);
@@ -190,11 +192,14 @@ public class JobController {
             ));
         }
 
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> "ADMIN".equals(a.getAuthority()) || "ROLE_ADMIN".equals(a.getAuthority()));
+
         boolean isOwnerClient = existingJob.clientId != null && existingJob.clientId.equals(auth.getName());
 
-        if (!isOwnerClient) {
+        if (!isOwnerClient && !isAdmin) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "error", "only the client who created this job can delete it"
+                    "error", "only the creator or an admin can delete this job"
             ));
         }
 

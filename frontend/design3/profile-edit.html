@@ -292,14 +292,24 @@
   }
 
   // Profil beim Laden der Seite abrufen
+  // Profil beim Laden der Seite abrufen
   async function loadEditProfile() {
     const message = document.getElementById("edit-profile-message");
+
+    // 1. Prüfen, ob eine userId als Query-Parameter in der URL übergeben wurde (vom Admin)
+    const urlParams = new URLSearchParams(window.location.search);
+    const adminTargetUserId = urlParams.get('userId');
+
+    // 2. Dynamische URL bestimmen (Wenn ID da ist, nutze Admin-Route, sonst /auth/me)
+    const fetchUrl = adminTargetUserId
+            ? `http://localhost:8080/users/${adminTargetUserId}`
+            : "http://localhost:8080/auth/me";
 
     try {
       // Erst die Länderliste laden, damit die Auswahloptionen existieren
       await loadCountries();
 
-      const response = await fetch("http://localhost:8080/auth/me", {
+      const response = await fetch(fetchUrl, { // <-- Hier dynamische URL genutzt
         method: "GET",
         headers: {
           "Authorization": "Bearer " + localStorage.getItem("designer_jobs_token")
@@ -312,7 +322,7 @@
 
       const user = await response.json();
 
-      // Alle Felder mit den geladenen Daten füllen
+      // Alle Felder mit den geladenen Daten füllen (Nutzt deine bestehende Funktion!)
       await fillFormFields(user);
 
       updatePreview();

@@ -60,6 +60,7 @@ public class SecurityConfig {
                         // GET /jobs/{id}/applications must stay authenticated.
                         .requestMatchers(HttpMethod.GET, "/jobs", "/jobs/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/designers/**").permitAll()
+                        .requestMatchers("/users", "/users/**").permitAll()
                         .requestMatchers("/admin/**").permitAll()
                         .requestMatchers("/", "/index.html", "/*.html", "/*.css", "/*.js",
                                 "/images/**", "/css/**", "/js/**", "/assets/**", "/favicon.ico").permitAll()

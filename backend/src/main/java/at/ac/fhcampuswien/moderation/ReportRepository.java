@@ -1,6 +1,6 @@
 package at.ac.fhcampuswien.moderation;
 
-import at.ac.fhcampuswien.Database.Database;
+import at.ac.fhcampuswien.infrastructure.Database.Database;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;

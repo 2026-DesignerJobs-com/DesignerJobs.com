@@ -1,8 +1,8 @@
 package at.ac.fhcampuswien.account;
 
-import at.ac.fhcampuswien.Database.Database;
-import at.ac.fhcampuswien.auth.UserModel;
-import at.ac.fhcampuswien.auth.UserRepository;
+import at.ac.fhcampuswien.infrastructure.Database.Database;
+import at.ac.fhcampuswien.account.UserModel;
+import at.ac.fhcampuswien.account.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -258,15 +258,15 @@ public class UserController {
 
     @GetMapping("/users")
     public ResponseEntity<?> listAllUsers() {
-        List<at.ac.fhcampuswien.auth.UserModel> users = new java.util.ArrayList<>();
+        List<at.ac.fhcampuswien.account.UserModel> users = new java.util.ArrayList<>();
         String sql = "SELECT * FROM users"; // Holt ALLE Einträge aus der Datenbank
 
-        try (Connection conn = at.ac.fhcampuswien.Database.Database.getConnection();
+        try (Connection conn = at.ac.fhcampuswien.infrastructure.Database.Database.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                at.ac.fhcampuswien.auth.UserModel user = new at.ac.fhcampuswien.auth.UserModel();
+                at.ac.fhcampuswien.account.UserModel user = new at.ac.fhcampuswien.account.UserModel();
                 user.id = rs.getString("id");
                 user.fullName = rs.getString("full_name");
                 user.email = rs.getString("email");

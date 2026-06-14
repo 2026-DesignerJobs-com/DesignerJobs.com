@@ -1,8 +1,10 @@
 package at.ac.fhcampuswien.stubs;
 
+import at.ac.fhcampuswien.account.UserRepository;
 import at.ac.fhcampuswien.contract.ContractController;
 import at.ac.fhcampuswien.moderation.ModerationController;
 import at.ac.fhcampuswien.account.UserController;
+import at.ac.fhcampuswien.moderation.ReportRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +22,7 @@ class StubControllersTest {
 
     @Test
     void userController_designerEndpoints_areNotImplemented() {
-        UserController controller = new UserController();
+        UserController controller = new UserController(new UserRepository());
 
         assertNotImplemented(controller.listDesigners(null, null));
         assertNotImplemented(controller.getDesignerProfile("id"));
@@ -43,7 +45,7 @@ class StubControllersTest {
 
     @Test
     void moderationController_endpoints_areNotImplemented() {
-        ModerationController controller = new ModerationController();
+        ModerationController controller = new ModerationController(new ReportRepository());
 
         assertNotImplemented(controller.reportMessage("id", null));
         assertNotImplemented(controller.reportJob("id", null));

@@ -1,4 +1,4 @@
-package at.ac.fhcampuswien.config;
+package at.ac.fhcampuswien.infrastructure.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

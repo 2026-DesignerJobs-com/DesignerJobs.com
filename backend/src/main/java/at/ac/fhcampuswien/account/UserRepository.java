@@ -8,6 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 @Repository
 public class UserRepository {
@@ -67,6 +69,26 @@ public class UserRepository {
 
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create or migrate users table", e);
+        }
+    }
+
+    protected void createPortfolioTableIfNotExists() {
+
+        String sql = """
+                CREATE TABLE IF NOT EXISTS portfolios (
+                    id VARCHAR(255) PRIMARY KEY,
+                    user_id VARCHAR(255) NOT NULL,
+                    title VARCHAR(255),
+                    description TEXT,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+            """;
+
+        try (Connection connection = Database.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.executeUpdate(sql);
+        } catch (SQLException e) {
+            throw new RuntimeException("Fehler beim Erstellen der 'portfolios' Tabelle", e);
         }
     }
 
@@ -204,6 +226,7 @@ public class UserRepository {
         update(updatedData);
         return findById(id);
     }
+
     public void deleteById(String id) {
 
         String sql = """
@@ -238,6 +261,111 @@ public class UserRepository {
         }
     }
 
+    public List<UserModel> findByRole(String role) {
+        List<UserModel> users = new ArrayList<>();
+        String sql = "SELECT * FROM users WHERE role = ?";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, role);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    users.add(mapResultSetToUser(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Fehler beim Laden der User nach Rolle", e);
+        }
+        return users;
+    }
+
+    public List<PortfolioItem> findPortfolioByDesignerId(String designerId) {
+        List<PortfolioItem> items = new ArrayList<>();
+        String sql = "SELECT * FROM portfolio_items WHERE designer_id = ? ORDER BY created_at DESC";
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, designerId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    PortfolioItem item = new PortfolioItem();
+                    item.id = rs.getString("id");
+                    item.designerId = rs.getString("designer_id");
+                    item.title = rs.getString("title");
+                    item.description = rs.getString("description");
+                    item.imageUrl = rs.getString("image_url");
+                    item.projectUrl = rs.getString("project_url");
+                    item.tags = rs.getString("tags");
+                    item.createdAt = rs.getString("created_at");
+                    items.add(item);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Fehler beim Laden des Portfolios aus der Datenbank", e);
+        }
+
+        return items;
+    }
+
+    public void savePortfolioItem(PortfolioItem item) {
+        String sql = """
+        INSERT INTO portfolio_items (id, designer_id, title, description, image_url, project_url, tags, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """;
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, item.id);
+            stmt.setString(2, item.designerId);
+            stmt.setString(3, item.title);
+            stmt.setString(4, item.description);
+            stmt.setString(5, item.imageUrl);
+            stmt.setString(6, item.projectUrl);
+            stmt.setString(7, item.tags);
+            stmt.setString(8, item.createdAt);
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Fehler beim Speichern des Portfolio Items in die Datenbank", e);
+        }
+    }
+
+    public boolean deletePortfolioItem(String itemId, String designerId) {
+        String sql = "DELETE FROM portfolio_items WHERE id = ? AND designer_id = ?";
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, itemId);
+            stmt.setString(2, designerId);
+            int affectedRows = stmt.executeUpdate();
+
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Fehler beim Löschen des Portfolio Items aus der Datenbank", e);
+        }
+    }
+
+    public List<UserModel> findAll() {
+        List<UserModel> users = new ArrayList<>();
+        String sql = "SELECT * FROM users";
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                // Hier nutzen wir deine bestehende Mapping-Funktion!
+                users.add(mapResultSetToUser(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Fehler beim Laden der User-Tabelle", e);
+        }
+
+        return users;
+    }
 
     private UserModel mapResultSetToUser(ResultSet resultSet) throws SQLException {
         UserModel user = new UserModel();

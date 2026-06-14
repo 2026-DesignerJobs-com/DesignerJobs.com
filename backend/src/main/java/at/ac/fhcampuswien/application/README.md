@@ -1,6 +1,6 @@
 # `application/` — apply & hire flow
 
-Wires designers to jobs and triggers contract creation. **Currently all endpoints are 501 stubs.** This README documents the contract the frontend already targets and the intended behaviour so whoever picks this up next has a sharp brief.
+Wires designers to jobs and (eventually) triggers contract creation. **Implemented** — `ApplicationController` + `JobApplicationRepository` are live; the only gap is the contract hand-off, which is still a `// TODO` because `contract/` is a stub.
 
 ---
 
@@ -10,20 +10,22 @@ Wires designers to jobs and triggers contract creation. **Currently all endpoint
 |---|---|
 | `ApplicationController.java` | REST endpoints — mixed bases under `/jobs/{jobId}/...` and `/applications/...` |
 | `JobApplication.java`        | model — `id`, `jobId`, `designerId`, `coverLetter`, `status`, `appliedAt` |
-
-There is no repository yet. When implementing, follow the `JobRepository` template: hand-rolled JDBC against H2, `@Repository`, prepared statements, `CREATE TABLE IF NOT EXISTS applications` in the constructor (or extend `DatabaseInitializer`).
+| `JobApplicationRepository.java` | hand-rolled JDBC against the H2 `applications` table; creates the table in its constructor |
+| `DuplicateApplicationException.java` | thrown when the `UNIQUE (job_id, designer_id)` constraint is hit; mapped to `409` |
 
 ---
 
 ## endpoints
 
-| method | path | who calls | what it should do |
+| method | path | who calls | behaviour |
 |---|---|---|---|
-| `POST` | `/jobs/{jobId}/apply` | designer | create `JobApplication` with status `PENDING`, `appliedAt = Instant.now()` |
-| `GET`  | `/jobs/{jobId}/applications` | client (owner of the job) | list applications for one job |
-| `GET`  | `/applications/{id}` | client (job owner) or applicant | fetch one |
-| `PUT`  | `/applications/{id}/status` | client | body `{"status":"ACCEPTED"\|"REJECTED"}` |
-| `POST` | `/applications/{id}/hire` | client | status → `HIRED`, **calls into `contract/` to auto-generate a draft contract** |
+| `POST` | `/jobs/{jobId}/apply` | designer | create a `JobApplication` (`PENDING`); `designerId` is server-set from the token; `409` if already applied; `403` if caller is not a `DESIGNER`; `404` if the job is missing |
+| `GET`  | `/jobs/{jobId}/applications` | client (owner of the job) | list applications for one job; `403` for non-owners |
+| `GET`  | `/applications/{id}` | client (job owner) or applicant | fetch one; `403` for anyone else |
+| `PUT`  | `/applications/{id}/status` | client (job owner) | body `{"status":"ACCEPTED"\|"REJECTED"}`; only a `PENDING` application can transition |
+| `POST` | `/applications/{id}/hire` | client (job owner) | only an `ACCEPTED` application → `HIRED`. **Contract auto-generation is still a `// TODO`** until `contract/` is implemented |
+
+Status transitions use a compare-and-set (`updateStatusFrom(id, expected, new)`), so concurrent updates return `409` rather than corrupting the state machine.
 
 ---
 
@@ -69,15 +71,15 @@ public ResponseEntity<?> apply(@PathVariable String jobId,
 
 ## cross-module call: hire → contract
 
-When `POST /applications/{id}/hire` succeeds, it must create a `DRAFT` contract. Inject a `ContractService` (to be created in the `contract/` package) and call it directly — do not call `ContractController` from another controller.
+When `POST /applications/{id}/hire` succeeds, it should create a `DRAFT` contract. The intended design is to inject a `ContractService` (to live in the `contract/` package) and call it directly — never call `ContractController` from another controller.
 
-Until `contract/` is implemented, leave a `// TODO: trigger contract creation` comment in the hire path and return 200 with the updated application.
+**Not wired yet:** `contract/` is still a 501 stub, so the hire path carries a `// TODO: trigger contract creation` comment and returns `200` with the updated (`HIRED`) application. Wire the call in once `ContractService` exists.
 
 ---
 
-## persistence sketch
+## persistence — the `applications` table
 
-When you implement `JobApplicationRepository`:
+`JobApplicationRepository` creates the table in its constructor (`CREATE TABLE IF NOT EXISTS`) and uses prepared statements + try-with-resources, following the `JobRepository` pattern:
 
 ```sql
 CREATE TABLE IF NOT EXISTS applications (
@@ -86,11 +88,12 @@ CREATE TABLE IF NOT EXISTS applications (
     designer_id VARCHAR(36) NOT NULL,
     cover_letter TEXT,
     status VARCHAR(20) NOT NULL,
-    applied_at VARCHAR(50) NOT NULL
+    applied_at VARCHAR(50) NOT NULL,
+    CONSTRAINT uq_applications_job_designer UNIQUE (job_id, designer_id)
 );
 ```
 
-`job_id` references `jobs.id`, `designer_id` references `users.id` — no foreign keys yet, manual referential integrity is fine at demo scale.
+The `UNIQUE (job_id, designer_id)` constraint enforces "one application per designer per job" at the DB level — the controller's up-front `existsByJobIdAndDesignerId` check is just for a clean `409`, with the constraint (surfaced as `DuplicateApplicationException`) as the race-proof backstop. `job_id` references `jobs.id`, `designer_id` references `users.id` — no foreign keys at demo scale.
 
 ---
 

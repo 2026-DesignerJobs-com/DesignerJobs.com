@@ -24,14 +24,20 @@ Navigation uses an **iframe shell**: `index.html` renders the navbar and footer 
 | `index.html` | Shell — navbar + iframe + footer (entry point); navbar swaps Register/Login ↔ Profile/Logout based on `localStorage` token |
 | `homepage.html` | Homepage — hero + dynamic recent-job listing pulled from `GET /jobs`; auth buttons adapt to login state |
 | `jobs.html` | Full job listings page |
-| `job-random.html` | Single job detail page |
+| `job-detail.html` | Single job detail page — reads `GET /jobs/{id}`, bumps `PATCH /jobs/{id}/view-count` |
+| `job-random.html` | "Surprise me" — picks a random entry client-side from `GET /jobs` (there is no `/jobs/random` endpoint) |
+| `advanced-search.html` | Advanced job search form |
+| `search-results.html` | Search results listing |
 | `post-a-job.html` | Post-a-job form — submits to `POST /jobs` |
+| `chat.html` | In-platform chat — polls `GET /conversations/{id}/messages`, sends via `POST` |
 | `profile.html` | Designer profile — populated from `GET /auth/me`, includes home + logout |
-| `profile-edit.html` | Edit profile form |
+| `profile-edit.html` | Edit profile form — submits to `PUT /auth/me` |
 | `register.html` | Registration page — POSTs `fullName`, `email`, `password`, `role`, optional `designType` / `skills` to `/auth/register` |
 | `login.html` | Login page — POSTs to `/auth/login`, stores token + userId + role in `localStorage`, redirects to `homepage.html` |
 | `about.html` | About us, team, impressum section |
 | `impressum.html` | Legal information |
+
+> An admin dashboard lives separately at `frontend/admin/dashboard.html` (consumes `/users`, `/jobs`, `/moderation/reports`), outside this `landing/` folder.
 
 ## Features
 
@@ -48,13 +54,16 @@ Navigation uses an **iframe shell**: `index.html` renders the navbar and footer 
 ```
 landing/
 ├── index.html              ← shell (entry point); auth-aware navbar
-├── shell.html              ← redirect to index.html
 ├── homepage.html           ← homepage content; dynamic recent-job listing
 ├── jobs.html               ← listings page
-├── job-random.html         ← job detail page
+├── job-detail.html         ← single job detail (GET /jobs/{id} + view-count)
+├── job-random.html         ← random job picked client-side from GET /jobs
+├── advanced-search.html    ← advanced search form
+├── search-results.html     ← search results listing
 ├── post-a-job.html         ← post-a-job form (POST /jobs)
+├── chat.html               ← in-platform chat (GET/POST /conversations…)
 ├── profile.html            ← designer profile (reads GET /auth/me)
-├── profile-edit.html       ← edit profile form
+├── profile-edit.html       ← edit profile form (PUT /auth/me)
 ├── register.html           ← registration page (POST /auth/register)
 ├── login.html              ← login page (POST /auth/login)
 ├── about.html              ← about us page

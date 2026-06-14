@@ -137,7 +137,9 @@ Because the token lives in `localStorage`, it survives a full page reload (`F5`,
 | `POST` | `/auth/register` | public | hashes password (BCrypt), persists `UserModel`, issues token |
 | `POST` | `/auth/login`    | public | verifies credentials, issues token |
 | `POST` | `/auth/logout`   | public | 204 noop — client deletes the token from `localStorage` |
-| `GET`  | `/auth/me`       | authenticated | returns `{userId, email, role, createdAt}` from the token's `sub` |
+| `GET`    | `/auth/me`     | authenticated | returns the caller's profile from the token's `sub` |
+| `PUT`    | `/auth/me`     | authenticated | partial profile update for the caller |
+| `DELETE` | `/auth/me`     | authenticated | deletes the caller's own account |
 
 ---
 
@@ -165,7 +167,7 @@ app.jwt.expiry-millis=7200000
 
 ## see also
 
-- `at.ac.fhcampuswien.auth.AuthController` — the issuer side.
-- `at.ac.fhcampuswien.auth.UserRepository` — the user store backing register/login.
+- `at.ac.fhcampuswien.account.AuthController` — the issuer side.
+- `at.ac.fhcampuswien.account.UserRepository` — the user store backing register/login.
 - `at.ac.fhcampuswien.infrastructure.config.SecurityConfig` — filter-chain wiring, decoder/encoder beans, converter, CORS.
 - `frontend/landing/auth.js` — client-side session persistence (US-04).

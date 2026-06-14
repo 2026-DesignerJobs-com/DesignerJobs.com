@@ -1,8 +1,6 @@
 # `chat/` — in-platform messaging
 
-REST-based polling chat between a client and a designer, scoped to a job. **Currently all endpoints are 501 stubs.**
-
-This README is a starter — it documents the contract the frontend already targets and what implementing it will need. It will grow as the package fills in.
+REST-based polling chat between a client and a designer, scoped to a job. **Implemented** — `ChatController` delegates to `ChatService`, backed by `ConversationRepository` + `MessageRepository`.
 
 ---
 
@@ -10,22 +8,24 @@ This README is a starter — it documents the contract the frontend already targ
 
 | file | role |
 |---|---|
-| `ChatController.java` | REST endpoints under `/conversations` |
+| `ChatController.java` | REST endpoints under `/conversations`; reads the caller via `Authentication`, maps `ResponseStatusException` → JSON error bodies |
+| `ChatService.java`    | participant guards + business logic (the controller stays thin) |
 | `Conversation.java`   | model — `id`, `clientId`, `designerId`, `jobId`, `createdAt` |
 | `Message.java`        | model — `id`, `conversationId`, `senderId`, `content`, `flagged`, `createdAt` |
-
-A repository pair is needed: `ConversationRepository` and `MessageRepository` against the existing H2 file, matching `JobRepository`'s pattern.
+| `ConversationRepository.java` / `MessageRepository.java` | hand-rolled JDBC against the H2 `conversations` / `messages` tables, matching `JobRepository`'s pattern |
 
 ---
 
 ## endpoints
 
-| method | path | auth | what it should do |
+| method | path | auth | behaviour |
 |---|---|---|---|
 | `GET`  | `/conversations` | authenticated | list conversations the caller participates in (either side) |
-| `POST` | `/conversations` | authenticated | open new — body `{clientId, designerId, jobId}`; reject if caller is neither party |
-| `GET`  | `/conversations/{id}/messages` | authenticated, participant-only | paginated — `?page=0` (default size 50, newest first) |
+| `POST` | `/conversations` | authenticated | open new — body `{clientId, designerId, jobId}`; `403` if caller is neither party |
+| `GET`  | `/conversations/{id}/messages` | authenticated, participant-only | paginated — `?page=0` (default), `403` for non-participants |
 | `POST` | `/conversations/{id}/messages` | authenticated, participant-only | send a message; server assigns `id`, `senderId` = principal, `createdAt`; `flagged = false` |
+
+Participant/auth failures are raised as `ResponseStatusException` inside `ChatService` and rendered as `{ "error": "..." }` by the controller's `@ExceptionHandler`.
 
 ---
 

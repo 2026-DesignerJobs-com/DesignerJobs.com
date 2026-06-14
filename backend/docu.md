@@ -1,5 +1,17 @@
 # designerjobs backend — documentation
 
+> ⚠️ **Historical — describes the original prototype, not the current backend.**
+> This walkthrough documents the first Spring Boot version: a single jobs API with
+> **no auth and no database**, persisting to a `jobs.json` file seeded with random
+> listings. The project has since moved to an **embedded H2 database**
+> (`data/projectdb.mv.db`, raw JDBC repositories — no `jobs.json`, no random seeding),
+> **stateless JWT auth**, and many more feature packages (applications, chat,
+> moderation, designer profiles, external-API proxies).
+>
+> Kept only as a "how Spring works" tutorial for newcomers. For the current
+> architecture see **`README.md`** (this folder) and the per-package READMEs under
+> `src/main/java/at/ac/fhcampuswien/`.
+
 ## overview
 
 minimal spring boot REST api. two responsibilities: store job listings and search them. no auth, no database — jobs persist as a json array in `jobs.json` in the working directory. on first run, 60 randomised job listings are seeded across four designer categories.

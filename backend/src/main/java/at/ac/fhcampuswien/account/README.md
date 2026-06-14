@@ -3,9 +3,11 @@
 The identity feature, end to end. This package owns the `users` table and everything
 about who a user is:
 
-- **Authentication & accounts** (implemented) — register, login, current user (`/auth/**`).
-- **Designer profiles & portfolio** (mostly 501 stubs) — public profile pages and portfolio
-  items (`/designers/**`, `/users/**`).
+- **Authentication & accounts** (implemented) — register, login, current user, profile
+  update/delete (`/auth/**`).
+- **Designer profiles & portfolio** (implemented) — public profile pages, profile edits, and
+  portfolio items (`/designers/**`, `/users/**`), served by `UserController` over the same
+  `users` table plus a `portfolios` table.
 
 It merges what used to be two packages (`auth/` + `user/`); they were split but both modelled
 identity, so they now live together. Tokens are issued via
@@ -34,10 +36,12 @@ identity, so they now live together. Tokens are issued via
 
 | method | path | auth | status |
 |---|---|---|---|
-| `POST` | `/register` | public | implemented — hashes password (BCrypt), persists, returns token |
-| `POST` | `/login`    | public | implemented — verifies password, returns token |
-| `POST` | `/logout`   | public | 204 noop — stateless JWT, client drops token |
-| `GET`  | `/me`       | authenticated | implemented — returns the user behind the bearer token |
+| `POST`   | `/register` | public | implemented — hashes password (BCrypt), persists, returns token |
+| `POST`   | `/login`    | public | implemented — verifies password, returns token |
+| `POST`   | `/logout`   | public | 204 noop — stateless JWT, client drops token |
+| `GET`    | `/me`       | authenticated | implemented — returns the user behind the bearer token |
+| `PUT`    | `/me`       | authenticated | implemented — partial profile update (only non-null fields applied), returns the updated profile |
+| `DELETE` | `/me`       | authenticated | implemented — deletes the caller's own account |
 
 ### request / response shapes
 
@@ -99,63 +103,59 @@ Always `204 No Content`. The frontend deletes the token from `localStorage` itse
 
 ## endpoints — designer profiles & portfolio (`/designers`, `/users`)
 
-**Currently mostly 501 stubs.** A partial profile surface already exists via auth: `UserModel`
-carries `fullName`, `designType`, `bio`, `skills`, location, rates and portfolio links (set at
-registration / profile edit), and `GET /auth/me` returns them. The landing frontend's profile
-pages currently read/display these via `/auth/me` rather than `/designers/{id}`. When the
-profile endpoints below are filled in, decide whether to migrate those columns into
-`designer_profiles` or keep core identity in `users` and only put richer profile data here.
+**Implemented in `UserController`.** Designer profiles are a *projection* of the `users` table:
+`UserModel` carries `fullName`, `designType`, `bio`, `skills`, location, rates and portfolio
+links (set at registration / profile edit), and `mapToProfile()` reshapes a `UserModel` into a
+`DesignerProfile` (`displayName`, `bio`, `skills`, `hourlyRate`, `location = "city, country"`).
+There is no separate `designer_profiles` table — only `users` plus a `portfolios` table for
+portfolio items.
 
 ### designer profiles
 
-| method | path | auth | what it should do |
+| method | path | auth | behaviour |
 |---|---|---|---|
-| `GET`  | `/designers` | public | list all designers; query params `skills` (csv match), `location` (substring) |
-| `GET`  | `/designers/{id}` | public | fetch one profile by **profile id** |
-| `PUT`  | `/designers/{id}` | authenticated, owner-only | update own profile — check `auth.getPrincipal() == profile.userId` |
+| `GET`  | `/designers` | public | list all `DESIGNER` users as profiles. **Note:** the `skills`/`location` query params are accepted but **not yet applied** as filters |
+| `GET`  | `/designers/{id}` | public | fetch one profile by **user id**; `404` if missing or not a designer |
+| `PUT`  | `/designers/{id}` | authenticated | update the profile fields. **Note:** owner-only enforcement is **not yet implemented** — see known gaps |
 
 ### portfolio
 
-| method | path | auth | what it should do |
+Portfolio items live in a `portfolios` table created by `UserRepository.createPortfolioTableIfNotExists()` (called from `UserController`'s constructor).
+
+| method | path | auth | behaviour |
 |---|---|---|---|
 | `GET`    | `/designers/{id}/portfolio` | public | list items for one designer |
-| `POST`   | `/designers/{id}/portfolio` | authenticated, owner-only | add item; server assigns `id` and `createdAt` |
-| `DELETE` | `/designers/{id}/portfolio/{itemId}` | authenticated, owner-only | remove item |
+| `POST`   | `/designers/{id}/portfolio` | authenticated | add item; server assigns `id` (if blank) and `createdAt` |
+| `DELETE` | `/designers/{id}/portfolio/{itemId}` | authenticated | remove item; `404` if not found |
+
+> ⚠️ The three portfolio endpoints currently **500** at runtime (the suite catches this) — a defect in the `portfolios` persistence path, not a routing issue. Owner-only checks are also still missing.
 
 ### generic user
 
-| method | path | auth | what it should do |
+| method | path | auth | behaviour |
 |---|---|---|---|
-| `GET`    | `/users/{id}` | public | return **public** fields only — `email`, `role`, `createdAt`. Never `passwordHash`. |
-| `DELETE` | `/users/{id}` | authenticated, self-only | delete own account; cascade to profile + portfolio + applications + contracts (decide cascade policy when implementing) |
+| `GET`    | `/users/{id}` | authenticated | return the `UserModel` with `passwordHash` nulled out; `404` if missing |
+| `GET`    | `/users`      | authenticated | list all users (`passwordHash` nulled) |
+| `DELETE` | `/users/{id}` | authenticated | delete the account (soft-delete in `UserRepository`). **Note:** self-only enforcement is **not yet implemented** |
 
-### persistence sketch (profiles — not yet built)
+### persistence — profiles & portfolio
+
+There is **no `designer_profiles` table**. A designer profile is just a `DESIGNER` row in `users`, reshaped on the fly by `UserController.mapToProfile()` — so the profile id *is* the user id. Only the portfolio gets its own table, `portfolios` (created by `UserRepository.createPortfolioTableIfNotExists()`):
 
 ```sql
-CREATE TABLE IF NOT EXISTS designer_profiles (
-    id VARCHAR(36) PRIMARY KEY,
-    user_id VARCHAR(36) UNIQUE NOT NULL,    -- references users.id
-    display_name VARCHAR(255),
-    bio TEXT,
-    skills TEXT,                             -- comma-separated
-    hourly_rate DOUBLE,
-    location VARCHAR(255),
-    avatar_url VARCHAR(1024)
-);
-
-CREATE TABLE IF NOT EXISTS portfolio_items (
-    id VARCHAR(36) PRIMARY KEY,
-    designer_id VARCHAR(36) NOT NULL,        -- references designer_profiles.id
-    title VARCHAR(255),
-    description TEXT,
-    image_url VARCHAR(1024),
-    project_url VARCHAR(1024),
-    tags TEXT,                               -- comma-separated
-    created_at VARCHAR(50)
+CREATE TABLE IF NOT EXISTS portfolios (
+    id           VARCHAR(36) PRIMARY KEY,
+    designer_id  VARCHAR(36) NOT NULL,        -- references users.id
+    title        VARCHAR(255),
+    description  TEXT,
+    image_url    VARCHAR(1024),
+    project_url  VARCHAR(1024),
+    tags         TEXT,                         -- comma-separated
+    created_at   VARCHAR(50)
 );
 ```
 
-Profile id and user id are kept separate so a user can in principle have multiple profile records without changing the primary key. If that flexibility isn't needed, the profile id can just be the user id.
+(Exact column set lives in `UserRepository`; the portfolio persistence path currently throws at runtime — see known gaps.)
 
 ---
 
@@ -211,9 +211,11 @@ works out of the box once method-security is enabled. Method-security is **not**
 
 1. **Email format validation** — currently any non-blank string is accepted. Add Bean Validation constraints once we add `spring-boot-starter-validation`.
 2. **Password strength** — no minimum length / complexity check.
-3. **Profile & portfolio endpoints** — `/designers/**` and `/users/**` are still 501 stubs; no `DesignerProfileRepository` / `PortfolioItemRepository` yet.
-4. **Refresh tokens / blacklist** — see `infrastructure/session/README.md`.
-5. **Lockout / rate limiting** — login endpoint is unprotected against brute force.
+3. **Portfolio endpoints 500 at runtime** — `GET/POST/DELETE /designers/{id}/portfolio` throw; the `portfolios` persistence path needs fixing.
+4. **Owner-only enforcement missing** — `PUT /designers/{id}`, `DELETE /users/{id}`, and the portfolio writes don't yet check `auth.getName()` against the resource owner; any authenticated user can edit/delete any profile.
+5. **`/designers` filters ignored** — the `skills` / `location` query params are accepted but not applied.
+6. **Refresh tokens / blacklist** — see `infrastructure/session/README.md`.
+7. **Lockout / rate limiting** — login endpoint is unprotected against brute force.
 
 ---
 

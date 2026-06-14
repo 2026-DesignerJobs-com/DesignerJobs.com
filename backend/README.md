@@ -57,12 +57,12 @@ at.ac.fhcampuswien
 ├── Main.java          ← @SpringBootApplication entry; calls DatabaseInitializer.init() before SpringApplication.run()
 │
 │   # feature packages (one domain each: controller + service + repository + model)
-├── account/           ← identity: register/login/me + users table + BCrypt (done); designer profiles & portfolio (stubs)
-├── job/               ← job listings — fully implemented (POST/GET/PUT/DELETE + search)
-├── application/       ← apply & hire flow (stubs)
-├── chat/              ← in-platform messaging (stubs)
-├── contract/          ← auto-generated freelance contracts (stubs)
-├── moderation/        ← reports & content moderation (stubs)
+├── account/           ← identity: register/login/me + profile edit/delete + designer profiles & portfolio (implemented; portfolio path has a runtime defect)
+├── job/               ← job listings — fully implemented (POST/GET/PUT/DELETE + search + view-count)
+├── application/       ← apply & hire flow (implemented; contract hand-off still a TODO)
+├── chat/              ← in-platform messaging (implemented)
+├── contract/          ← auto-generated freelance contracts (501 stub, Phase 2)
+├── moderation/        ← reports & content moderation (implemented; admin gate + JWT-derived reporter still TODO)
 │
 │   # third-party API integrations
 ├── integration/
@@ -86,13 +86,14 @@ Each package has its own `README.md` documenting endpoints, models, and design c
 |---|---|
 | `infrastructure/Database/`    | implemented |
 | `infrastructure/config/`      | implemented |
-| `account/`     | auth done; profiles stubbed |
+| `account/`     | implemented (auth + profiles + portfolio; portfolio endpoints 500 at runtime) |
 | `infrastructure/session/`     | implemented |
 | `job/`         | implemented |
-| `application/` | stubs |
-| `chat/`        | stubs |
-| `contract/`    | stubs (Phase 2) |
-| `moderation/`  | stubs (Phase 2) |
+| `application/` | implemented (contract hand-off TODO) |
+| `chat/`        | implemented |
+| `contract/`    | **501 stub** (Phase 2) |
+| `moderation/`  | implemented (admin gate + JWT reporter TODO; message/user report 500) |
+| `integration/` | implemented (worldclock, location, pexels) |
 
 ---
 
@@ -119,36 +120,53 @@ HTTP request                                    │ Spring Security filters  │
 
 Embedded H2 in file mode at `data/projectdb.mv.db`. URL: `jdbc:h2:file:./data/projectdb`, user `sa`, no password (dev only).
 
-Two tables today:
+Tables today:
 
-| table   | created by                                    | owned by             |
-|---------|-----------------------------------------------|----------------------|
-| `jobs`  | `infrastructure/Database/DatabaseInitializer.init()` on boot | `job/JobRepository`  |
-| `users` | `account/UserRepository` constructor             | `account/UserRepository`|
+| table           | created by                                    | owned by                       |
+|-----------------|-----------------------------------------------|--------------------------------|
+| `jobs`          | `infrastructure/Database/DatabaseInitializer.init()` on boot | `job/JobRepository`            |
+| `users`         | `account/UserRepository` constructor          | `account/UserRepository`       |
+| `portfolios`    | `account/UserRepository` (`createPortfolioTableIfNotExists`) | `account/UserRepository`       |
+| `applications`  | `application/JobApplicationRepository` constructor | `application/JobApplicationRepository` |
+| `conversations` | `chat/ConversationRepository` constructor     | `chat/ConversationRepository`  |
+| `messages`      | `chat/MessageRepository` constructor          | `chat/MessageRepository`       |
+| `reports`       | `moderation/ReportRepository` constructor     | `moderation/ReportRepository`  |
 
-There is no migrations framework. Schema changes mean editing the relevant `CREATE TABLE` statement and either deleting the DB file or adding `ALTER TABLE` SQL. See `infrastructure/Database/README.md` for the full Job-side documentation.
+There is no migrations framework. Schema changes mean editing the relevant `CREATE TABLE` (or adding `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`, as done for `jobs.view_count`) and either deleting the DB file or letting the idempotent DDL apply on boot. See `infrastructure/Database/README.md` for the full Job-side documentation.
 
-When new packages (`application/`, `chat/`, `contract/`, `moderation/`) get implemented, decide per package whether the table-creation goes into `DatabaseInitializer` (alongside `jobs`) or into the repository's constructor (the pattern `account/` uses). The current split is historical, not principled.
+Only `jobs` is bootstrapped in `DatabaseInitializer`; every other table is created in its repository's constructor. The split is historical, not principled — `contract/` is the only feature without a table yet (still a stub).
 
 ---
 
 ## endpoints
 
-Implemented:
+Implemented (see each package README for request/response shapes and auth detail):
 
 | method | path | auth | package |
 |---|---|---|---|
 | `POST`   | `/auth/register`     | public        | `account/`     |
 | `POST`   | `/auth/login`        | public        | `account/`     |
 | `POST`   | `/auth/logout`       | public        | `account/` (noop) |
-| `GET`    | `/auth/me`           | authenticated | `account/`     |
+| `GET` `PUT` `DELETE` | `/auth/me` | authenticated | `account/`     |
+| `GET`    | `/designers`, `/designers/{id}` | public | `account/` (UserController) |
+| `PUT`    | `/designers/{id}`    | authenticated | `account/`     |
+| `GET` `POST` `DELETE` | `/designers/{id}/portfolio[/{itemId}]` | mixed | `account/` (⚠ 500 at runtime) |
+| `GET` `DELETE` | `/users/{id}`, `GET /users` | authenticated | `account/`     |
 | `POST`   | `/jobs`              | authenticated | `job/`      |
-| `GET`    | `/jobs`              | public        | `job/`      |
-| `GET`    | `/jobs/{id}`         | public        | `job/`      |
-| `PUT`    | `/jobs/{id}`         | authenticated | `job/`      |
-| `DELETE` | `/jobs/{id}`         | authenticated | `job/`      |
+| `GET`    | `/jobs`, `/jobs/{id}` | public       | `job/`      |
+| `PUT` `DELETE` | `/jobs/{id}`   | owner only    | `job/`      |
+| `PATCH`  | `/jobs/{id}/view-count` | public    | `job/`      |
+| `POST`   | `/jobs/{jobId}/apply` | designer     | `application/` |
+| `GET`    | `/jobs/{jobId}/applications` | job owner | `application/` |
+| `GET` `PUT` `POST` | `/applications/{id}[/status\|/hire]` | parties | `application/` |
+| `GET` `POST` | `/conversations`, `/conversations/{id}/messages` | participants | `chat/` |
+| `POST`   | `/moderation/{messages\|jobs\|users}/{id}/report` | authenticated | `moderation/` |
+| `GET` `PUT` | `/moderation/reports[/{id}]` | authenticated | `moderation/` |
+| `GET`    | `/world-clock`       | public        | `integration/worldclock` |
+| `GET`    | `/locations/countries`, `/locations/cities` | public | `integration/location` |
+| `GET`    | `/api/design-inspiration`, `/api/test` | public | `integration/pexels` |
 
-Everything else returns `501 Not Implemented` for now — see each package's README for the contract.
+The only endpoints still returning `501 Not Implemented` are the three `/contracts**` routes (`contract/` is a Phase-2 stub).
 
 **Response formats (C2, since 2026-06-11):** the API answers in JSON by default and in XML when the client sends `Accept: application/xml` — enabled by `jackson-dataformat-xml` in `pom.xml`, which registers an app-wide XML message converter. `GET /jobs` and `GET /jobs/{id}` declare it explicitly via `produces`; covered by `infrastructure/config/ContentNegotiationTest`. Note: browsers rank `application/xml` above `*/*` in their Accept header, so opening an API URL in a browser tab shows XML, while `fetch()` calls (Accept `*/*`) keep getting JSON.
 

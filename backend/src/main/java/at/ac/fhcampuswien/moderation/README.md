@@ -1,8 +1,8 @@
 # `moderation/` — reports & content moderation
 
-Lets users flag jobs, chat messages, and other users; gives admins a queue to triage. **Currently all endpoints are 501 stubs (Phase 2).**
+Lets users flag jobs, chat messages, and other users; gives admins a queue to triage. **Implemented** — `ModerationController` + `ReportRepository` persist reports to the H2 `reports` table.
 
-This README documents the contract the frontend will target and the hooks other packages (`chat/`, `job/`, `account/`) will need.
+> ⚠️ **Known divergences from the intended design (see § known issues):** reports do **not** derive `reporterId` from the JWT, the admin endpoints are **not** role-gated, and `POST .../messages/{id}/report` and `.../users/{id}/report` currently **500** because they don't supply a `reporterId` for the `NOT NULL` column.
 
 ---
 
@@ -12,22 +12,23 @@ This README documents the contract the frontend will target and the hooks other 
 |---|---|
 | `ModerationController.java` | REST endpoints under `/moderation` |
 | `Report.java`               | model — `id`, `reporterId`, `targetType`, `targetId`, `reason`, `status`, `createdAt` |
+| `ReportRepository.java`     | hand-rolled JDBC against the H2 `reports` table; creates it in its constructor |
 
-A `ReportRepository` is needed when implementing — follow `JobRepository`'s JDBC pattern. A separate `ModerationService` should host the synchronous moderation hook (see § integration below).
+A separate `ModerationService` for the synchronous chat hook (see § integration) is **not** built yet.
 
 ---
 
 ## endpoints
 
-| method | path | who calls | what it should do |
+| method | path | who calls | behaviour today |
 |---|---|---|---|
-| `POST` | `/moderation/messages/{id}/report` | any authenticated user | flag a chat message — body `{ "reason": "..." }`; server fills the rest |
-| `POST` | `/moderation/jobs/{id}/report`     | any authenticated user | flag a job listing |
-| `POST` | `/moderation/users/{id}/report`    | any authenticated user | flag a user |
-| `GET`  | `/moderation/reports`              | admin                  | list reports; `?status=OPEN` filter, default to all |
-| `PUT`  | `/moderation/reports/{id}`         | admin                  | resolve — body `{ "status": "RESOLVED"\|"DISMISSED" }` |
+| `POST` | `/moderation/messages/{id}/report` | authenticated | `targetType=MESSAGE`; `400` if `reason` blank; **`500` unless the body carries `reporterId`** |
+| `POST` | `/moderation/jobs/{id}/report`     | authenticated | `targetType=JOB`; defaults a missing `reporterId` to `"anonymous"`; `400` if `reason` blank → `200` |
+| `POST` | `/moderation/users/{id}/report`    | authenticated | `targetType=USER`; `400` if `reason` blank; **`500` unless the body carries `reporterId`** |
+| `GET`  | `/moderation/reports`              | authenticated (not admin-gated) | list reports; optional `?status=OPEN` filter (case-insensitive), default all |
+| `PUT`  | `/moderation/reports/{id}`         | authenticated (not admin-gated) | set status — body `{ "status": "OPEN"\|"RESOLVED"\|"DISMISSED" }`; `404` if no such report |
 
-The three `POST` endpoints all build a `Report` with `targetType` derived from the URL (`MESSAGE` / `JOB` / `USER`), `targetId` from the path variable, `reporterId` from `auth.getPrincipal()`, `status = "OPEN"`, and `createdAt = Instant.now()`.
+Each `POST` sets `targetType` from the URL, `targetId` from the path variable, and persists the rest of the `Report` from the request body. Successful reports return `200` with `{ "message": "...", "id": "..." }` (not `201`).
 
 ---
 
@@ -61,10 +62,20 @@ Moderation for `JOB` and `USER` targets is **after-the-fact**: the `POST /modera
 
 ## auth model
 
-- `POST /moderation/*/report` — any authenticated caller can file a report.
-- `GET /moderation/reports` and `PUT /moderation/reports/{id}` — admin only. Use `@PreAuthorize("hasRole('ADMIN')")` once method security is enabled in `SecurityConfig`. Until then, hard-code a check against a known admin user-id or skip these endpoints in V1.
+All `/moderation/**` routes fall through to `authenticated()` in `SecurityConfig`, so a valid JWT is required.
 
-Rate-limit `POST /moderation/*/report` per reporter to avoid abuse — out of scope for V1, flag in code with a `// TODO: rate limit`.
+**Intended (not yet enforced):**
+- `GET /moderation/reports` and `PUT /moderation/reports/{id}` should be **admin only** — add `@PreAuthorize("hasRole('ADMIN')")` once method security is enabled. Today any authenticated user can list and resolve reports.
+- `reporterId` should be taken from `auth.getPrincipal()`, never the request body — `ModerationController` doesn't take an `Authentication` param yet, so it trusts the body (or defaults to `"anonymous"` for jobs).
+- Rate-limit `POST /moderation/*/report` per reporter — still a `// TODO`.
+
+---
+
+## known issues
+
+1. **`reportMessage` / `reportUser` return `500`** — the `reports.reporter_id` column is `NOT NULL`, but only `reportJob` defaults a missing `reporterId` (to `"anonymous"`). The other two persist `null` and trip the constraint. Fix: derive `reporterId` from the JWT (preferred) or apply the same default.
+2. **No admin gate** on the read/resolve endpoints (see auth model).
+3. **No chat hook** — `ModerationService.scan(...)` (below) was never built.
 
 ---
 

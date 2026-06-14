@@ -1,8 +1,8 @@
-// 1. Die globalen Maps für die Zuordnung von IDs zu lesbaren Namen
+//globalen Maps für die Zuordnung von IDs zu lesbaren Namen
 const userMap = {};
-const jobMap = {}; // NEU: Map für die Job-Titel
+const jobMap = {};
 
-// 2. Startpunkt beim Laden der Seite
+//Startpunkt beim Laden der Seite
 document.addEventListener('DOMContentLoaded', async () => {
     // Dieser Ansatz wartet ERST komplett auf die User und Jobs,
     // damit die Maps befüllt sind, wenn die Reports geladen werden.
@@ -87,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 // USER LADEN & USER-TABELLE BEFÜLLEN
 // ==========================================
+
 async function loadUsersFromServer() {
     const tableBody = document.getElementById('user-table-body');
     if (!tableBody) return;
@@ -158,6 +159,7 @@ async function loadUsersFromServer() {
 // ==========================================
 // JOBS LADEN & JOB-TABELLE BEFÜLLEN
 // ==========================================
+
 async function loadJobsFromServer() {
     const tableBody = document.getElementById('job-table-body');
     if (!tableBody) return;
@@ -247,6 +249,7 @@ async function loadJobsFromServer() {
 // ==========================================
 // REPORTS AUS DER DATENBANK LADEN & TAVELLEE FÜLLEN
 // ==========================================
+
 async function loadReportsFromServer() {
     const tableBody = document.getElementById('report-table-body');
     if (!tableBody) return;
@@ -352,6 +355,7 @@ async function loadReportsFromServer() {
 // ==========================================
 // REPORT STATUS ROTIEREN
 // ==========================================
+
 async function toggleReportStatus(reportId, currentStatus) {
     if (currentStatus !== 'OPEN') {
         alert('Diese Meldung wurde bereits final bearbeitet.');

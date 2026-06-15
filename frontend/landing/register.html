@@ -105,78 +105,8 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
   <script src="auth.js"></script>
   <script src="app.js"></script>
-  <script>
-    const designerRadio = document.getElementById('role-designer');
-    const clientRadio = document.getElementById('role-client');
-    const designerFields = document.getElementById('designer-fields');
-    const roleInput = document.getElementById('role-input');
-
-
-    function syncRole() {
-      const role = clientRadio.checked ? 'CLIENT' : 'DESIGNER';
-      roleInput.value = role;
-      designerFields.style.display = role === 'DESIGNER' ? '' : 'none';
-    }
-
-    designerRadio.addEventListener('change', syncRole);
-    clientRadio.addEventListener('change', syncRole);
-    syncRole();
-
-    /*
-     * Connects the register form with the Spring backend.
-     * The form data is sent as JSON to POST http://localhost:8080/auth/register.
-     */
-    document.getElementById('register-form').addEventListener('submit', async event => {
-      event.preventDefault();
-
-      const form = event.target;
-      const formData = new FormData(form);
-      const message = document.getElementById('register-message');
-
-      const registerData = {
-        fullName: formData.get('name'),
-        email: formData.get('email'),
-        password: formData.get('password'),
-        role: formData.get('role'),
-        designType: formData.get('designType'),
-        skills: formData.get('skills')
-      };
-
-
-      try {
-        const response = await fetch('http://localhost:8080/auth/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(registerData)
-        });
-
-        const text = await response.text();
-        const data = text ? JSON.parse(text) : {};
-
-        if (!response.ok) {
-          message.textContent = data && data.error ? data.error : 'Registration failed.';
-          message.className = 'font-monospace small mb-3 text-danger';
-          return;
-        }
-
-        // Backend returns {token, userId, role} on register — log the user in immediately.
-        if (window.Auth) {
-          Auth.saveSession({ token: data.token, userId: data.userId, role: data.role });
-        }
-
-        message.textContent = 'Account created. Redirecting…';
-        message.className = 'font-monospace small mb-3 text-success';
-        window.location.href = 'homepage.html';
-
-      } catch (error) {
-        console.error('Register error:', error);
-        message.textContent = 'Register request failed. Please check if the backend is running.';
-        message.className = 'font-monospace small mb-3 text-danger';
-      }
-    });
-  </script>
+  <script src="common.js"></script>
+  <script src="register.js"></script>
 
 </body>
 </html>

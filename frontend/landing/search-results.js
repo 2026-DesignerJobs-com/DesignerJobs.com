@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (type) backendParams.set("workMode", type);
   if (budget) backendParams.set("budget", mapBudgetToBackendValue(budget));
 
-  const requestUrl = "http://localhost:8080/jobs?" + backendParams.toString();
+  const requestUrl = `${API_BASE}/jobs?` + backendParams.toString();
 
   try {
     if (count) count.textContent = "Loading...";
@@ -121,11 +121,4 @@ function mapBudgetToBackendValue(value) {
   return budgets[value] || value;
 }
 
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
+// escapeHtml is provided globally by common.js

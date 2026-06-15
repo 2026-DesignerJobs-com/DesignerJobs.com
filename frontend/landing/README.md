@@ -71,8 +71,16 @@ landing/
 ├── theme.css               ← Bootstrap CSS variable overrides only (no component styles)
 ├── app.js                  ← theme toggle + search submit
 ├── auth.js                 ← localStorage helpers for token / userId / role
+├── common.js               ← shared helpers: API_BASE (backend origin, single source of truth) + escapeHtml
+├── <page>.js               ← one per page (index.js, jobs.js, chat.js, profile.js, …): that page's logic, externalized from its inline <script>
 ├── 18.05-auth-changelog.md ← notes on profile-nav and logout wiring
 └── docu.md                 ← Bootstrap class patterns, theme.css reference, iframe architecture
+
+> **JS conventions.** Each page's logic lives in a matching `<page>.js` loaded at
+> the end of `<body>`; only two tiny inline scripts remain in the HTML — the
+> `<head>` no-flash theme init and (on protected pages) the `auth.js` requireAuth
+> guard. Backend calls always use the full absolute URL via `` `${API_BASE}/…` ``
+> from `common.js` — no relative endpoints, no per-page base-URL literals.
 ```
 
 See `docu.md` for the Bootstrap utility class patterns, how `theme.css` works, and how to extend the design.

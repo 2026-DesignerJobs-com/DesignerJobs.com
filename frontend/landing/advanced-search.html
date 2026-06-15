@@ -294,17 +294,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="app.js"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const params = new URLSearchParams(window.location.search);
-      const keyword = params.get("q");
-
-      const keywordInput = document.querySelector('input[name="q"]');
-
-      if (keywordInput && keyword) {
-        keywordInput.value = keyword;
-      }
-    });
-</script>
+<script src="advanced-search.js"></script>
 </body>
 </html>

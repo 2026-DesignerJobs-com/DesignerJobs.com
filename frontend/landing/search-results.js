@@ -3,26 +3,83 @@ document.addEventListener("DOMContentLoaded", async () => {
   const count = document.getElementById("results-count");
   const resultsContainer = document.getElementById("jobs-results");
   const noResults = document.getElementById("no-results");
+  const clearAllBtn = document.getElementById("clear-all-btn");
+  const filterForm = document.getElementById("desktop-filter-form");
 
   const pageParams = new URLSearchParams(window.location.search);
   const backendParams = new URLSearchParams();
 
   const q = pageParams.get("q");
-  const discipline = pageParams.get("discipline");
-  const type = pageParams.get("type");
   const location = pageParams.get("location");
-  const budget = pageParams.get("budget");
 
+  // Gather all checked values from URL into filter arrays
+  const disciplines = pageParams.getAll("discipline");
+  const types = pageParams.getAll("type");
+  const budgets = pageParams.getAll("budget");
+  const postedVal = pageParams.get("posted");
+
+  // ========================================================
+  // 1. SIDEBAR MANAGEMENT
+  // ========================================================
+  if (filterForm) {
+    // A. Restore states of multiple checkboxes on page load
+    const restoreCheckboxes = (name, activeValues) => {
+      activeValues.forEach(val => {
+        const cb = filterForm.querySelector(`input[name="${name}"][value="${val}"]`);
+        if (cb) cb.checked = true;
+      });
+    };
+
+    restoreCheckboxes("discipline", disciplines);
+    restoreCheckboxes("type", types);
+    restoreCheckboxes("budget", budgets);
+
+    // Restore select dropdown state
+    const postedSelect = document.getElementById("sf-posted");
+    if (postedSelect && postedVal) {
+      postedSelect.value = postedVal;
+    }
+
+    // B. Listen for form input changes and auto-submit live
+    filterForm.addEventListener("change", () => {
+      // Retain the search bar 'q' string and location parameter if they exist
+      if (q && !filterForm.querySelector('input[name="q"]')) {
+        const hiddenQ = document.createElement("input");
+        hiddenQ.type = "hidden";
+        hiddenQ.name = "q";
+        hiddenQ.value = q;
+        filterForm.appendChild(hiddenQ);
+      }
+      if (location && !filterForm.querySelector('input[name="location"]')) {
+        const hiddenLoc = document.createElement("input");
+        hiddenLoc.type = "hidden";
+        hiddenLoc.name = "location";
+        hiddenLoc.value = location;
+        filterForm.appendChild(hiddenLoc);
+      }
+      filterForm.submit();
+    });
+  }
+
+  // ========================================================
+  // 2. CLEAR ALL FUNCTIONALITY
+  // ========================================================
+  if (clearAllBtn) {
+    clearAllBtn.addEventListener("click", () => {
+      // Wipes all filters completely and reloads to show all jobs
+      window.location.href = window.location.pathname;
+    });
+  }
+
+  // ========================================================
+  // 3. BACKEND API SEARCH & FETCH
+  // ========================================================
   if (heading) {
     heading.textContent = q ? `"${q}"` : "All Jobs";
   }
 
   if (q) backendParams.set("q", q);
   if (location) backendParams.set("location", location);
-
-  if (discipline) backendParams.set("category", discipline);
-  if (type) backendParams.set("workMode", type);
-  if (budget) backendParams.set("budget", mapBudgetToBackendValue(budget));
 
   const requestUrl = "http://localhost:8080/jobs?" + backendParams.toString();
 
@@ -36,8 +93,44 @@ document.addEventListener("DOMContentLoaded", async () => {
       throw new Error("Backend returned " + response.status);
     }
 
-    const jobs = await response.json();
+    let jobs = await response.json();
 
+    // ========================================================
+    // 4. CLIENT-SIDE FILTERING (Flexible Multi-Select OR Logic)
+    // ========================================================
+    if (Array.isArray(jobs)) {
+
+      // Filter Discipline (Matches ANY checked discipline)
+      if (disciplines.length > 0) {
+        jobs = jobs.filter(job => {
+          const jobCat = job.category || job.designType || "";
+          return disciplines.some(d => d.toLowerCase() === jobCat.toLowerCase());
+        });
+      }
+
+      // Filter Work Type (Matches ANY checked work mode)
+      if (types.length > 0) {
+        jobs = jobs.filter(job => {
+          const jobMode = job.workMode || "";
+          return types.some(t => t.toLowerCase() === jobMode.toLowerCase());
+        });
+      }
+
+      // Filter Budget (Matches ANY checked budget level)
+      if (budgets.length > 0) {
+        jobs = jobs.filter(job => {
+          const jobBudget = (job.budget || "").toLowerCase();
+          return budgets.some(b => {
+            const mapped = mapBudgetToBackendValue(b).toLowerCase();
+            return jobBudget === mapped || jobBudget === b.toLowerCase();
+          });
+        });
+      }
+    }
+
+    // ========================================================
+    // 5. RENDER LOGIC
+    // ========================================================
     if (!Array.isArray(jobs) || jobs.length === 0) {
       if (count) count.textContent = "0 Results";
       if (resultsContainer) resultsContainer.innerHTML = "";
@@ -66,8 +159,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 function createJobCardHtml(job) {
   const jobId = job.id;
   const detailUrl = jobId
-    ? "job-detail.html?id=" + encodeURIComponent(jobId)
-    : "#";
+      ? "job-detail.html?id=" + encodeURIComponent(jobId)
+      : "#";
 
   return `
     <article class="result-card p-4">
@@ -115,17 +208,16 @@ function mapBudgetToBackendValue(value) {
   const budgets = {
     "1": "small",
     "2": "medium",
-    "3": "big"      // matches the value post-a-job.html stores (not "large")
+    "3": "big"
   };
-
   return budgets[value] || value;
 }
 
 function escapeHtml(value) {
   return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
 }

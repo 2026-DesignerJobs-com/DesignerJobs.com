@@ -4,8 +4,15 @@ const jobMap = {};
 
 //Startpunkt beim Laden der Seite
 document.addEventListener('DOMContentLoaded', async () => {
-    // Dieser Ansatz wartet ERST komplett auf die User und Jobs,
-    // damit die Maps befüllt sind, wenn die Reports geladen werden.
+
+    const userRole = localStorage.getItem("designer_jobs_role");
+        if (userRole !== "ADMIN") {
+            // Kleines Popup anzeigen
+            alert("Nicht erlaubt! Du hast keine Admin-Rechte.");
+            window.location.href = "/index.html";
+           return;
+       }
+
     await loadUsersFromServer();
     await loadJobsFromServer();
     await loadReportsFromServer();
@@ -93,10 +100,19 @@ async function loadUsersFromServer() {
     if (!tableBody) return;
 
     try {
-        const response = await fetch('/users', {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' }
-        });
+        const token = localStorage.getItem("designer_jobs_token");
+                const headers = { 'Accept': 'application/json' };
+
+
+                if (token && token !== "null" && token !== "undefined") {
+                    headers['Authorization'] = 'Bearer ' + token;
+                }
+
+                const response = await fetch('/users', {
+                    method: 'GET',
+                    headers: headers
+                });
+
 
         if (!response.ok) {
             throw new Error(`Server-Fehler: ${response.status}`);
@@ -414,11 +430,20 @@ async function banUser(id) {
     }
 
     try {
-        const response = await fetch(`/users/${id}`, {
+        const token = localStorage.getItem("designer_jobs_token");
+        const headers = {
+            'Accept': 'application/json'
+        };
+
+        // WICHTIG: Den Admin-Token mitschicken, damit die 401 verschwindet!
+        if (token && token !== "null" && token !== "undefined") {
+            headers['Authorization'] = 'Bearer ' + token;
+        }
+
+        const response = await fetch(`/users/${id}`, { // Überprüfe hier kurz den Pfad (/users/ oder /admin/users/)
             method: 'DELETE',
-            headers: {
-                'Accept': 'application/json'
-            }
+            headers: headers, // <-- Die korrigierten Headers mit Token verwenden!
+            credentials: 'same-origin'
         });
 
         const data = await response.json();
@@ -453,11 +478,19 @@ async function deleteJob(id) {
     }
 
     try {
+        const token = localStorage.getItem("designer_jobs_token");
+        const headers = {
+            'Accept': 'application/json'
+        };
+
+        // Token im Header mitschicken, damit Spring dich als ADMIN authentifiziert
+        if (token && token !== "null" && token !== "undefined") {
+            headers['Authorization'] = 'Bearer ' + token;
+        }
+
         const response = await fetch(`/jobs/${id}`, {
             method: 'DELETE',
-            headers: {
-                'Accept': 'application/json'
-            },
+            headers: headers, // <-- Korrigierte Headers verwenden!
             credentials: 'same-origin'
         });
 

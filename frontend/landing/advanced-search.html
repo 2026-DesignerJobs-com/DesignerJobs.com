@@ -102,35 +102,35 @@
             <p class="font-monospace text-uppercase fw-bold filter-section-label text-success mb-3">Discipline</p>
             <div class="d-flex flex-wrap gap-2">
               <div class="check-tile">
-                <input type="checkbox" name="discipline" value="web" id="d-web">
+                <input type="checkbox" name="discipline" value="Web Design" id="d-web">
                 <label for="d-web" class="font-monospace text-uppercase fw-bold">Web Design</label>
               </div>
               <div class="check-tile">
-                <input type="checkbox" name="discipline" value="graphic" id="d-graphic">
+                <input type="checkbox" name="discipline" value="Graphic Design" id="d-graphic">
                 <label for="d-graphic" class="font-monospace text-uppercase fw-bold">Graphic Design</label>
               </div>
               <div class="check-tile">
-                <input type="checkbox" name="discipline" value="ux" id="d-ux">
+                <input type="checkbox" name="discipline" value="UI/UX Design" id="d-ux">
                 <label for="d-ux" class="font-monospace text-uppercase fw-bold">UX / UI</label>
               </div>
               <div class="check-tile">
-                <input type="checkbox" name="discipline" value="interior" id="d-interior">
+                <input type="checkbox" name="discipline" value="Interior Design" id="d-interior">
                 <label for="d-interior" class="font-monospace text-uppercase fw-bold">Interior Design</label>
               </div>
               <div class="check-tile">
-                <input type="checkbox" name="discipline" value="motion" id="d-motion">
+                <input type="checkbox" name="discipline" value="Motion Design" id="d-motion">
                 <label for="d-motion" class="font-monospace text-uppercase fw-bold">Motion Design</label>
               </div>
               <div class="check-tile">
-                <input type="checkbox" name="discipline" value="illustration" id="d-illustration">
+                <input type="checkbox" name="discipline" value="Illustration" id="d-illustration">
                 <label for="d-illustration" class="font-monospace text-uppercase fw-bold">Illustration</label>
               </div>
               <div class="check-tile">
-                <input type="checkbox" name="discipline" value="photography" id="d-photo">
+                <input type="checkbox" name="discipline" value="Photography" id="d-photo">
                 <label for="d-photo" class="font-monospace text-uppercase fw-bold">Photography</label>
               </div>
               <div class="check-tile">
-                <input type="checkbox" name="discipline" value="branding" id="d-branding">
+                <input type="checkbox" name="discipline" value="Brand Identity" id="d-branding">
                 <label for="d-branding" class="font-monospace text-uppercase fw-bold">Branding</label>
               </div>
             </div>
@@ -293,18 +293,40 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-<script src="app.js"></script>
+
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const params = new URLSearchParams(window.location.search);
-      const keyword = params.get("q");
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.querySelector('form');
 
-      const keywordInput = document.querySelector('input[name="q"]');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault(); // Verhindert das Neuladen der Seite
 
-      if (keywordInput && keyword) {
-        keywordInput.value = keyword;
-      }
-    });
+        // 1. FormData sammelt automatisch alle Felder mit einem 'name'-Attribut ein!
+        const formData = new FormData(form);
+        const params = new URLSearchParams();
+
+        // 2. Wir loopen durch die Daten und fügen nur hinzu, was nicht leer ist
+        for (const [key, value] of formData.entries()) {
+          const trimmedValue = value.trim();
+
+          // Verhindert das Übergeben von leeren Feldern oder Standard-Platzhaltern
+          if (trimmedValue && !trimmedValue.startsWith("Select") && !trimmedValue.startsWith("Any")) {
+
+            // Spezialfall: search-results.js erwartet für das 'workMode'-Feld den Parameter 'type'
+            if (key === 'workMode') {
+              params.append('type', trimmedValue);
+            } else {
+              params.append(key, trimmedValue);
+            }
+          }
+        }
+
+        // 3. iFrame-Sichere Weiterleitung mit den sauberen Parametern
+        window.location.href = `search-results.html?${params.toString()}`;
+      });
+    }
+  });
 </script>
 </body>
 </html>

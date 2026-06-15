@@ -26,6 +26,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
@@ -54,15 +55,21 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/me").authenticated()
+
                         .requestMatchers("/world-clock").permitAll()
                         .requestMatchers("/locations/**" ).permitAll()
                         .requestMatchers("/api/**").permitAll()
+                        //chütze die echten API-Daten-Endpunkte (Hier MUSS man Admin sein!):
+                        .requestMatchers("/api/admin/**", "/moderation/**").hasRole("ADMIN")
                         // Deliberately not /jobs/** — nested sub-resources such as
                         // GET /jobs/{id}/applications must stay authenticated.
                         .requestMatchers(HttpMethod.GET, "/jobs", "/jobs/*").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/jobs/*/view-count").permitAll()
                         .requestMatchers(HttpMethod.GET, "/designers/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/users/*").permitAll()
                         .requestMatchers("/users", "/users/**").permitAll()
+                        .requestMatchers("/admin/dashboard.html", "/admin/dashboard.js", "/admin/dashboard.css").permitAll()
                         .requestMatchers("/admin/**").permitAll()
                         .requestMatchers("/", "/index.html", "/*.html", "/*.css", "/*.js",
                                 "/images/**", "/css/**", "/js/**", "/assets/**", "/favicon.ico").permitAll()
